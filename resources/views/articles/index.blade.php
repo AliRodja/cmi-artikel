@@ -72,6 +72,7 @@
                         <tr>
                             <th class="th">Artikel</th>
                             <th class="th">Status</th>
+                            <th class="th text-center">Dilihat</th>
                             <th class="th">Dibuat</th>
                             <th class="th text-right">Aksi</th>
                         </tr>
@@ -93,6 +94,7 @@
                                     </div>
                                 </td>
                                 <td class="td"><x-status-badge :status="$article->status" /></td>
+                                <td class="td text-center text-gray-700">{{ number_format($article->view_count, 0, ',', '.') }}</td>
                                 <td class="td whitespace-nowrap text-gray-500">{{ $article->created_at->translatedFormat('d M Y') }}</td>
                                 <td class="td">
                                     <div class="flex justify-end gap-1">

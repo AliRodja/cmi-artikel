@@ -9,6 +9,9 @@
  */
 
 return [
+    // Artikel baru masuk daftar "Artikel Terpopuler" setelah dilihat minimal sebanyak ini (pengunjung unik).
+    'popular_min_views' => 5,
+
     'whatsapp_consultation_url' => 'https://api.whatsapp.com/send/?'.http_build_query([
         'phone' => '6282121590000',
         'text' => "Halo, dari website cmihospital.com, Saya ingin konsultasi.\nNama: \nAlamat: \nKeluhan: ",

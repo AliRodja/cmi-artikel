@@ -297,13 +297,19 @@ password      (bcrypt)                     slug        UNIQUE  (dipakai di URL)
 remember_token                             content     LONGTEXT
 timestamps                                 category    NULLABLE, INDEX: diabetes | jantung | kanker | ginjal
                                            image       NULLABLE (path, mis. articles/abc.jpg)
-                                           status      TINYINT  0 = Draft, 1 = Published
-password_reset_tokens                      timestamps
-─────────────────────                      INDEX (status, created_at)
-email  PK · token (ter-hash) · created_at
+                                           status      TINYINT  0 = Draft, 1 = Published, 2 = Review
+password_reset_tokens                      view_count  UNSIGNED INT, INDEX (jumlah pembaca unik)
+─────────────────────                      timestamps
+email  PK · token (ter-hash) · created_at  INDEX (status, created_at)
+
+article_views (riwayat kunjungan)
+──────────────────────────────────────────────────────────────────────────
+id · article_id FK (cascade) · user_id FK NULLABLE (null on delete)
+visitor ("user:{id}" / "guest:{sha256 sesi}") · viewed_at
+INDEX (article_id, visitor) · INDEX (article_id, viewed_at)
 ```
 
-Tabel bawaan Laravel lainnya: `sessions`, `cache`, `jobs`.
+Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sessions`, `cache`, `jobs`.
 
 - **Relasi:** satu user memiliki banyak artikel (`User::articles()` → `hasMany`, `Article::user()` → `belongsTo`).
 - **`user_id` nullable + `nullOnDelete`:** jika user dihapus, artikelnya tetap ada tetapi tanpa penulis — kondisi
@@ -374,6 +380,16 @@ Tabel bawaan Laravel lainnya: `sessions`, `cache`, `jobs`.
     Jenis Artikel beserta jumlahnya, kartu "Alami gejala …? Konsultasi segera").
   - Tombol konsultasi membuka WhatsApp customer service CMI. URL-nya ada di `config/clinic.php` (satu tempat, tidak
     ditulis mati di view).
+- **Jumlah dilihat & Artikel Terpopuler:** setiap kunjungan halaman artikel publik dicatat di `article_views`
+  (riwayat) dan menambah `articles.view_count` (`App\Support\ArticleViewCounter`).
+  - Satu pengunjung dihitung **sekali per artikel**: user login dikenali dari id-nya, tamu dari sesinya. ID sesi
+    di-hash sha256 sebelum disimpan, karena ID sesi asli bisa dipakai membajak sesi. Penulis yang membuka artikelnya
+    sendiri tidak dihitung.
+  - `view_count` ditambah dengan `UPDATE … SET view_count = view_count + 1` lewat query builder: aman bila dua
+    pengunjung datang bersamaan, dan `updated_at` artikel tidak ikut berubah.
+  - **Artikel Terpopuler** = artikel Published dengan `view_count` ≥ `config('clinic.popular_min_views')` (default
+    5), diurutkan terbanyak. **Artikel Terkait** = artikel Published dengan jenis yang sama.
+  - Penulis/admin melihat total, 7 hari terakhir, dan 5 kunjungan terbaru di halaman detail artikelnya.
 - **Statistik dashboard per user**, bukan statistik seluruh situs.
 - **Laporan Artikel (Soal 2) hanya untuk admin**, karena menampilkan email semua penulis (data pribadi) sementara
   siapa pun bisa mendaftar. Laporan menampilkan artikel Published **semua penulis**, sesuai soal. Penilai dapat
@@ -443,13 +459,14 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/ArticleAuthorizationTest.php` | 9 | Pemilik bisa lihat/edit/update/hapus artikel yang belum tayang; user lain **403** (lihat, edit, update, hapus); daftar hanya artikel sendiri; tamu diarahkan ke login; `user_id` tidak bisa disisipkan dari form; publik hanya melihat Published (Draft 404) dan tidak ada tombol kelola |
 | `tests/Feature/ArticleReportTest.php` | 9 | Soal 2: INNER JOIN membuang artikel tanpa penulis, hanya `status = 1`, nama & email dari tabel `users`, urut `created_at` terbaru, 10 per halaman, search judul/nama/email, search tidak membocorkan Draft, kata kunci terbawa di link pagination, tamu ditolak |
 | `tests/Feature/ArticleCategoryTest.php` | 4 | Jenis artikel wajib & hanya 4 pilihan; filter `?jenis=` di beranda (nilai asing diabaikan); halaman detail berisi link bagikan ter-encode, jumlah per jenis (hanya Published), judul "Alami gejala jantung?" & URL WhatsApp CS persis; artikel lama tanpa jenis tetap tampil |
+| `tests/Feature/ArticleViewTest.php` | 6 | Tamu dihitung sekali per sesi (sesi disimpan ter-hash), user login sekali, penulis sendiri tidak dihitung; `updated_at` tidak berubah & Draft tidak dihitung; Terpopuler butuh minimal kunjungan, urut terbanyak, tanpa Draft & artikel yang sedang dibuka; Terkait = jenis sama; statistik & riwayat di area penulis |
 | `tests/Feature/ArticleContentTest.php` | 6 | Rich text: format dipertahankan, HTML berbahaya (`<script>`, `onclick`, `javascript:`) dibuang, link diberi `rel=noopener`, editor kosong ditolak |
 | `tests/Feature/ArticleRoleTest.php` | 11 | Pendaftar selalu pembaca walau mengirim `role=admin`; penulis tidak bisa langsung Published; artikel yang diajukan tidak tampil di publik; penulis tidak bisa edit/hapus artikel yang sudah tayang; penulis **403** di halaman admin; admin mengelola artikel siapa pun; terbitkan & kembalikan (catatan wajib); catatan hilang saat diajukan ulang; command `user:role` |
 | `tests/Feature/ReaderFeaturesTest.php` | 8 | Pembaca **403** di area penulis & diarahkan ke beranda setelah login; komentar (wajib login, validasi, di-escape, tidak bisa di artikel Draft, hapus hanya pemilik/admin); Baca Nanti (simpan/batal, artikel yang ditarik hilang dari daftar) |
 | `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
 | `tests/Feature/UserManagementTest.php` | 8 | Hanya admin (penulis & pembaca **403**); cari nama/email + filter peran (search tidak menembus filter); tambah akun dengan peran, password ter-hash & bisa login; validasi (email unik, peran tidak dikenal, konfirmasi password); edit dengan password kosong = tidak diganti; reset password orang lain; admin tidak bisa mengubah peran / menghapus akun sendiri; hapus akun → artikel tetap tanpa penulis, komentar/Baca Nanti/notifikasi ikut terhapus |
 
-Hasil: **75 test, 287 assertion, semua lulus.**
+Hasil: **81 test, 307 assertion, semua lulus.**
 
 ---
 

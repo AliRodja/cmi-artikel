@@ -105,6 +105,45 @@
             </div>
         @endcan
 
+        @if ($article->isPublished() || $article->view_count > 0)
+            <section class="card mb-6 p-5">
+                <h2 class="flex items-center gap-2 font-bold text-gray-900">
+                    <x-icon name="chart-line" size="size-4" class="text-brand-600" /> Statistik Kunjungan
+                </h2>
+                <div class="mt-4 grid gap-5 sm:grid-cols-[auto_1fr]">
+                    <dl class="flex gap-6 sm:flex-col sm:gap-3 sm:border-r sm:border-gray-100 sm:pr-8">
+                        <div>
+                            <dt class="text-xs text-gray-500">Total dilihat</dt>
+                            <dd class="text-2xl font-extrabold text-gray-900">{{ number_format($article->view_count, 0, ',', '.') }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-gray-500">7 hari terakhir</dt>
+                            <dd class="text-2xl font-extrabold text-gray-900">{{ number_format($weeklyViews, 0, ',', '.') }}</dd>
+                        </div>
+                    </dl>
+                    <div class="min-w-0">
+                        <p class="text-xs font-semibold tracking-wider text-gray-400 uppercase">Kunjungan terbaru</p>
+                        @if ($recentViews->isEmpty())
+                            <p class="mt-2 text-sm text-gray-500">Belum ada yang membaca artikel ini.</p>
+                        @else
+                            <ul class="mt-2 divide-y divide-gray-100 text-sm">
+                                @foreach ($recentViews as $view)
+                                    <li class="flex items-center justify-between gap-3 py-2">
+                                        <span class="flex min-w-0 items-center gap-2">
+                                            <x-avatar :name="$view->user?->name" />
+                                            <span class="truncate text-gray-700">{{ $view->user?->name ?? 'Pengunjung tamu' }}</span>
+                                        </span>
+                                        <span class="shrink-0 text-xs text-gray-400">{{ $view->viewed_at->diffForHumans() }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                </div>
+                <p class="mt-4 text-xs text-gray-400">Satu pengunjung dihitung sekali; kunjungan penulis sendiri tidak dihitung.</p>
+            </section>
+        @endif
+
         @if ($article->image_url)
             <img src="{{ $article->image_url }}" alt="{{ $article->title }}" class="mb-6 aspect-[16/9] w-full rounded-2xl object-cover shadow-sm">
         @endif

@@ -234,6 +234,17 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Kunjungan, Terpopuler, Terkait** (2026-10-28): tabel `article_views` (article_id cascade, user_id nullOnDelete,
+  `visitor` = `user:{id}` / `guest:{sha256 id sesi}`, `viewed_at`; model `ArticleView` CREATED_AT=viewed_at,
+  UPDATED_AT=null) + kolom `articles.view_count` (tidak di `$fillable`). `App\Support\ArticleViewCounter::record()`
+  dipanggil di `PublicArticleController@show`: skip penulis sendiri, skip visitor yang sudah tercatat, lalu dalam
+  transaksi insert riwayat + `DB::table('articles')->increment()` (bukan increment model → updated_at tetap).
+  Halaman publik: "N kali dilihat" di hero; di bawah grid 3 kolom ada **Artikel Terkait** (jenis sama, 3 kartu) dan
+  **Artikel Terpopuler** (≥ `config('clinic.popular_min_views')` = 5, urut view_count, 6 item bernomor; empty state
+  bila belum ada). Variabel sidebar kini `$latestArticles`. Area penulis: kolom "Dilihat" di Artikel Saya + panel
+  Statistik Kunjungan di `articles/show` (total, 7 hari, 5 riwayat terbaru). Seeder membuat 0–40 riwayat acak per
+  artikel Published. MySQL dimigrasi (backup `artikel_app-sebelum-kunjungan-*.sql`). Test `ArticleViewTest` (6) →
+  81 test / 307 assertion; terbukti gagal saat dedup/cek penulis/hash sesi/increment/batas minimal disabotase.
 - [x] **Jenis artikel + detail 3 kolom** (2026-10-28): migration `add_category_to_articles_table` (`category` string
   nullable + index; MySQL sudah dimigrasi, backup `storage/app/backups/artikel_app-sebelum-jenis-artikel-*.sql`).
   `Article::CATEGORIES` (diabetes/jantung/kanker/ginjal), `category_label` (null-safe, PHP 8.5 menolak offset null),

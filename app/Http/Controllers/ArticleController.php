@@ -64,7 +64,11 @@ class ArticleController extends Controller
     {
         Gate::authorize('view', $article);
 
-        return view('articles.show', compact('article'));
+        // Statistik kunjungan dari riwayat article_views.
+        $weeklyViews = $article->views()->where('viewed_at', '>=', now()->subDays(7))->count();
+        $recentViews = $article->views()->with('user:id,name')->latest('viewed_at')->take(5)->get();
+
+        return view('articles.show', compact('article', 'weeklyViews', 'recentViews'));
     }
 
     public function edit(Article $article): View

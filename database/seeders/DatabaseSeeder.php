@@ -3,9 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\Article;
+use App\Models\ArticleView;
 use App\Models\Comment;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -50,5 +52,13 @@ class DatabaseSeeder extends Seeder
         }
 
         $pembaca->bookmarks()->attach($published->take(3)->pluck('id'));
+
+        // Riwayat kunjungan acak, agar "Artikel Terpopuler" sudah berisi pada instalasi baru.
+        // view_count disamakan dengan jumlah riwayatnya (lewat query builder agar updated_at tidak berubah).
+        Article::published()->each(function (Article $article) {
+            $views = ArticleView::factory(fake()->numberBetween(0, 40))->for($article)->create();
+
+            DB::table('articles')->where('id', $article->id)->update(['view_count' => $views->count()]);
+        });
     }
 }

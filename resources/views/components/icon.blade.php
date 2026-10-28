@@ -43,6 +43,8 @@
         'chevron-right' => 'fa-solid fa-chevron-right',
         'share' => 'fa-solid fa-share-nodes',
         'stethoscope' => 'fa-solid fa-stethoscope',
+        'fire' => 'fa-solid fa-fire',
+        'chart-line' => 'fa-solid fa-chart-line',
         // Logo merek (gaya brands).
         'whatsapp' => 'fa-brands fa-whatsapp',
         'x-twitter' => 'fa-brands fa-x-twitter',

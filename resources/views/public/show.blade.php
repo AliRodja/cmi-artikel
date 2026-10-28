@@ -37,6 +37,10 @@
                     <x-icon name="clock" size="size-4" class="text-brand-300" />
                     {{ $article->reading_time }} menit baca
                 </span>
+                <span class="inline-flex items-center gap-1.5">
+                    <x-icon name="eye" size="size-4" class="text-brand-300" />
+                    {{ number_format($article->view_count, 0, ',', '.') }} kali dilihat
+                </span>
             </div>
         </div>
     </section>
@@ -202,11 +206,11 @@
 
         {{-- Kolom 3: artikel lainnya, jenis artikel, ajakan konsultasi. --}}
         <aside class="min-w-0 space-y-6">
-            @if ($relatedArticles->isNotEmpty())
+            @if ($latestArticles->isNotEmpty())
                 <section class="card p-5">
                     <h2 class="font-bold text-gray-900">Artikel Lainnya</h2>
                     <ul class="mt-2 divide-y divide-gray-100">
-                        @foreach ($relatedArticles as $related)
+                        @foreach ($latestArticles as $related)
                             <li>
                                 <a href="{{ route('public.articles.show', $related) }}" class="group flex gap-3 py-3">
                                     <x-article-thumb :article="$related" class="size-16" />
@@ -258,6 +262,62 @@
             </section>
         </aside>
     </div>
+
+    {{-- Artikel terkait: jenis yang sama dengan artikel yang sedang dibuka. --}}
+    @if ($relatedArticles->isNotEmpty())
+        <section class="mt-16">
+            <div class="mb-6 flex flex-wrap items-end justify-between gap-2 border-b border-gray-200 pb-3">
+                <h2 class="text-xl font-bold text-gray-900">Artikel Terkait</h2>
+                <a href="{{ route('home', ['jenis' => $article->category]) }}" class="link inline-flex items-center gap-1.5 text-sm">
+                    Semua artikel {{ $article->category_label }} <x-icon name="chevron-right" size="size-3" />
+                </a>
+            </div>
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($relatedArticles as $related)
+                    <x-article-card :article="$related" />
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    {{-- Artikel terpopuler: urut jumlah pembaca (articles.view_count), minimal config('clinic.popular_min_views'). --}}
+    <section class="mt-16">
+        <div class="mb-6 flex flex-wrap items-end justify-between gap-2 border-b border-gray-200 pb-3">
+            <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900">
+                <x-icon name="fire" class="text-orange-500" /> Artikel Terpopuler
+            </h2>
+            <p class="text-xs text-gray-500">Berdasarkan jumlah pembaca</p>
+        </div>
+
+        @if ($popularArticles->isEmpty())
+            <div class="card px-6 py-10 text-center">
+                <x-icon name="chart-line" size="size-7" class="text-gray-300" />
+                <p class="mt-2 text-sm text-gray-500">
+                    Belum ada artikel populer. Artikel akan muncul di sini setelah dibaca minimal
+                    {{ config('clinic.popular_min_views') }} kali.
+                </p>
+            </div>
+        @else
+            <ol class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($popularArticles as $popular)
+                    <li>
+                        <a href="{{ route('public.articles.show', $popular) }}"
+                           class="group card flex h-full items-center gap-4 p-4 transition hover:-translate-y-0.5 hover:shadow-lg">
+                            <span class="w-7 shrink-0 text-center text-3xl font-extrabold text-brand-200 tabular-nums transition group-hover:text-brand-500">{{ $loop->iteration }}</span>
+                            <x-article-thumb :article="$popular" class="size-16" />
+                            <div class="min-w-0">
+                                <x-category-badge :article="$popular" class="mb-1" />
+                                <p class="line-clamp-2 text-sm leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $popular->title }}</p>
+                                <p class="mt-1 inline-flex items-center gap-1 text-xs text-gray-500">
+                                    <x-icon name="eye" size="size-3" /> {{ number_format($popular->view_count, 0, ',', '.') }} kali dilihat
+                                </p>
+                            </div>
+                        </a>
+                    </li>
+                @endforeach
+            </ol>
+        @endif
+    </section>
 @endsection
 
 @push('scripts')

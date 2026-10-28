@@ -33,6 +33,7 @@ class Article extends Model
 
     protected $casts = [
         'status' => 'integer',
+        'view_count' => 'integer',
     ];
 
     public function getRouteKeyName(): string
@@ -48,6 +49,12 @@ class Article extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
+    }
+
+    /** Riwayat kunjungan halaman publik (lihat App\Support\ArticleViewCounter). */
+    public function views(): HasMany
+    {
+        return $this->hasMany(ArticleView::class);
     }
 
     public function scopePublished(Builder $query): Builder
