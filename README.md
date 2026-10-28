@@ -375,9 +375,10 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
     (relasi polymorphic, tanpa FK) dihapus manual dalam satu `DB::transaction`.
 - **Jenis artikel** (`articles.category`): Diabetes, Jantung, Kanker, Ginjal (`Article::CATEGORIES`), wajib dipilih di
   form (`Rule::in`). Kolomnya nullable agar artikel lama tetap valid; halamannya tetap tampil tanpa badge jenis.
-  - Halaman detail artikel memakai 3 kolom: **Bagikan** (link WhatsApp/X/Facebook dibuat dengan `http_build_query()`
-    agar judul & URL ter-encode, + salin tautan), **isi artikel & komentar**, dan **sidebar** (Artikel Lainnya,
-    Jenis Artikel beserta jumlahnya, kartu "Alami gejala …? Konsultasi segera").
+  - Halaman detail artikel memakai 3 kolom: **Simpan & Bagikan** (link WhatsApp/X/Facebook dibuat dengan
+    `http_build_query()` agar judul & URL ter-encode, + salin tautan), **isi artikel, penulis & komentar**, dan
+    **sidebar** (Artikel Lainnya, Jenis Artikel beserta jumlahnya, kartu "Alami gejala …? Konsultasi segera" yang ikut
+    menempel saat scroll). Ada bar progres membaca yang dibuat murni dengan CSS (`animation-timeline: scroll()`).
   - Tombol konsultasi membuka WhatsApp customer service CMI. URL-nya ada di `config/clinic.php` (satu tempat, tidak
     ditulis mati di view).
 - **Jumlah dilihat & Artikel Terpopuler:** setiap kunjungan halaman artikel publik dicatat di `article_views`

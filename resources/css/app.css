@@ -81,6 +81,12 @@
     .article-content :where(em)         { @apply italic; }
     .article-content :where(del)        { @apply text-gray-500 line-through; }
     .article-content :where(pre)        { @apply my-6 overflow-x-auto rounded-lg bg-gray-900 px-5 py-4 font-mono text-sm leading-6 text-gray-100; }
+    /* Halaman publik: paragraf pembuka (<p>) sedikit lebih besar sebagai pengantar. Sengaja bukan <div>:
+       Trix menyimpan satu blok berisi banyak baris, sehingga seluruh artikel ikut membesar. */
+    .article-lead > :where(p:first-child) { @apply text-xl leading-9 text-gray-900; }
+
+    /* Tombol bulat bagikan / simpan (components/share-buttons, rel kiri public/show). */
+    .share-btn       { @apply flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white shadow-xs ring-1 ring-gray-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-transparent; }
 }
 
 /*
@@ -170,4 +176,29 @@ html:has(dialog.nav-drawer[open], dialog.search-panel[open]) { overflow: hidden;
 
 @media (prefers-reduced-motion: reduce) {
     .dropdown-panel { transition: none; }
+}
+
+/*
+ * Bar progres membaca di halaman artikel (public/show). Murni CSS: animation-timeline: scroll()
+ * mengikat animasi ke posisi scroll halaman, jadi tanpa JavaScript. Browser yang belum mendukung
+ * tidak menampilkannya.
+ */
+.reading-progress {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 40;
+    height: 3px;
+    transform-origin: left;
+    background-color: var(--color-amber-400);
+    animation: reading-progress linear both;
+    animation-timeline: scroll(root);
+}
+
+@keyframes reading-progress {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+}
+
+@supports not (animation-timeline: scroll()) {
+    .reading-progress { display: none; }
 }

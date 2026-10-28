@@ -234,6 +234,16 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Redesign detail artikel publik** (2026-10-28): hero **biru tua sama dengan beranda** (user minta tetap biru tua,
+  bukan terang; `bg-brand-950` + radial gradient, tanpa pola garis (user: "kelihatan seperti AI"), breadcrumb chevron, baris penulis + tanggal/menit
+  baca/dilihat); latar konten sama dengan beranda (`bg-gray-50` dari layout); bar progres membaca `.reading-progress` (murni CSS
+  `animation-timeline: scroll(root)`, disembunyikan via `@supports not`); grid `lg:grid-cols-[3rem_minmax(0,1fr)_18rem]`
+  tanpa `items-start` (agar kolom kanan setinggi baris → kartu CTA `lg:sticky`); rel kiri = tombol Simpan
+  (`public/_bookmark-button`, dipakai juga di kotak penulis) + `x-share-buttons` (ikon berwarna merek di tombol putih
+  `.share-btn`; salin tautan generik via `data-copy-link`/`data-copy-icon`/`data-copy-done`, bisa >1 per halaman).
+  Isi = satu kartu (gambar menempel di atas, `.article-lead` membesarkan `<p>` pertama saja — bukan `<div>`, karena
+  Trix menyimpan satu blok berisi banyak baris), footer "Artikel ini bermanfaat? Bagikan", kotak "Ditulis oleh",
+  komentar dalam kartu.
 - [x] **Kunjungan, Terpopuler, Terkait** (2026-10-28): tabel `article_views` (article_id cascade, user_id nullOnDelete,
   `visitor` = `user:{id}` / `guest:{sha256 id sesi}`, `viewed_at`; model `ArticleView` CREATED_AT=viewed_at,
   UPDATED_AT=null) + kolom `articles.view_count` (tidak di `$fillable`). `App\Support\ArticleViewCounter::record()`

@@ -3,163 +3,129 @@
 @section('title', $article->title)
 
 @section('hero')
-    <section class="bg-brand-950">
-        <div class="container-page py-12 sm:py-16">
+    {{-- Bar progres membaca (CSS scroll-driven animation, lihat .reading-progress di app.css). --}}
+    <div class="reading-progress" aria-hidden="true"></div>
+
+    {{-- Hero biru tua, sama dengan beranda (public/index). --}}
+    <section class="relative overflow-hidden bg-brand-950">
+        <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,var(--color-brand-700),transparent_45%)] opacity-70"></div>
+
+        <div class="container-page relative py-12 sm:py-16">
             <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-xs font-medium text-brand-300">
                 <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
-                <span>/</span>
+                <x-icon name="chevron-right" size="size-3" class="text-brand-500" />
                 <a href="{{ route('home') }}" class="hover:text-white">Berita &amp; Artikel</a>
                 @if ($article->category_label)
-                    <span>/</span>
+                    <x-icon name="chevron-right" size="size-3" class="text-brand-500" />
                     <a href="{{ route('home', ['jenis' => $article->category]) }}" class="hover:text-white">{{ $article->category_label }}</a>
                 @endif
             </nav>
 
-            <x-category-badge :article="$article" class="mt-5" />
+            <div class="mt-6 max-w-4xl">
+                <x-category-badge :article="$article" />
+                <h1 class="mt-3 text-3xl leading-[1.15] font-extrabold tracking-tight text-white sm:text-4xl lg:text-[2.75rem]">
+                    {{ $article->title }}
+                </h1>
 
-            <h1 class="mt-4 max-w-4xl text-3xl leading-tight font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
-                {{ $article->title }}
-            </h1>
-
-            <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-brand-200">
-                <div class="flex items-center gap-3">
-                    <x-avatar :name="$article->user?->name" size="md" tone="dark" />
-                    <div class="leading-tight">
-                        <p class="font-semibold text-white">{{ $article->user?->name ?? 'Anonim' }}</p>
-                        <p class="text-xs">Penulis</p>
+                <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-brand-200">
+                    <div class="flex items-center gap-3">
+                        <x-avatar :name="$article->user?->name" size="md" tone="dark" />
+                        <div class="leading-tight">
+                            <p class="font-semibold text-white">{{ $article->user?->name ?? 'Anonim' }}</p>
+                            <p class="text-xs">Penulis · {{ config('app.name') }}</p>
+                        </div>
                     </div>
+                    <span class="hidden h-8 w-px bg-white/15 sm:block"></span>
+                    <span class="inline-flex items-center gap-1.5">
+                        <x-icon name="calendar" size="size-4" class="text-brand-300" />
+                        {{ $article->created_at->translatedFormat('d F Y') }}
+                    </span>
+                    <span class="inline-flex items-center gap-1.5">
+                        <x-icon name="clock" size="size-4" class="text-brand-300" />
+                        {{ $article->reading_time }} menit baca
+                    </span>
+                    <span class="inline-flex items-center gap-1.5">
+                        <x-icon name="eye" size="size-4" class="text-brand-300" />
+                        {{ number_format($article->view_count, 0, ',', '.') }} kali dilihat
+                    </span>
                 </div>
-                <span class="inline-flex items-center gap-1.5">
-                    <x-icon name="calendar" size="size-4" class="text-brand-300" />
-                    {{ $article->created_at->translatedFormat('l, d F Y') }}
-                </span>
-                <span class="inline-flex items-center gap-1.5">
-                    <x-icon name="clock" size="size-4" class="text-brand-300" />
-                    {{ $article->reading_time }} menit baca
-                </span>
-                <span class="inline-flex items-center gap-1.5">
-                    <x-icon name="eye" size="size-4" class="text-brand-300" />
-                    {{ number_format($article->view_count, 0, ',', '.') }} kali dilihat
-                </span>
             </div>
         </div>
     </section>
 @endsection
 
 @section('content')
-    @php
-        // Link bagikan. http_build_query() meng-encode judul & URL agar aman dipakai di query string.
-        $shareUrl = route('public.articles.show', $article);
-        $shareLinks = [
-            [
-                'label' => 'WhatsApp',
-                'icon' => 'whatsapp',
-                'href' => 'https://wa.me/?'.http_build_query(['text' => $article->title."\n".$shareUrl]),
-                'class' => 'bg-[#25D366] hover:bg-[#1DA851]',
-            ],
-            [
-                'label' => 'X',
-                'icon' => 'x-twitter',
-                'href' => 'https://x.com/intent/post?'.http_build_query(['text' => $article->title, 'url' => $shareUrl]),
-                'class' => 'bg-gray-900 hover:bg-black',
-            ],
-            [
-                'label' => 'Facebook',
-                'icon' => 'facebook',
-                'href' => 'https://www.facebook.com/sharer/sharer.php?'.http_build_query(['u' => $shareUrl]),
-                'class' => 'bg-[#1877F2] hover:bg-[#0F62D0]',
-            ],
-        ];
-    @endphp
-
-    {{-- Tiga kolom di layar lebar: bagikan | isi artikel | sidebar. Di ponsel tersusun ke bawah. --}}
-    <div class="grid items-start gap-8 lg:grid-cols-[4.5rem_minmax(0,1fr)_18rem] xl:gap-10">
-        {{-- Kolom 1: bagikan. Di layar lebar ikon tersusun ke bawah dan ikut menempel saat scroll. --}}
-        <aside aria-label="Bagikan artikel" class="lg:sticky lg:top-24">
-            <div class="flex flex-wrap items-center gap-3 lg:flex-col">
-                <p class="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-gray-500 uppercase lg:flex-col lg:gap-1">
-                    <x-icon name="share" size="size-4" class="text-brand-600" /> Bagikan
-                </p>
-                @foreach ($shareLinks as $link)
-                    <a href="{{ $link['href'] }}" target="_blank" rel="noopener noreferrer" title="Bagikan ke {{ $link['label'] }}"
-                       class="flex size-11 items-center justify-center rounded-full text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md {{ $link['class'] }}">
-                        <x-icon :name="$link['icon']" size="size-5" />
-                        <span class="sr-only">Bagikan ke {{ $link['label'] }}</span>
-                    </a>
-                @endforeach
-                <button type="button" id="copy-link" data-url="{{ $shareUrl }}" title="Salin tautan"
-                        class="flex size-11 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:-translate-y-0.5 hover:text-brand-700 hover:shadow-md">
-                    <x-icon name="link" size="size-4" id="copy-link-icon" />
-                    {{-- Atribut hidden (bukan class): CSS Font Awesome yang tak berlayer menimpa class "hidden" Tailwind. --}}
-                    <x-icon name="check" size="size-4" id="copy-link-done" class="text-green-600" hidden />
-                    <span id="copy-link-label" class="sr-only">Salin tautan</span>
-                </button>
+    {{-- Tiga kolom di layar lebar: aksi (simpan & bagikan) | isi artikel | sidebar. Di ponsel tersusun ke bawah. --}}
+    <div class="grid gap-8 lg:grid-cols-[3rem_minmax(0,1fr)_18rem] xl:gap-12">
+        {{-- Kolom 1: rel aksi. Di layar lebar tersusun ke bawah dan ikut menempel saat scroll. --}}
+        <aside aria-label="Simpan dan bagikan artikel" class="lg:sticky lg:top-24 lg:self-start">
+            <div class="flex flex-wrap items-center gap-2 lg:flex-col lg:gap-3">
+                @include('public._bookmark-button', ['class' => 'share-btn'])
+                <span class="mx-1 h-6 w-px bg-gray-200 lg:mx-0 lg:h-px lg:w-6"></span>
+                <span class="text-[0.625rem] font-semibold tracking-widest text-gray-400 uppercase">Bagikan</span>
+                <x-share-buttons :article="$article" class="lg:flex-col lg:gap-3" />
             </div>
         </aside>
 
-        {{-- Kolom 2: isi artikel & komentar. --}}
-        <div class="min-w-0">
-            @if ($article->image_url)
-                <img src="{{ $article->image_url }}" alt="{{ $article->title }}"
-                     class="mb-8 aspect-[16/9] w-full rounded-2xl object-cover shadow-md">
+        {{-- Kolom 2: isi artikel, penulis & komentar. --}}
+        <div class="min-w-0 space-y-8">
+            <article class="card overflow-hidden">
+                @if ($article->image_url)
+                    <img src="{{ $article->image_url }}" alt="{{ $article->title }}" class="aspect-[16/9] w-full object-cover">
+                @endif
+
+                <div class="px-6 py-8 sm:px-12 sm:py-10">
+                    {{-- content_html sudah disanitasi (App\Support\ArticleContent), aman untuk {!! !!}. --}}
+                    <div class="article-content article-lead">{!! $article->content_html !!}</div>
+                </div>
+
+                {{-- Akhir artikel: ajakan menyimpan & membagikan. --}}
+                <footer class="flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 bg-gray-50/70 px-6 py-5 sm:px-12">
+                    <p class="text-sm font-semibold text-gray-900">Artikel ini bermanfaat? Bagikan ke keluarga &amp; teman.</p>
+                    <div class="flex items-center gap-2">
+                        <x-share-buttons :article="$article" />
+                    </div>
+                </footer>
+            </article>
+
+            @if ($article->user)
+                <section class="card flex items-center gap-4 p-5 sm:p-6">
+                    <x-avatar :name="$article->user->name" size="md" />
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-semibold tracking-wider text-gray-400 uppercase">Ditulis oleh</p>
+                        <p class="font-bold text-gray-900">{{ $article->user->name }}</p>
+                        <p class="text-sm text-gray-500">Penulis di {{ config('app.name') }}</p>
+                    </div>
+                    @include('public._bookmark-button', ['class' => 'btn btn-secondary btn-sm', 'withLabel' => true])
+                </section>
             @endif
 
-            <div class="card px-6 py-4 sm:px-10 sm:py-6">
-                {{-- content_html sudah disanitasi (App\Support\ArticleContent), aman untuk {!! !!}. --}}
-                <div class="article-content">{!! $article->content_html !!}</div>
-            </div>
-
-            <div class="mt-8 flex flex-wrap items-center justify-between gap-3">
-                <a href="{{ route('home') }}" class="link inline-flex items-center gap-1.5 text-sm">
-                    <x-icon name="arrow-left" size="size-4" /> Kembali ke Berita &amp; Artikel
-                </a>
-                @auth
-                    <form action="{{ route('bookmarks.toggle', $article) }}" method="POST">
-                        @csrf
-                        <button type="submit" @class([
-                            'btn btn-sm',
-                            'btn-primary' => $isBookmarked,
-                            'btn-secondary' => ! $isBookmarked,
-                        ])>
-                            <x-icon :name="$isBookmarked ? 'bookmark-solid' : 'bookmark'" size="size-3" />
-                            {{ $isBookmarked ? 'Tersimpan' : 'Simpan' }}
-                        </button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="btn btn-secondary btn-sm">
-                        <x-icon name="bookmark" size="size-3" /> Simpan
-                    </a>
-                @endauth
-            </div>
-
             {{-- Komentar --}}
-            <section id="komentar" class="mt-12 scroll-mt-24">
-                <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900">
+            <section id="komentar" class="card scroll-mt-24 p-5 sm:p-6">
+                <h2 class="flex items-center gap-2 text-lg font-bold text-gray-900">
                     <x-icon name="comments" class="text-brand-600" /> Komentar
-                    <span class="text-base font-medium text-gray-400">({{ $article->comments->count() }})</span>
+                    <span class="rounded-full bg-gray-100 px-2 text-sm font-semibold text-gray-600">{{ $article->comments->count() }}</span>
                 </h2>
 
                 @auth
-                    <form action="{{ route('comments.store', $article) }}" method="POST" class="card mt-5 p-4">
+                    <form action="{{ route('comments.store', $article) }}" method="POST" class="mt-5 flex gap-3">
                         @csrf
-                        <div class="flex gap-3">
-                            <x-avatar :name="auth()->user()->name" />
-                            <div class="min-w-0 flex-1">
-                                <label for="body" class="sr-only">Tulis komentar</label>
-                                <textarea id="body" name="body" rows="3" maxlength="2000" required
-                                          placeholder="Tulis komentar atau pertanyaan Anda..."
-                                          @class(['form-input', 'form-input-error' => $errors->has('body')])>{{ old('body') }}</textarea>
-                                @error('body')
-                                    <p class="form-error">{{ $message }}</p>
-                                @enderror
-                                <div class="mt-3 flex justify-end">
-                                    <button type="submit" class="btn btn-primary btn-sm">Kirim Komentar</button>
-                                </div>
+                        <x-avatar :name="auth()->user()->name" />
+                        <div class="min-w-0 flex-1">
+                            <label for="body" class="sr-only">Tulis komentar</label>
+                            <textarea id="body" name="body" rows="3" maxlength="2000" required
+                                      placeholder="Tulis komentar atau pertanyaan Anda..."
+                                      @class(['form-input', 'form-input-error' => $errors->has('body')])>{{ old('body') }}</textarea>
+                            @error('body')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <div class="mt-3 flex justify-end">
+                                <button type="submit" class="btn btn-primary btn-sm">Kirim Komentar</button>
                             </div>
                         </div>
                     </form>
                 @else
-                    <div class="card mt-5 px-5 py-4 text-sm text-gray-600">
+                    <div class="mt-5 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-900">
                         <a href="{{ route('login') }}" class="link">Masuk</a> atau
                         <a href="{{ route('register') }}" class="link">daftar</a> untuk ikut berkomentar.
                     </div>
@@ -204,7 +170,7 @@
             </section>
         </div>
 
-        {{-- Kolom 3: artikel lainnya, jenis artikel, ajakan konsultasi. --}}
+        {{-- Kolom 3: artikel lainnya, jenis artikel, ajakan konsultasi (menempel saat scroll). --}}
         <aside class="min-w-0 space-y-6">
             @if ($latestArticles->isNotEmpty())
                 <section class="card p-5">
@@ -247,7 +213,7 @@
             </section>
 
             {{-- Ajakan konsultasi: membuka chat WhatsApp customer service (URL di config/clinic.php). --}}
-            <section class="overflow-hidden rounded-xl bg-gradient-to-br from-brand-600 to-brand-900 p-5 text-white shadow-md">
+            <section class="overflow-hidden rounded-xl bg-gradient-to-br from-brand-600 to-brand-900 p-5 text-white shadow-md lg:sticky lg:top-24">
                 <span class="flex size-11 items-center justify-center rounded-full bg-white/15">
                     <x-icon name="stethoscope" size="size-5" />
                 </span>
@@ -322,24 +288,28 @@
 
 @push('scripts')
     <script>
-        // Tombol salin hanya berisi ikon: ganti ikon tautan → centang sebentar, label untuk pembaca layar ikut berubah.
-        document.getElementById('copy-link').addEventListener('click', async function () {
-            const icon = document.getElementById('copy-link-icon');
-            const done = document.getElementById('copy-link-done');
-            const label = document.getElementById('copy-link-label');
-            try {
-                await navigator.clipboard.writeText(this.dataset.url);
-                icon.hidden = true;
-                done.hidden = false;
-                label.textContent = 'Tautan disalin';
-            } catch {
-                label.textContent = 'Gagal menyalin';
-            }
-            setTimeout(() => {
-                icon.hidden = false;
-                done.hidden = true;
-                label.textContent = 'Salin tautan';
-            }, 2000);
+        // Tombol salin tautan (components/share-buttons, bisa lebih dari satu di halaman):
+        // ikon tautan berganti centang selama 2 detik; label untuk pembaca layar ikut berubah.
+        document.querySelectorAll('[data-copy-link]').forEach((button) => {
+            const icon = button.querySelector('[data-copy-icon]');
+            const done = button.querySelector('[data-copy-done]');
+            const label = button.querySelector('[data-copy-label]');
+
+            button.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(button.dataset.copyLink);
+                    icon.hidden = true;
+                    done.hidden = false;
+                    label.textContent = 'Tautan disalin';
+                } catch {
+                    label.textContent = 'Gagal menyalin';
+                }
+                setTimeout(() => {
+                    icon.hidden = false;
+                    done.hidden = true;
+                    label.textContent = 'Salin tautan';
+                }, 2000);
+            });
         });
     </script>
 @endpush

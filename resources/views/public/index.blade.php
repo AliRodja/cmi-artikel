@@ -5,7 +5,6 @@
 @section('hero')
     <section class="relative overflow-hidden bg-brand-950">
         <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,var(--color-brand-700),transparent_45%)] opacity-70"></div>
-        <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgb(255_255_255/0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgb(255_255_255/0.04)_1px,transparent_1px)] bg-[size:48px_48px]"></div>
 
         <div class="container-page relative py-16 sm:py-20">
             <p class="eyebrow text-brand-300">Pusat Informasi</p>
