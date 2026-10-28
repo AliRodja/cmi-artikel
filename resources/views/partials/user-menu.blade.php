@@ -9,18 +9,15 @@
         <div class="min-w-0 leading-tight">
             <p class="truncate font-semibold text-gray-900">{{ auth()->user()->name }}</p>
             <p class="truncate text-xs text-gray-500">{{ auth()->user()->email }}</p>
-            <span class="badge mt-1 bg-brand-50 text-brand-700">{{ auth()->user()->role_label }}</span>
+            <x-role-badge :user="auth()->user()" class="mt-1" />
         </div>
     </div>
 
     <div class="p-2">
-        {{-- Kelola Pengguna menyusul: ditampilkan nonaktif dulu supaya admin tahu fiturnya akan ada. --}}
         @if (auth()->user()->isAdmin())
-            <span class="drawer-link drawer-link-disabled" aria-disabled="true">
-                <x-icon name="users" size="size-4" class="text-gray-300" />
-                <span class="flex-1">Kelola Pengguna</span>
-                <span class="badge bg-gray-100 text-gray-500">Segera</span>
-            </span>
+            <a href="{{ route('users.index') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('users.*')])>
+                <x-icon name="users" size="size-4" class="text-gray-400" /> Kelola Pengguna
+            </a>
         @endif
         <a href="{{ route('bookmarks.index') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('bookmarks.*')])>
             <x-icon name="bookmark" size="size-4" class="text-gray-400" /> Baca Nanti

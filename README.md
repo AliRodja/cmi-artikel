@@ -171,10 +171,12 @@ Buka **http://localhost:8000** di browser.
 | `pembaca@example.com` | `password` | **Pembaca**: berkomentar, menyimpan artikel (Baca Nanti), menerima notifikasi artikel baru |
 
 User lain hasil seeder juga memakai password `password` (email-nya dapat dilihat di tabel `users`).
-Akun yang mendaftar lewat halaman **Daftar** selalu berperan **pembaca**. Untuk mengubah peran:
+Akun yang mendaftar lewat halaman **Daftar** selalu berperan **pembaca**. Admin mengubah peran (dan menambah,
+mengedit, atau menghapus akun) lewat menu akun → **Kelola Pengguna** (`/dashboard/users`). Lewat terminal juga bisa,
+misalnya untuk menunjuk admin pertama pada instalasi baru:
 
 ```bash
-php artisan user:role email@contoh.com penulis   # admin / penulis / pembaca
+php artisan user:role email@contoh.com admin   # admin / penulis / pembaca
 ```
 
 > **Untuk menguji CRUD artikel & dashboard**, masuk dengan akun penulis/admin di atas: akun hasil Daftar adalah
@@ -333,6 +335,7 @@ Tabel bawaan Laravel lainnya: `sessions`, `cache`, `jobs`.
 | — | `/dashboard/articles/...` | `articles.*` | `auth`, `writer` + Policy | CRUD artikel (resource) |
 | GET | `/dashboard/laporan-artikel` | `articles.report` | `auth`, `writer`, `admin` | Soal 2 — INNER JOIN |
 | GET | `/dashboard/review` | `review.index` | `auth`, `writer`, `admin` | Antrean review & semua artikel |
+| Resource | `/dashboard/users` | `users.*` (tanpa `show`) | `auth`, `writer`, `admin` + Policy | Kelola Pengguna |
 | PATCH | `/dashboard/articles/{slug}/publish` | `review.publish` | `auth`, `writer`, `admin` + Policy | Terbitkan artikel yang diajukan |
 | PATCH | `/dashboard/articles/{slug}/return` | `review.return` | `auth`, `writer`, `admin` + Policy | Kembalikan ke penulis dengan catatan |
 
@@ -357,6 +360,12 @@ Tabel bawaan Laravel lainnya: `sessions`, `cache`, `jobs`.
     `ArticlePolicy` ("bolehkah user ini mengubah artikel INI?"), dan validasi status di `ArticleRequest`
     (`Article::allowedStatusesFor()`, sehingga status Published yang dipalsukan lewat DevTools tetap ditolak).
   - `role` tidak ada di `$fillable`, jadi input `role=admin` yang disisipkan ke form Daftar diabaikan.
+- **Kelola Pengguna (admin):** tambah, edit (nama, email, peran, ganti password), dan hapus akun.
+  - Admin **tidak bisa mengubah peran atau menghapus akunnya sendiri** (`UserPolicy`; input `role` untuk akun
+    sendiri ditolak aturan `prohibited` di `UserRequest`). Karena itu situs selalu punya minimal satu admin.
+  - Menghapus akun **tidak menghapus artikelnya**: artikel tetap ada tanpa penulis (FK `nullOnDelete`), sehingga juga
+    tidak muncul di Laporan INNER JOIN. Komentar & Baca Nanti ikut terhapus (`cascadeOnDelete`); notifikasi
+    (relasi polymorphic, tanpa FK) dihapus manual dalam satu `DB::transaction`.
 - **Statistik dashboard per user**, bukan statistik seluruh situs.
 - **Laporan Artikel (Soal 2) hanya untuk admin**, karena menampilkan email semua penulis (data pribadi) sementara
   siapa pun bisa mendaftar. Laporan menampilkan artikel Published **semua penulis**, sesuai soal. Penilai dapat
@@ -386,14 +395,15 @@ app/
 │   │   ├── CommentController.php          komentar
 │   │   ├── BookmarkController.php         Baca Nanti
 │   │   ├── NotificationController.php     notifikasi
+│   │   ├── UserController.php             Kelola Pengguna (admin)
 │   │   ├── PublicArticleController.php    halaman publik
 │   │   └── ArticleReportController.php    Soal 2 (INNER JOIN)
 │   ├── Middleware/EnsureUserIsAdmin.php   middleware "admin"
 │   ├── Middleware/EnsureUserCanWrite.php  middleware "writer" (admin & penulis)
-│   └── Requests/ArticleRequest.php        validasi artikel
+│   └── Requests/{Article,User}Request.php validasi artikel & form pengguna
 ├── Models/{User,Article,Comment}.php
 ├── Notifications/                         ArticleNotification + 5 notifikasi turunannya
-├── Policies/{Article,Comment}Policy.php   otorisasi per artikel / komentar
+├── Policies/{Article,Comment,User}Policy.php  otorisasi per artikel / komentar / akun
 └── Support/ArticleNotifier.php            penentu penerima notifikasi
 database/{migrations,factories,seeders}/
 resources/views/
@@ -401,7 +411,8 @@ resources/views/
 ├── partials/  components/  auth/  public/  errors/
 ├── dashboard.blade.php
 ├── articles/{index,_form,create,edit,show,report}.blade.php
-└── review/index.blade.php
+├── review/index.blade.php
+└── users/{index,_form,create,edit}.blade.php
 routes/web.php
 lang/id/  lang/id.json                     terjemahan Bahasa Indonesia
 ```
@@ -425,11 +436,11 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/ArticleReportTest.php` | 9 | Soal 2: INNER JOIN membuang artikel tanpa penulis, hanya `status = 1`, nama & email dari tabel `users`, urut `created_at` terbaru, 10 per halaman, search judul/nama/email, search tidak membocorkan Draft, kata kunci terbawa di link pagination, tamu ditolak |
 | `tests/Feature/ArticleContentTest.php` | 6 | Rich text: format dipertahankan, HTML berbahaya (`<script>`, `onclick`, `javascript:`) dibuang, link diberi `rel=noopener`, editor kosong ditolak |
 | `tests/Feature/ArticleRoleTest.php` | 11 | Pendaftar selalu pembaca walau mengirim `role=admin`; penulis tidak bisa langsung Published; artikel yang diajukan tidak tampil di publik; penulis tidak bisa edit/hapus artikel yang sudah tayang; penulis **403** di halaman admin; admin mengelola artikel siapa pun; terbitkan & kembalikan (catatan wajib); catatan hilang saat diajukan ulang; command `user:role` |
-
 | `tests/Feature/ReaderFeaturesTest.php` | 8 | Pembaca **403** di area penulis & diarahkan ke beranda setelah login; komentar (wajib login, validasi, di-escape, tidak bisa di artikel Draft, hapus hanya pemilik/admin); Baca Nanti (simpan/batal, artikel yang ditarik hilang dari daftar) |
 | `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
+| `tests/Feature/UserManagementTest.php` | 8 | Hanya admin (penulis & pembaca **403**); cari nama/email + filter peran (search tidak menembus filter); tambah akun dengan peran, password ter-hash & bisa login; validasi (email unik, peran tidak dikenal, konfirmasi password); edit dengan password kosong = tidak diganti; reset password orang lain; admin tidak bisa mengubah peran / menghapus akun sendiri; hapus akun → artikel tetap tanpa penulis, komentar/Baca Nanti/notifikasi ikut terhapus |
 
-Hasil: **63 test, 225 assertion, semua lulus.**
+Hasil: **71 test, 267 assertion, semua lulus.**
 
 ---
 

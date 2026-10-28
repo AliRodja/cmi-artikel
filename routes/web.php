@@ -12,6 +12,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicArticleController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicArticleController::class, 'index'])->name('home');
@@ -62,6 +63,8 @@ Route::middleware(['auth', 'writer'])->group(function () {
             Route::get('review', [ArticleReviewController::class, 'index'])->name('review.index');
             Route::patch('articles/{article}/publish', [ArticleReviewController::class, 'publish'])->name('review.publish');
             Route::patch('articles/{article}/return', [ArticleReviewController::class, 'sendBack'])->name('review.return');
+
+            Route::resource('users', UserController::class)->except('show');
         });
     });
 });
