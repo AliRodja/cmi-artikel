@@ -9,6 +9,9 @@ use Illuminate\View\View;
 
 class PublicArticleController extends Controller
 {
+    /** Kolom yang cukup untuk daftar Artikel Terpopuler (tanpa isi artikel yang panjang). */
+    private const POPULAR_COLUMNS = ['id', 'title', 'slug', 'category', 'image', 'view_count', 'created_at'];
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search'));
@@ -31,7 +34,16 @@ class PublicArticleController extends Controller
             ->paginate(9)
             ->withQueryString();
 
-        return view('public.index', compact('articles', 'search', 'category'));
+        // Halaman awal (tanpa cari/filter, halaman 1) menampilkan Sorotan & Artikel Terpopuler.
+        $isLanding = $search === '' && $category === null && $articles->onFirstPage();
+
+        $popularArticles = $isLanding
+            ? Article::query()->popular()->take(6)->get(self::POPULAR_COLUMNS)
+            : collect();
+
+        $categoryCounts = Article::publishedCountsByCategory();
+
+        return view('public.index', compact('articles', 'search', 'category', 'isLanding', 'popularArticles', 'categoryCounts'));
     }
 
     public function show(Request $request, Article $article): View
@@ -70,20 +82,12 @@ class PublicArticleController extends Controller
 
         // ...dan artikel yang paling sering dilihat, setelah melewati batas minimal kunjungan.
         $popularArticles = Article::query()
-            ->published()
+            ->popular()
             ->whereKeyNot($article->getKey())
-            ->where('view_count', '>=', config('clinic.popular_min_views'))
-            ->orderByDesc('view_count')
-            ->latest()
             ->take(6)
-            ->get(['id', 'title', 'slug', 'category', 'image', 'view_count', 'created_at']);
+            ->get(self::POPULAR_COLUMNS);
 
-        $categoryCounts = Article::query()
-            ->published()
-            ->whereNotNull('category')
-            ->selectRaw('category, COUNT(*) as total')
-            ->groupBy('category')
-            ->pluck('total', 'category');
+        $categoryCounts = Article::publishedCountsByCategory();
 
         return view('public.show', compact(
             'article', 'latestArticles', 'relatedArticles', 'popularArticles', 'categoryCounts', 'isBookmarked',

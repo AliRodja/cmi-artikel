@@ -210,7 +210,7 @@ Link reset berlaku 60 menit dan hanya bisa dipakai satu kali.
 | 6 | Upload & Pengelolaan Gambar | 10 | Disimpan di disk `public` folder `articles/` (nama file acak); preview sebelum upload; file lama **dihapus dari disk** saat gambar diganti, saat checkbox "Hapus gambar" dicentang, dan saat artikel dihapus | Tulis artikel dengan gambar → edit → ganti/hapus gambar |
 | 7 | Validation Form | 5 | Form Request `ArticleRequest` (dipakai `store` & `update`): judul wajib maks 255, isi wajib, gambar `jpg/jpeg/png/webp` maks 2 MB, status hanya 0/1; pesan error Bahasa Indonesia, input lama dipertahankan (`old()`) | Kirim form kosong |
 | 8 | Authorization / Middleware | 10 | Middleware `auth` (area dashboard), `guest` (halaman login/daftar), `throttle`, dan middleware buatan sendiri `admin` (`EnsureUserIsAdmin`, halaman Review & Laporan); `ArticlePolicy` + `Gate::authorize()` → penulis hanya mengelola artikel **miliknya** yang belum tayang, admin mengelola semua (lainnya **403**); penulis tidak bisa memilih status Published (divalidasi di server); `user_id` dan `role` tidak pernah diambil dari input form | Buka `/dashboard` tanpa login → diarahkan ke login. Login sebagai penulis lalu buka `/dashboard/review` atau edit artikel user lain → 403 |
-| 9 | Halaman Publik Artikel | 5 | `PublicArticleController` — daftar artikel **Published** (search, filter jenis, 9 per halaman, eager loading penulis), detail artikel 3 kolom (bagikan WhatsApp/X/Facebook · isi · artikel lainnya, jenis artikel, tombol konsultasi WhatsApp); artikel Draft → **404**; tidak ada tombol tambah/edit/hapus | Buka `/` tanpa login |
+| 9 | Halaman Publik Artikel | 5 | `PublicArticleController` — beranda: Sorotan, Artikel Terpopuler, daftar artikel **Published** (search, filter jenis + jumlahnya, 9 per halaman, eager loading penulis), banner konsultasi WhatsApp; detail artikel 3 kolom (bagikan WhatsApp/X/Facebook · isi · artikel lainnya, jenis artikel, tombol konsultasi WhatsApp); artikel Draft → **404**; tidak ada tombol tambah/edit/hapus | Buka `/` tanpa login |
 | 10 | Database & Migration | 5 | Migration `articles` dengan foreign key, unique slug, index (`status`, `created_at`); factory & seeder | `php artisan migrate:fresh --seed` |
 | 11 | Blade & UI | 5 | Layout `layouts/app`, partial (`navbar`, `flash`), Blade component (`x-input`, `x-status-badge`, `x-auth-card`), form bersama `articles/_form`, Tailwind CSS v4, responsif, halaman 403 custom | — |
 | 12 | Kerapihan Struktur & Code Quality | 5 | Validasi di Form Request, otorisasi di Policy, query scope (`published()`, `draft()`), konstanta status, accessor (`image_url`, `excerpt`), controller tipis | — |
@@ -388,8 +388,9 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
     sendiri tidak dihitung.
   - `view_count` ditambah dengan `UPDATE … SET view_count = view_count + 1` lewat query builder: aman bila dua
     pengunjung datang bersamaan, dan `updated_at` artikel tidak ikut berubah.
-  - **Artikel Terpopuler** = artikel Published dengan `view_count` ≥ `config('clinic.popular_min_views')` (default
-    5), diurutkan terbanyak. **Artikel Terkait** = artikel Published dengan jenis yang sama.
+  - **Artikel Terpopuler** = scope `Article::popular()`: Published dengan `view_count` ≥
+    `config('clinic.popular_min_views')` (default 5), diurutkan terbanyak. Tampil di halaman detail dan di beranda
+    (hanya halaman awal tanpa cari/filter, agar hasil pencarian tetap jadi fokus). **Artikel Terkait** = artikel Published dengan jenis yang sama.
   - Penulis/admin melihat total, 7 hari terakhir, dan 5 kunjungan terbaru di halaman detail artikelnya.
 - **Statistik dashboard per user**, bukan statistik seluruh situs.
 - **Laporan Artikel (Soal 2) hanya untuk admin**, karena menampilkan email semua penulis (data pribadi) sementara
@@ -460,14 +461,14 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/ArticleAuthorizationTest.php` | 9 | Pemilik bisa lihat/edit/update/hapus artikel yang belum tayang; user lain **403** (lihat, edit, update, hapus); daftar hanya artikel sendiri; tamu diarahkan ke login; `user_id` tidak bisa disisipkan dari form; publik hanya melihat Published (Draft 404) dan tidak ada tombol kelola |
 | `tests/Feature/ArticleReportTest.php` | 9 | Soal 2: INNER JOIN membuang artikel tanpa penulis, hanya `status = 1`, nama & email dari tabel `users`, urut `created_at` terbaru, 10 per halaman, search judul/nama/email, search tidak membocorkan Draft, kata kunci terbawa di link pagination, tamu ditolak |
 | `tests/Feature/ArticleCategoryTest.php` | 4 | Jenis artikel wajib & hanya 4 pilihan; filter `?jenis=` di beranda (nilai asing diabaikan); halaman detail berisi link bagikan ter-encode, jumlah per jenis (hanya Published), judul "Alami gejala jantung?" & URL WhatsApp CS persis; artikel lama tanpa jenis tetap tampil |
-| `tests/Feature/ArticleViewTest.php` | 6 | Tamu dihitung sekali per sesi (sesi disimpan ter-hash), user login sekali, penulis sendiri tidak dihitung; `updated_at` tidak berubah & Draft tidak dihitung; Terpopuler butuh minimal kunjungan, urut terbanyak, tanpa Draft & artikel yang sedang dibuka; Terkait = jenis sama; statistik & riwayat di area penulis |
+| `tests/Feature/ArticleViewTest.php` | 7 | Tamu dihitung sekali per sesi (sesi disimpan ter-hash), user login sekali, penulis sendiri tidak dihitung; `updated_at` tidak berubah & Draft tidak dihitung; Terpopuler butuh minimal kunjungan, urut terbanyak, tanpa Draft & artikel yang sedang dibuka; Terkait = jenis sama; beranda menampilkan Terpopuler hanya di halaman awal (tidak saat cari/filter) + banner WhatsApp; statistik & riwayat di area penulis |
 | `tests/Feature/ArticleContentTest.php` | 6 | Rich text: format dipertahankan, HTML berbahaya (`<script>`, `onclick`, `javascript:`) dibuang, link diberi `rel=noopener`, editor kosong ditolak |
 | `tests/Feature/ArticleRoleTest.php` | 11 | Pendaftar selalu pembaca walau mengirim `role=admin`; penulis tidak bisa langsung Published; artikel yang diajukan tidak tampil di publik; penulis tidak bisa edit/hapus artikel yang sudah tayang; penulis **403** di halaman admin; admin mengelola artikel siapa pun; terbitkan & kembalikan (catatan wajib); catatan hilang saat diajukan ulang; command `user:role` |
 | `tests/Feature/ReaderFeaturesTest.php` | 8 | Pembaca **403** di area penulis & diarahkan ke beranda setelah login; komentar (wajib login, validasi, di-escape, tidak bisa di artikel Draft, hapus hanya pemilik/admin); Baca Nanti (simpan/batal, artikel yang ditarik hilang dari daftar) |
 | `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
 | `tests/Feature/UserManagementTest.php` | 8 | Hanya admin (penulis & pembaca **403**); cari nama/email + filter peran (search tidak menembus filter); tambah akun dengan peran, password ter-hash & bisa login; validasi (email unik, peran tidak dikenal, konfirmasi password); edit dengan password kosong = tidak diganti; reset password orang lain; admin tidak bisa mengubah peran / menghapus akun sendiri; hapus akun → artikel tetap tanpa penulis, komentar/Baca Nanti/notifikasi ikut terhapus |
 
-Hasil: **81 test, 307 assertion, semua lulus.**
+Hasil: **82 test, 312 assertion, semua lulus.**
 
 ---
 

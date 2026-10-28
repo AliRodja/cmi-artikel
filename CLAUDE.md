@@ -234,6 +234,13 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Redesign beranda** (2026-10-28): hero biru tua tetap (tanpa pola garis). `PublicArticleController@index` kirim
+  `$isLanding` (tanpa cari/filter & halaman 1), `$popularArticles` (hanya saat landing), `$categoryCounts`. Urutan:
+  Sorotan (1 besar + 2 kartu kecil dengan thumbnail & jenis) → Artikel Terpopuler (komponen `x-popular-article`,
+  dipakai juga di detail; ponsel hanya 3 teratas) → `#daftar-artikel` (judul dinamis Terbaru / Artikel {Jenis} /
+  Hasil Pencarian + jumlah, pill filter jenis + jumlah, link pill berakhiran `#daftar-artikel`) → banner WhatsApp.
+  Query bersama dipindah ke model: scope `popular()` & `Article::publishedCountsByCategory()`. User tidak suka hiasan
+  yang "kelihatan seperti AI" (pola garis, glow berlebihan) — jaga desain tetap polos & korporat.
 - [x] **Redesign detail artikel publik** (2026-10-28): hero **biru tua sama dengan beranda** (user minta tetap biru tua,
   bukan terang; `bg-brand-950` + radial gradient, tanpa pola garis (user: "kelihatan seperti AI"), breadcrumb chevron, baris penulis + tanggal/menit
   baca/dilihat); latar konten sama dengan beranda (`bg-gray-50` dari layout); bar progres membaca `.reading-progress` (murni CSS

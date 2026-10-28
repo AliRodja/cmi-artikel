@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class Article extends Model
@@ -75,6 +76,29 @@ class Article extends Model
     public function scopeOfCategory(Builder $query, string $category): Builder
     {
         return $query->where('category', $category);
+    }
+
+    /**
+     * Artikel Terpopuler (beranda & halaman detail): Published, sudah dilihat minimal
+     * config('clinic.popular_min_views') kali, urut jumlah pembaca terbanyak.
+     */
+    public function scopePopular(Builder $query): Builder
+    {
+        return $query->published()
+            ->where('view_count', '>=', config('clinic.popular_min_views'))
+            ->orderByDesc('view_count')
+            ->latest();
+    }
+
+    /** Jumlah artikel Published per jenis, mis. ['jantung' => 7, ...] (jenis tanpa artikel tidak ada). */
+    public static function publishedCountsByCategory(): Collection
+    {
+        return static::query()
+            ->published()
+            ->whereNotNull('category')
+            ->selectRaw('category, COUNT(*) as total')
+            ->groupBy('category')
+            ->pluck('total', 'category');
     }
 
     /** "Jantung", atau null untuk artikel lama yang belum diberi jenis. */

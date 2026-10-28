@@ -88,6 +88,23 @@ class ArticleViewTest extends TestCase
         $this->assertSame(['Populer Pertama', 'Populer Kedua'], $popular->pluck('title')->all());
     }
 
+    public function test_home_shows_popular_articles_only_on_landing_page(): void
+    {
+        config(['clinic.popular_min_views' => 5]);
+        $this->article->forceFill(['view_count' => 30])->save();
+        Article::factory()->published()->create(['view_count' => 2]);
+
+        $popular = $this->get(route('home'))
+            ->assertSee('Artikel Terpopuler')
+            ->assertSee(e(config('clinic.whatsapp_consultation_url')), false)
+            ->viewData('popularArticles');
+        $this->assertSame([$this->article->id], $popular->pluck('id')->all());
+
+        // Saat mencari / memfilter, fokus ke hasil: Terpopuler tidak ditampilkan.
+        $this->get(route('home', ['jenis' => 'jantung']))->assertDontSee('Artikel Terpopuler');
+        $this->get(route('home', ['search' => 'apa saja']))->assertDontSee('Artikel Terpopuler');
+    }
+
     public function test_related_articles_have_the_same_category(): void
     {
         Article::factory()->published()->create(['title' => 'Jantung Lain', 'category' => 'jantung']);

@@ -266,20 +266,7 @@
         @else
             <ol class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($popularArticles as $popular)
-                    <li>
-                        <a href="{{ route('public.articles.show', $popular) }}"
-                           class="group card flex h-full items-center gap-4 p-4 transition hover:-translate-y-0.5 hover:shadow-lg">
-                            <span class="w-7 shrink-0 text-center text-3xl font-extrabold text-brand-200 tabular-nums transition group-hover:text-brand-500">{{ $loop->iteration }}</span>
-                            <x-article-thumb :article="$popular" class="size-16" />
-                            <div class="min-w-0">
-                                <x-category-badge :article="$popular" class="mb-1" />
-                                <p class="line-clamp-2 text-sm leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $popular->title }}</p>
-                                <p class="mt-1 inline-flex items-center gap-1 text-xs text-gray-500">
-                                    <x-icon name="eye" size="size-3" /> {{ number_format($popular->view_count, 0, ',', '.') }} kali dilihat
-                                </p>
-                            </div>
-                        </a>
-                    </li>
+                    <li><x-popular-article :article="$popular" :rank="$loop->iteration" /></li>
                 @endforeach
             </ol>
         @endif
