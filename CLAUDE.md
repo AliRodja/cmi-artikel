@@ -1,0 +1,173 @@
+# CLAUDE.md — Artikel App (Ujian Masuk IT CMI)
+
+## Konteks
+Project ini adalah jawaban **ujian masuk IT CMI** milik Ali Imran Rodja (fresh graduate Teknik Informatika UNPAS).
+Pihak CMI mengizinkan AI **sebagai asisten**: Claude memberi kode **dan menjelaskannya**, user mempelajari dan memahami
+setiap baris. Jadi:
+- Selalu jelaskan *kenapa* sebuah keputusan diambil, bukan hanya *apa* kodenya.
+- Gunakan **Bahasa Indonesia** dalam penjelasan.
+- Kerjakan bertahap; jangan menulis ulang file besar tanpa diminta. Tunjukkan bagian yang berubah.
+- Siapkan user agar bisa menjawab pertanyaan teknis penilai (middleware vs policy, INNER JOIN, validasi, dll.).
+
+## Soal & rubrik
+
+### Soal 1 — Website artikel (Laravel)
+Fitur wajib: Login, Register, Logout, Lupa password, Reset password · User (nama, email, password) · Dashboard untuk
+user login · CRUD artikel · Halaman publik (pengunjung hanya lihat daftar & detail artikel **Published**, tidak bisa
+tambah/edit/hapus) · Dashboard menampilkan jumlah artikel, jumlah Published, jumlah Draft, daftar artikel terbaru.
+
+Ketentuan teknis: Laravel, MySQL, Eloquent ORM, Blade, Migration, Validation, Authentication, Middleware, Pagination,
+Route Model Binding. **Tidak boleh CMS siap pakai.**
+
+Rubrik (100): Login & Logout 10 · Register 10 · Lupa & Reset Password 10 · Dashboard 5 · CRUD Artikel 20 ·
+Upload & Pengelolaan Gambar 10 · Validation Form 5 · Authorization/Middleware 10 · Halaman Publik 5 ·
+Database & Migration 5 · Blade & UI 5 · Kerapihan Struktur & Code Quality 5.
+
+### Soal 2 — INNER JOIN
+Halaman daftar artikel: judul, nama penulis, email penulis, status, tanggal dibuat.
+INNER JOIN `articles` × `users` · hanya artikel yang punya penulis · hanya `status = 1` · urut `articles.created_at`
+terbaru · 10 per halaman · Query Builder/Eloquent. Bonus: search.
+Rubrik (100): INNER JOIN 30 · Filter status 15 · Sorting 10 · Pagination 15 · Query Laravel 15 · Blade 10 · Bonus search 5.
+
+## Environment
+- MacBook Pro M1 (Apple Silicon), macOS.
+- PHP + Composer + MySQL via **Homebrew** (`brew services start mysql`). Kredensial DB ada di `.env`
+  (`DB_CONNECTION=mysql`, `DB_DATABASE=artikel_app`, user `root`).
+- GUI DB: phpMyAdmin via `php -S localhost:8080 -t /opt/homebrew/share/phpmyadmin` (opsional).
+- Node.js versi baru (sudah di-upgrade dari Node 20) untuk Vite.
+- Mail: `MAIL_MAILER=log` → link reset password muncul di `storage/logs/laravel.log`.
+
+## Stack & keputusan desain
+- **Laravel (versi terbaru) + MySQL + Blade + Tailwind CSS v4 via Vite** (bukan Bootstrap — sudah diganti).
+- **Autentikasi dibuat manual** (tanpa Breeze) agar setiap baris dipahami.
+- Tabel `articles`: `id`, `user_id` (**nullable**, FK ke users, `nullOnDelete`), `title`, `slug` (unique),
+  `content` (longText), `image` (nullable, path), `status` (tinyInteger: **0 = Draft, 1 = Published**), timestamps,
+  index (`status`, `created_at`).
+  - `user_id` nullable sengaja: agar INNER JOIN Soal 2 terbukti menyaring artikel tanpa penulis.
+- Model `Article`: konstanta `STATUS_DRAFT`/`STATUS_PUBLISHED`, `$fillable`, `getRouteKeyName()` → `slug`,
+  relasi `user()`, scope `published()` & `draft()`, `isPublished()`, slug otomatis unik di `booted()`
+  (`generateUniqueSlug()`; slug **tidak** berubah saat judul diedit), accessor `image_url` & `excerpt`.
+- Model `User`: relasi `articles()` (hasMany). Password otomatis di-hash oleh cast `'password' => 'hashed'`.
+- **Authorization:** user hanya bisa lihat/edit/hapus artikel miliknya (`ArticlePolicy`: view/update/delete →
+  `$user->id === $article->user_id`). Di controller pakai `Gate::authorize()` (base Controller Laravel 11+ tidak punya
+  `$this->authorize()`).
+- **Statistik dashboard per user** (milik user yang login).
+- Halaman Soal 2 berada **di area login** karena menampilkan email penulis.
+- Gambar disimpan di disk `public` folder `articles/`; file lama dihapus saat diganti / checkbox `remove_image` /
+  artikel dihapus. Butuh `php artisan storage:link`.
+- Validasi artikel lewat **Form Request** `ArticleRequest` (dipakai store & update), pesan & atribut Bahasa Indonesia.
+- Seeder: akun demo `admin@example.com` / `password` (20 artikel), 10 artikel milik user lain, **3 artikel tanpa
+  penulis** (`user_id = null`, **sengaja Published**) untuk uji INNER JOIN — kalau Draft, artikel itu sudah tersaring
+  oleh `status = 1` dan tidak membuktikan JOIN. Hasil uji: 19 Published → 16 setelah INNER JOIN.
+- Timezone: `config/app.php` membaca `env('APP_TIMEZONE', 'UTC')` (default Laravel menulis mati `'UTC'`),
+  `.env` → `APP_TIMEZONE=Asia/Jakarta`.
+- Bahasa: `APP_LOCALE=id`. `lang/id/{auth,passwords,validation}.php` untuk pesan berkunci; `lang/id.json` menerjemahkan
+  kalimat Inggris bawaan framework (isi email reset password & template email) — tanpa notifikasi custom.
+- Halaman error custom: `resources/views/errors/403.blade.php` (status tetap 403).
+
+## Struktur file penting
+```
+routes/web.php
+app/Models/{User,Article}.php
+app/Policies/ArticlePolicy.php
+app/Http/Requests/ArticleRequest.php
+app/Http/Controllers/
+  Auth/{LoginController,RegisterController,ForgotPasswordController,ResetPasswordController}.php
+  DashboardController.php         (invokable)
+  ArticleController.php           (resource, CRUD milik sendiri, search + filter status, paginate 10)
+  PublicArticleController.php     (index published + search, paginate 9, eager load user; show → 404 jika draft)
+  ArticleReportController.php     (Soal 2: DB::table + join + where status=1 + search dibungkus where(closure)
+                                   + orderByDesc + paginate(10)->withQueryString())
+database/migrations/*_create_articles_table.php
+database/factories/ArticleFactory.php
+database/seeders/DatabaseSeeder.php
+resources/css/app.css             (Tailwind v4: @import, @source, @layer components: .card .btn .btn-sm .btn-primary
+                                   .btn-secondary .btn-danger .form-label .form-input .form-input-error .form-error
+                                   .badge .link .nav-link .nav-link-active .th .td .article-content)
+resources/views/
+  layouts/app.blade.php           (@vite, @yield content, @stack scripts)
+  partials/{navbar,flash}.blade.php
+  components/{input,status-badge,auth-card}.blade.php
+  auth/{login,register,forgot-password,reset-password}.blade.php
+  dashboard.blade.php
+  articles/{index,_form,create,edit,show,report}.blade.php
+  public/{index,show}.blade.php
+  errors/403.blade.php
+lang/id/{auth,passwords,validation}.php, lang/id.json
+```
+
+## Routes
+- Publik: `GET /` (`home`), `GET /artikel/{article}` (`public.articles.show`).
+- `guest`: `/register`, `/login`, `/forgot-password` (`password.request`, `password.email`),
+  `/reset-password/{token}` (`password.reset` — nama wajib persis), `POST /reset-password` (`password.update`).
+- `auth`: `POST /logout` (`logout`), `GET /dashboard` (`dashboard`),
+  prefix `dashboard`: `Route::resource('articles', ...)` (`articles.*`), `GET laporan-artikel` (`articles.report`).
+
+## Konvensi
+- Blade: selalu `{{ }}` (escape). Jangan pakai `{!! !!}`. Isi artikel ditampilkan dengan class `.article-content`
+  (`whitespace-pre-line`), bukan `nl2br`.
+- Tailwind: **jangan merangkai nama class dinamis** (mis. `text-{{ $color }}-600`); tulis class lengkap.
+- Pagination memakai view Tailwind bawaan Laravel (jangan aktifkan `Paginator::useBootstrapFive()`).
+- Form upload wajib `enctype="multipart/form-data"`; form PUT/DELETE pakai `@csrf` + `@method`.
+- `user_id` artikel diisi lewat relasi `$request->user()->articles()->create()`, tidak pernah dari input form.
+
+## Menjalankan
+```bash
+npm run dev                 # terminal 1 (biarkan berjalan)
+php artisan optimize:clear  # terminal 2
+php artisan serve           # http://localhost:8000
+php artisan migrate:fresh --seed   # reset database + data dummy
+```
+
+## Progres
+- [x] Tahap 1 — Database (migration, model, factory, seeder)
+- [x] Tahap 2 — Route & Controller (+ Form Request, Policy)
+- [x] Tahap 3 — Blade & UI (Tailwind) — **semua 12 checklist lolos** (diuji 2026-10-19 di browser + curl/tinker)
+- [ ] Tahap 4 — Testing & finishing — **sedang berjalan**
+
+Catatan: `ArticleRequest`, `ArticlePolicy`, `ArticleController`, view `articles/*` dan `ArticleReportController`
+sempat belum ada di repo walau ditandai selesai; dibuat ulang 2026-10-19 (commit 510bc6f, 2a16b48, bfd8176).
+Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `touch resources/css/app.css`.
+
+### Checklist uji Tahap 3 (semua ✅)
+1. Beranda: grid artikel Published, search, pagination
+2. Detail artikel publik tanpa tombol edit/hapus
+3. Login `admin@example.com` / `password` → dashboard + 3 statistik
+4. Tulis artikel dengan gambar (preview muncul)
+5. Edit: ganti gambar & centang hapus gambar
+6. Submit form kosong → error validasi tampil
+7. Hapus artikel (dengan konfirmasi)
+8. Laporan Artikel: hanya Published, urut terbaru, 10/halaman, search, 3 artikel tanpa penulis tidak muncul
+9. Lupa password → pesan status
+10. Link reset dari `storage/logs/laravel.log` → set password baru → login
+11. User lain membuka `/dashboard/articles/{slug-milik-admin}/edit` → **403**
+12. Belum login membuka `/dashboard` → redirect ke login
+
+### Tahap 4
+- [x] Jalankan & perbaiki semua checklist di atas.
+- [x] Perbaikan kecil: timezone WIB, halaman 403 Bahasa Indonesia, email reset Bahasa Indonesia.
+- [x] Cocokkan fitur dengan rubrik Soal 1 & Soal 2 satu per satu (+ uji register & ganti gambar) → README bagian 5.
+- [x] README untuk penilai: fitur vs rubrik, bukti INNER JOIN, struktur database, route, keputusan desain.
+- [x] Feature test PHPUnit (`php artisan test`, SQLite in-memory dari `phpunit.xml`, MySQL aman): `AuthTest` (11),
+  `ArticleAuthorizationTest` (9), `ArticleReportTest` (9) → 29 test / 112 assertion lulus. Sudah dibuktikan bisa gagal
+  dengan sabotase sementara (policy selalu true, `leftJoin`, search tanpa closure). `TestCase` memanggil
+  `withoutVite()`; `ArticleFactory` punya state `published()` / `draft()`.
+- `npm run build` sebelum dikumpulkan.
+- **README.md** untuk penilai: requirement (PHP, Composer, MySQL, Node), langkah instalasi
+  (`composer install`, `cp .env.example .env`, `php artisan key:generate`, set DB, `php artisan migrate --seed`,
+  `php artisan storage:link`, `npm install && npm run build`, `php artisan serve`), akun demo, cara uji reset password
+  via log, daftar fitur vs rubrik, keputusan desain & asumsi.
+### Tahap 5 — Pengembangan front-end (mulai 2026-10-28, data real diinput user sendiri lewat halaman)
+- Arah desain: **corporate / company profile**. Token di `app.css` `@theme`: palet `brand-50..950` dari warna resmi
+  CMI (navbar `#E3F2FD` = `brand-50`, footer `#066AC9` = `brand-600`) + font Plus Jakarta Sans (`vite.config.js` →
+  `@fonts` di layout). Logo: `public/images/logo-cmi.{svg,png,webp,jpg}` via komponen `x-logo` (fallback inisial).
+- Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
+- [x] Halaman publik: layout (`@yield('hero')`, `partials/footer`), navbar, beranda (hero + featured di halaman 1 tanpa
+  search + grid), detail (hero, waktu baca, salin tautan, Artikel Lainnya). Komponen baru `x-avatar` (prop `tone`),
+  `x-article-card`. Accessor `reading_time`. Pagination Bahasa Indonesia (`lang/id/pagination.php`, `id.json`).
+- [ ] Rich text editor untuk isi artikel (simpan HTML + **sanitasi di server**; `.article-content` sudah punya style
+  h2/ul/blockquote/dll.).
+- [ ] Area penulis: dashboard, Artikel Saya, form tulis/edit.
+
+- Persiapan tanya-jawab: middleware vs policy, alur reset password, INNER JOIN vs LEFT JOIN, jebakan
+  `orWhere` tanpa closure, N+1 & eager loading, mass assignment & `$fillable`, CSRF, route model binding dengan slug.

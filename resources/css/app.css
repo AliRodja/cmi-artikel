@@ -1,0 +1,72 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+/*
+ * Design token. Ganti nilai --color-brand-* dengan warna resmi perusahaan,
+ * seluruh halaman (bg-brand-*, text-brand-*, dst.) ikut berubah.
+ */
+@theme {
+    --font-sans: var(--font-plus-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
+
+    /* Warna identitas CMI: 50 = navbar (#E3F2FD), 600 = footer (#066AC9). */
+    --color-brand-50: #e3f2fd;
+    --color-brand-100: #c9e5fb;
+    --color-brand-200: #9dcff7;
+    --color-brand-300: #62b1ef;
+    --color-brand-400: #2e92e2;
+    --color-brand-500: #0f7bd5;
+    --color-brand-600: #066ac9;
+    --color-brand-700: #0556a3;
+    --color-brand-800: #074884;
+    --color-brand-900: #0b3c6d;
+    --color-brand-950: #082648;
+}
+
+@layer components {
+    .container-page  { @apply mx-auto w-full max-w-6xl px-4 sm:px-6; }
+
+    .card            { @apply rounded-xl border border-gray-200 bg-white shadow-sm; }
+
+    .btn             { @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2; }
+    .btn-sm          { @apply px-3 py-1.5 text-xs; }
+    .btn-primary     { @apply bg-brand-600 text-white hover:bg-brand-700 focus-visible:ring-brand-500; }
+    .btn-secondary   { @apply border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus-visible:ring-gray-400; }
+    .btn-danger      { @apply border border-red-200 bg-white text-red-600 hover:bg-red-50 focus-visible:ring-red-400; }
+
+    .form-label      { @apply mb-1 block text-sm font-medium text-gray-700; }
+    .form-input      { @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none; }
+    .form-input-error{ @apply border-red-500 focus:border-red-500 focus:ring-red-500/20; }
+    .form-error      { @apply mt-1 text-sm text-red-600; }
+
+    .badge           { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium; }
+    .link            { @apply font-medium text-brand-700 hover:text-brand-600; }
+
+    /* Navbar berlatar brand-50, jadi link aktif memakai latar putih agar tetap kontras. */
+    .nav-link        { @apply rounded-md px-3 py-2 text-sm font-medium text-brand-900/80 hover:bg-white/70 hover:text-brand-900; }
+    .nav-link-active { @apply bg-white text-brand-700 shadow-sm hover:bg-white hover:text-brand-700; }
+
+    .th              { @apply px-4 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase; }
+    .td              { @apply px-4 py-3 text-sm; }
+
+    .eyebrow         { @apply text-xs font-semibold tracking-[0.18em] uppercase; }
+
+    /*
+     * Tipografi isi artikel. Aturan untuk h2/ul/blockquote/dst. sudah disiapkan
+     * agar langsung terpakai saat isi artikel berupa HTML dari rich text editor.
+     */
+    .article-content { @apply text-[1.0625rem] leading-8 whitespace-pre-line text-gray-700; }
+    .article-content :where(p)          { @apply my-5; }
+    .article-content :where(h2)         { @apply mt-10 mb-4 text-2xl font-bold text-gray-900; }
+    .article-content :where(h3)         { @apply mt-8 mb-3 text-xl font-semibold text-gray-900; }
+    .article-content :where(ul)         { @apply my-5 list-disc pl-6; }
+    .article-content :where(ol)         { @apply my-5 list-decimal pl-6; }
+    .article-content :where(li)         { @apply my-1.5; }
+    .article-content :where(a)          { @apply font-medium text-brand-700 underline underline-offset-2 hover:text-brand-600; }
+    .article-content :where(strong)     { @apply font-semibold text-gray-900; }
+    .article-content :where(blockquote) { @apply my-6 border-l-4 border-brand-600 bg-brand-50 px-5 py-3 text-gray-800 italic; }
+    .article-content :where(img)        { @apply my-6 rounded-lg; }
+}
