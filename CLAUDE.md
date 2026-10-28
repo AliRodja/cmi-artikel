@@ -234,6 +234,15 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Live search navbar** (2026-10-28): `GET /cari?q=` (`articles.live-search`, `throttle:60,1`) →
+  `PublicArticleController@liveSearch` (bukan AJAX → redirect `home?search=`; < 2 huruf → kosong; Published +
+  scope baru `Article::search()` yang juga dipakai beranda; `orderByRaw('CASE WHEN title LIKE ? ...')` judul dulu;
+  6 hasil + total) → view potongan `public/_live-search-results` (role=listbox/option). Komponen `x-highlight`
+  (`preg_split` + `PREG_SPLIT_DELIM_CAPTURE`, `<mark>` dengan `{{ }}`; satu directive per baris — `@endif@endforeach`
+  menempel tidak dikompilasi Blade). `partials/search-panel`: input `role=combobox`, `[data-live-search-idle]` (pill
+  jenis), `[data-live-search-results]`. JS `resources/js/live-search.js` (diimpor app.js): debounce 250 ms,
+  `AbortController`, header `X-Requested-With`, panah/Enter via `aria-activedescendant`. Test `LiveSearchTest` (6) →
+  99 test / 376 assertion.
 - [x] **Kelola Akun** (2026-10-28, koreksi user: "Kelola Pengguna" di menu avatar maksudnya akun milik user itu sendiri,
   bukan seluruh user). `ProfileController` (`/akun` GET/PATCH, `/akun/password` PUT; selalu `$request->user()`; role
   tidak bisa diubah; password baru wajib `current_password` + `different:current_password`). View `profile/edit`

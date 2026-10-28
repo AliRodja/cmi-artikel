@@ -326,6 +326,7 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
 |---|---|---|---|---|
 | GET | `/` | `home` | — | Daftar artikel Published (`?search=`, `?jenis=jantung`) |
 | GET | `/artikel/{slug}` | `public.articles.show` | — | Detail artikel Published |
+| GET | `/cari?q=` | `articles.live-search` | `throttle:60,1` | Live search panel navbar (potongan HTML untuk `fetch()`) |
 | GET/POST | `/register` | `register` | `guest` | Daftar akun |
 | GET/POST | `/login` | `login` | `guest` (+ `throttle` saat POST) | Masuk |
 | GET/POST | `/forgot-password` | `password.request` / `password.email` | `guest` | Minta link reset |
@@ -399,6 +400,15 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
     `config('clinic.popular_min_views')` (default 5), diurutkan terbanyak. Tampil di halaman detail dan di beranda
     (hanya halaman awal tanpa cari/filter, agar hasil pencarian tetap jadi fokus). **Artikel Terkait** = artikel Published dengan jenis yang sama.
   - Penulis/admin melihat total, 7 hari terakhir, dan 5 kunjungan terbaru di halaman detail artikelnya.
+- **Live search di navbar:** saat mengetik (minimal 2 huruf, jeda 250 ms), `resources/js/live-search.js` memanggil
+  `GET /cari?q=` (`PublicArticleController@liveSearch`). Server mengembalikan **potongan HTML yang dirender Blade**,
+  bukan JSON, jadi semua teks sudah di-escape `{{ }}` dan JavaScript cukup menempelkannya, tanpa merakit HTML sendiri
+  (yang rawan XSS).
+  - Hasil: maksimal 6 artikel Published; judul yang cocok tampil lebih dulu (`ORDER BY CASE WHEN title LIKE ?`).
+    Kata kunci ditandai `<mark>` oleh komponen `x-highlight` dengan `preg_split()` + `{{ }}`.
+  - Permintaan lama dibatalkan dengan `AbortController`, dan route dibatasi `throttle:60,1`.
+  - Navigasi keyboard memakai pola *combobox* (`aria-activedescendant`). Enter tanpa memilih = halaman hasil lengkap.
+  - Pencarian judul/isi memakai scope `Article::search()`, yang juga dipakai beranda.
 - **Pop-up berhasil/gagal (toast):** semua pesan flash (`success` / `status` / `error`) dan error validasi tampil
   sebagai pop-up di `partials/flash` yang hilang sendiri. Dua jalur gagal ditangani di `bootstrap/app.php`:
   tamu yang menekan **Simpan** diarahkan ke Masuk dengan pop-up penjelasan (lalu kembali ke artikelnya), dan token
@@ -476,6 +486,7 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/ArticleReportTest.php` | 9 | Soal 2: INNER JOIN membuang artikel tanpa penulis, hanya `status = 1`, nama & email dari tabel `users`, urut `created_at` terbaru, 10 per halaman, search judul/nama/email, search tidak membocorkan Draft, kata kunci terbawa di link pagination, tamu ditolak |
 | `tests/Feature/ArticleCategoryTest.php` | 4 | Jenis artikel wajib & hanya 4 pilihan; filter `?jenis=` di beranda (nilai asing diabaikan); halaman detail berisi link bagikan ter-encode, jumlah per jenis (hanya Published), judul "Alami gejala jantung?" & URL WhatsApp CS persis; artikel lama tanpa jenis tetap tampil |
 | `tests/Feature/ArticleViewTest.php` | 7 | Tamu dihitung sekali per sesi (sesi disimpan ter-hash), user login sekali, penulis sendiri tidak dihitung; `updated_at` tidak berubah & Draft tidak dihitung; Terpopuler butuh minimal kunjungan, urut terbanyak, tanpa Draft & artikel yang sedang dibuka; Terkait = jenis sama; beranda menampilkan Terpopuler hanya di halaman awal (tidak saat cari/filter) + banner WhatsApp; statistik & riwayat di area penulis |
+| `tests/Feature/LiveSearchTest.php` | 6 | Panel live search ada di navbar; hasil hanya Published, kata kunci ditandai, judul yang cocok di urutan pertama; maksimal 6 + tautan "Lihat semua"; judul tetap di-escape walau ditandai; kata < 2 huruf / tidak ditemukan; endpoint yang dibuka langsung diarahkan ke halaman hasil |
 | `tests/Feature/ProfileTest.php` | 5 | Semua peran bisa membuka Kelola Akun (tamu → login); menu avatar → Kelola Akun untuk semua, Kelola Pengguna hanya muncul untuk admin; ubah nama/email (email unik), `role` yang disisipkan diabaikan; ganti password wajib password saat ini yang benar; password baru harus berbeda & terkonfirmasi |
 | `tests/Feature/PopupMessageTest.php` | 6 | Pop-up berhasil saat keluar & menyimpan artikel; keluar dengan token CSRF kedaluwarsa → kembali + pop-up gagal (bukan 419), tetap login; tamu menekan Simpan → Masuk + pop-up gagal, setelah login kembali ke artikel; form tidak valid → pop-up gagal umum; tanpa pesan → tidak ada pop-up |
 | `tests/Feature/ArticleContentTest.php` | 6 | Rich text: format dipertahankan, HTML berbahaya (`<script>`, `onclick`, `javascript:`) dibuang, link diberi `rel=noopener`, editor kosong ditolak |
@@ -484,7 +495,7 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
 | `tests/Feature/UserManagementTest.php` | 8 | Hanya admin (penulis & pembaca **403**); cari nama/email + filter peran (search tidak menembus filter); tambah akun dengan peran, password ter-hash & bisa login; validasi (email unik, peran tidak dikenal, konfirmasi password); edit dengan password kosong = tidak diganti; reset password orang lain; admin tidak bisa mengubah peran / menghapus akun sendiri; hapus akun → artikel tetap tanpa penulis, komentar/Baca Nanti/notifikasi ikut terhapus |
 
-Hasil: **93 test, 360 assertion, semua lulus.**
+Hasil: **99 test, 376 assertion, semua lulus.**
 
 ---
 

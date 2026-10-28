@@ -6,6 +6,8 @@ import '@fortawesome/fontawesome-free/css/solid.css';
 import '@fortawesome/fontawesome-free/css/regular.css';
 import '@fortawesome/fontawesome-free/css/brands.css';
 
+import './live-search';
+
 // Dialog navbar: drawer menu (partials/nav-drawer) & panel pencarian (partials/search-panel).
 // Tombol pembuka: data-dialog-open="<id dialog>"; tombol penutup di dalam dialog: data-dialog-close.
 // showModal() membuat dialog modal: Esc menutup, fokus terkunci di dalamnya,

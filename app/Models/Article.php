@@ -73,6 +73,17 @@ class Article extends Model
         return $query->where('status', self::STATUS_REVIEW);
     }
 
+    /**
+     * Cari di judul ATAU isi. Dibungkus where(closure) → "(title LIKE ? OR content LIKE ?)", agar OR tidak
+     * "lolos" dari filter lain (mis. status = Published). Dipakai beranda & live search navbar.
+     */
+    public function scopeSearch(Builder $query, string $term): Builder
+    {
+        return $query->where(fn (Builder $query) => $query
+            ->where('title', 'like', "%{$term}%")
+            ->orWhere('content', 'like', "%{$term}%"));
+    }
+
     public function scopeOfCategory(Builder $query, string $category): Builder
     {
         return $query->where('category', $category);

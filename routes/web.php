@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicArticleController::class, 'index'])->name('home');
 Route::get('/artikel/{article}', [PublicArticleController::class, 'show'])->name('public.articles.show');
+// Live search panel cari navbar. Dibatasi 60 permintaan/menit per pengunjung (JS sudah memberi jeda saat mengetik).
+Route::get('/cari', [PublicArticleController::class, 'liveSearch'])->middleware('throttle:60,1')->name('articles.live-search');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'create'])->name('register');

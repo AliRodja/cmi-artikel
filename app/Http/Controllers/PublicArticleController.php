@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Support\ArticleViewCounter;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -24,12 +25,7 @@ class PublicArticleController extends Controller
             ->published()
             ->with('user:id,name')
             ->when($category, fn ($query) => $query->ofCategory($category))
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($query) use ($search) {
-                    $query->where('title', 'like', "%{$search}%")
-                        ->orWhere('content', 'like', "%{$search}%");
-                });
-            })
+            ->when($search !== '', fn ($query) => $query->search($search))
             ->latest()
             ->paginate(9)
             ->withQueryString();
@@ -44,6 +40,38 @@ class PublicArticleController extends Controller
         $categoryCounts = Article::publishedCountsByCategory();
 
         return view('public.index', compact('articles', 'search', 'category', 'isLanding', 'popularArticles', 'categoryCounts'));
+    }
+
+    /**
+     * Live search di panel cari navbar (dipanggil fetch() dari resources/js/live-search.js).
+     * Mengembalikan potongan HTML yang dirender Blade, sehingga semua teks sudah di-escape oleh {{ }}
+     * dan JavaScript cukup menempelkannya.
+     */
+    public function liveSearch(Request $request): View|RedirectResponse
+    {
+        $term = trim((string) $request->query('q'));
+
+        // Dibuka langsung di browser (bukan lewat fetch) → halaman hasil pencarian lengkap di beranda.
+        if (! $request->ajax()) {
+            return redirect()->route('home', array_filter(['search' => $term]));
+        }
+
+        $results = collect();
+        $total = 0;
+
+        if (mb_strlen($term) >= 2) {
+            $query = Article::query()->published()->search($term);
+            $total = (clone $query)->count();
+
+            $results = $query
+                // Judul yang cocok tampil lebih dulu, baru yang cocok di isi saja.
+                ->orderByRaw('CASE WHEN title LIKE ? THEN 0 ELSE 1 END', ["%{$term}%"])
+                ->latest()
+                ->take(6)
+                ->get(['id', 'title', 'slug', 'category', 'image', 'created_at']);
+        }
+
+        return view('public._live-search-results', compact('term', 'results', 'total'));
     }
 
     public function show(Request $request, Article $article): View
