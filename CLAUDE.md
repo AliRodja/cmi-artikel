@@ -213,7 +213,7 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   Notifikasi, Keluar. Drawer kiri hanya
   navigasi (tanpa profil/Masuk/Daftar/Keluar).
   Redesign 2026-10-28: garis aksen `brand-600` di atas, tinggi `h-16`, tombol ikon bulat `.nav-icon-btn` (app.css),
-  burger berlabel "Menu" (≥sm), kolom "Cari artikel…" palsu (≥lg) + pintasan `/`, bayangan saat scroll
+  burger berlabel "Menu" (≥sm), ikon cari saja di semua ukuran (kolom "Cari artikel…" palsu dihapus atas permintaan user) + pintasan `/`, bayangan saat scroll
   (`data-scrolled` dari app.js).
   Ikon cari membuka `partials/search-panel` (`<dialog>` dari atas, GET ke `home?search=`, input `autofocus`).
   JS dialog di `app.js` dipakai bersama: `data-dialog-open="<id>"` / `data-dialog-close`, Esc ditangani manual

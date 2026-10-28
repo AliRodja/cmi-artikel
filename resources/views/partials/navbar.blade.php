@@ -14,17 +14,11 @@
                 <span class="sr-only sm:hidden">Buka menu</span>
             </button>
 
-            {{-- Ponsel & tablet: ikon saja. Layar lebar: tampil seperti kolom cari. Keduanya membuka partials/search-panel. --}}
+            {{-- Ikon saja; panel pencarian (partials/search-panel, live search) muncul saat ditekan atau dengan tombol "/". --}}
             <button type="button" data-dialog-open="search-panel" aria-controls="search-panel" aria-expanded="false"
-                    class="nav-icon-btn lg:hidden">
+                    title="Cari artikel (/)" class="nav-icon-btn">
                 <x-icon name="magnifying-glass" size="size-4" />
                 <span class="sr-only">Cari artikel</span>
-            </button>
-            <button type="button" data-dialog-open="search-panel" aria-controls="search-panel" aria-expanded="false"
-                    class="hidden h-10 w-60 cursor-pointer items-center gap-2.5 rounded-full border border-brand-100 bg-white px-4 text-sm text-gray-400 shadow-xs transition hover:border-brand-300 hover:text-gray-500 lg:flex">
-                <x-icon name="magnifying-glass" size="size-4" class="text-brand-700" />
-                <span class="flex-1 text-left">Cari artikel…</span>
-                <kbd class="rounded border border-gray-200 bg-gray-50 px-1.5 font-sans text-xs text-gray-500">/</kbd>
             </button>
         </div>
 
