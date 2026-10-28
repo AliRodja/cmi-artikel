@@ -55,12 +55,14 @@
     .eyebrow         { @apply text-xs font-semibold tracking-[0.18em] uppercase; }
 
     /*
-     * Tipografi isi artikel. Aturan untuk h2/ul/blockquote/dst. sudah disiapkan
-     * agar langsung terpakai saat isi artikel berupa HTML dari rich text editor.
+     * Tipografi isi artikel (HTML dari Trix). Dipakai di halaman detail DAN di
+     * dalam editor, sehingga yang ditulis tampil sama dengan hasil akhirnya.
+     * <h1> dari tombol "Heading" Trix ditampilkan seukuran subjudul.
      */
-    .article-content { @apply text-[1.0625rem] leading-8 whitespace-pre-line text-gray-700; }
+    .article-content { @apply text-[1.0625rem] leading-8 text-gray-700; }
     .article-content :where(p)          { @apply my-5; }
-    .article-content :where(h2)         { @apply mt-10 mb-4 text-2xl font-bold text-gray-900; }
+    .article-content :where(h1, h2)     { @apply mt-10 mb-4 text-2xl leading-snug font-bold text-gray-900; }
+    .article-content > :where(:first-child) { @apply mt-0; }
     .article-content :where(h3)         { @apply mt-8 mb-3 text-xl font-semibold text-gray-900; }
     .article-content :where(ul)         { @apply my-5 list-disc pl-6; }
     .article-content :where(ol)         { @apply my-5 list-decimal pl-6; }
@@ -69,4 +71,22 @@
     .article-content :where(strong)     { @apply font-semibold text-gray-900; }
     .article-content :where(blockquote) { @apply my-6 border-l-4 border-brand-600 bg-brand-50 px-5 py-3 text-gray-800 italic; }
     .article-content :where(img)        { @apply my-6 rounded-lg; }
+    .article-content :where(em)         { @apply italic; }
+    .article-content :where(del)        { @apply text-gray-500 line-through; }
+    .article-content :where(pre)        { @apply my-6 overflow-x-auto rounded-lg bg-gray-900 px-5 py-4 font-mono text-sm leading-6 text-gray-100; }
 }
+
+/*
+ * Editor Trix. Sengaja DI LUAR @layer: trix.css tidak memakai layer, dan aturan
+ * tanpa layer selalu menang atas aturan di dalam layer. Selector ini lebih
+ * spesifik dari "trix-editor" milik trix.css, sehingga tampilan kita yang dipakai.
+ */
+trix-toolbar .trix-button-row        { @apply mb-2 flex-wrap gap-y-2; }
+trix-toolbar .trix-button-group      { @apply mb-0 rounded-lg border-gray-300; }
+trix-toolbar .trix-button.trix-active { @apply bg-brand-100; }
+
+trix-editor.article-editor {
+    @apply block min-h-80 rounded-lg border border-gray-300 bg-white px-4 py-3 shadow-sm;
+}
+trix-editor.article-editor:focus     { @apply border-brand-500 ring-2 ring-brand-500/20 outline-none; }
+trix-editor.article-editor-error     { @apply border-red-500; }

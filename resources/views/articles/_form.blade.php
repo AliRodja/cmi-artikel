@@ -3,9 +3,11 @@
 <x-input name="title" label="Judul" :value="$article?->title" required maxlength="255" />
 
 <div class="mb-4">
-    <label for="content" class="form-label">Isi Artikel</label>
-    <textarea id="content" name="content" rows="12" required
-              @class(['form-input', 'form-input-error' => $errors->has('content')])>{{ old('content', $article?->content) }}</textarea>
+    <label for="content-editor" class="form-label">Isi Artikel</label>
+    {{-- Trix menulis HTML ke input tersembunyi ini; nilainya yang dikirim ke server. --}}
+    <input type="hidden" id="content" name="content" value="{{ old('content', $article?->content_html) }}">
+    <trix-editor id="content-editor" input="content"
+                 @class(['article-editor article-content', 'article-editor-error' => $errors->has('content')])></trix-editor>
     @error('content')
         <p class="form-error">{{ $message }}</p>
     @enderror
@@ -46,6 +48,7 @@
 </div>
 
 @push('scripts')
+    @vite('resources/js/editor.js')
     <script>
         document.getElementById('image').addEventListener('change', function (event) {
             const preview = document.getElementById('image-preview');

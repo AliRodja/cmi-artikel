@@ -34,6 +34,7 @@
             <img src="{{ $article->image_url }}" alt="{{ $article->title }}" class="mt-6 w-full rounded-xl object-cover">
         @endif
 
-        <div class="card article-content mt-6 p-6 sm:p-8">{{ $article->content }}</div>
+        {{-- content_html sudah disanitasi (App\Support\ArticleContent), aman untuk {!! !!}. --}}
+        <div class="card article-content mt-6 p-6 sm:p-8">{!! $article->content_html !!}</div>
     </article>
 @endsection

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ArticleContent;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -74,13 +75,31 @@ class Article extends Model
         return $this->image ? asset('storage/'.$this->image) : null;
     }
 
+    /**
+     * Isi selalu disanitasi sebelum masuk database, dari jalur mana pun
+     * (form, seeder, tinker) selama lewat Eloquent.
+     */
+    public function setContentAttribute(?string $value): void
+    {
+        $this->attributes['content'] = ArticleContent::toHtml($value);
+    }
+
+    /**
+     * HTML yang siap ditampilkan dengan {!! !!}. Disanitasi ulang saat dibaca
+     * sebagai lapisan kedua, untuk data yang masuk tanpa Eloquent.
+     */
+    public function getContentHtmlAttribute(): string
+    {
+        return ArticleContent::toHtml($this->content);
+    }
+
     public function getExcerptAttribute(): string
     {
-        return Str::limit(strip_tags($this->content), 140);
+        return Str::limit(ArticleContent::toPlainText($this->content), 140);
     }
 
     public function getReadingTimeAttribute(): int
     {
-        return max(1, (int) ceil(str_word_count(strip_tags($this->content)) / 200));
+        return max(1, (int) ceil(str_word_count(ArticleContent::toPlainText($this->content)) / 200));
     }
 }

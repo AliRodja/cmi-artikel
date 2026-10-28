@@ -104,8 +104,9 @@ lang/id/{auth,passwords,validation}.php, lang/id.json
   prefix `dashboard`: `Route::resource('articles', ...)` (`articles.*`), `GET laporan-artikel` (`articles.report`).
 
 ## Konvensi
-- Blade: selalu `{{ }}` (escape). Jangan pakai `{!! !!}`. Isi artikel ditampilkan dengan class `.article-content`
-  (`whitespace-pre-line`), bukan `nl2br`.
+- Blade: selalu `{{ }}` (escape). Jangan pakai `{!! !!}` — **satu-satunya pengecualian**:
+  `{!! $article->content_html !!}` (HTML isi artikel yang sudah disanitasi `App\Support\ArticleContent`), dengan class
+  `.article-content`. Jangan pernah `{!! $article->content !!}` atau `{!! !!}` untuk data lain.
 - Tailwind: **jangan merangkai nama class dinamis** (mis. `text-{{ $color }}-600`); tulis class lengkap.
 - Pagination memakai view Tailwind bawaan Laravel (jangan aktifkan `Paginator::useBootstrapFive()`).
 - Form upload wajib `enctype="multipart/form-data"`; form PUT/DELETE pakai `@csrf` + `@method`.
@@ -160,13 +161,21 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
 ### Tahap 5 — Pengembangan front-end (mulai 2026-10-28, data real diinput user sendiri lewat halaman)
 - Arah desain: **corporate / company profile**. Token di `app.css` `@theme`: palet `brand-50..950` dari warna resmi
   CMI (navbar `#E3F2FD` = `brand-50`, footer `#066AC9` = `brand-600`) + font Plus Jakarta Sans (`vite.config.js` →
-  `@fonts` di layout). Logo: `public/images/logo-cmi.{svg,png,webp,jpg}` via komponen `x-logo` (fallback inisial).
+  `@fonts` di layout). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
 - [x] Halaman publik: layout (`@yield('hero')`, `partials/footer`), navbar, beranda (hero + featured di halaman 1 tanpa
   search + grid), detail (hero, waktu baca, salin tautan, Artikel Lainnya). Komponen baru `x-avatar` (prop `tone`),
   `x-article-card`. Accessor `reading_time`. Pagination Bahasa Indonesia (`lang/id/pagination.php`, `id.json`).
-- [ ] Rich text editor untuk isi artikel (simpan HTML + **sanitasi di server**; `.article-content` sudah punya style
-  h2/ul/blockquote/dll.).
+- [x] Rich text editor **Trix** (npm `trix`, entry Vite terpisah `resources/js/editor.js`, hanya dimuat di `_form`;
+  lampiran file dimatikan). `<trix-editor class="article-editor article-content">` + `<input type="hidden" name="content">`.
+  CSS editor sengaja di luar `@layer` (trix.css tidak berlayer); jangan beri class `.trix-content`.
+- [x] Sanitasi: `symfony/html-sanitizer` lewat `App\Support\ArticleContent` (whitelist tag Trix: div p br strong em del
+  h1 blockquote pre ul ol li a[href]; link http/https/mailto, dipaksa `target=_blank rel=noopener noreferrer`).
+  Dua lapis: mutator `setContentAttribute` (saat simpan) + accessor `content_html` (saat tampil). Teks polos lama →
+  `<p>`. `excerpt`/`reading_time` memakai `ArticleContent::toPlainText()`. `ArticleRequest`: `bail` + closure menolak
+  editor kosong (`<div><br></div>`). Test: `ArticleContentTest` (6) → total 35 test / 130 assertion, terbukti gagal
+  bila sanitizer dimatikan.
+- [x] Favicon dari tanda salib logo: `public/favicon.ico` (16/32/48) + `public/apple-touch-icon.png`.
 - [ ] Area penulis: dashboard, Artikel Saya, form tulis/edit.
 
 - Persiapan tanya-jawab: middleware vs policy, alur reset password, INNER JOIN vs LEFT JOIN, jebakan

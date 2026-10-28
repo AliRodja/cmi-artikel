@@ -38,7 +38,8 @@
         @endif
 
         <div class="card px-6 py-4 sm:px-10 sm:py-6">
-            <div class="article-content">{{ $article->content }}</div>
+            {{-- content_html sudah disanitasi (App\Support\ArticleContent), aman untuk {!! !!}. --}}
+            <div class="article-content">{!! $article->content_html !!}</div>
         </div>
 
         <div class="mt-8 flex flex-wrap items-center justify-between gap-3">
