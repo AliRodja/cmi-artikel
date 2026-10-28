@@ -5,23 +5,10 @@
 @section('content')
     <x-auth-card title="Masuk ke akun Anda" subtitle="Gunakan email dan password yang Anda daftarkan.">
         <x-slot:aside>
-            <x-logo tone="dark" />
-
-            <div class="my-auto py-10">
-                <h2 class="text-3xl leading-tight font-extrabold tracking-tight">Selamat datang kembali</h2>
-                <p class="mt-3 text-sm leading-relaxed text-brand-100">
-                    Masuk untuk melanjutkan membaca dan mengikuti informasi kesehatan terbaru dari {{ config('app.name') }}.
-                </p>
-            </div>
-
-            <div class="rounded-xl bg-white/10 p-5">
-                <p class="font-semibold">Punya keluhan kesehatan?</p>
-                <a href="{{ config('clinic.whatsapp_consultation_url') }}" target="_blank" rel="noopener noreferrer"
-                   class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-brand-100 transition hover:text-white">
-                    <x-icon name="whatsapp" size="size-4" class="text-[#25D366]" /> Konsultasi via WhatsApp
-                    <x-icon name="chevron-right" size="size-3" />
-                </a>
-            </div>
+            @include('auth._aside', [
+                'heading' => 'Selamat datang kembali',
+                'text' => 'Masuk untuk melanjutkan membaca dan mengikuti informasi kesehatan terbaru dari '.config('app.name').'.',
+            ])
         </x-slot:aside>
 
         <form action="{{ route('login') }}" method="POST">

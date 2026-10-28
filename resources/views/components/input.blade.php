@@ -1,8 +1,9 @@
-@props(['name', 'label', 'type' => 'text', 'value' => null, 'icon' => null])
+@props(['name', 'label', 'type' => 'text', 'value' => null, 'icon' => null, 'hint' => null])
 
 {{--
     Kolom isian standar: label + input + pesan error.
     - icon: ikon di sisi kiri kolom (nama dari components/icon), mis. "envelope".
+    - hint: teks bantuan kecil di bawah kolom (disembunyikan saat ada pesan error).
     - type="password": otomatis mendapat tombol tampilkan/sembunyikan password dan peringatan Caps Lock
       (perilakunya di resources/js/app.js).
 --}}
@@ -32,5 +33,9 @@
     @endif
     @error($name)
         <p class="form-error">{{ $message }}</p>
+    @else
+        @if ($hint)
+            <p id="{{ $name }}-hint" class="mt-1 text-xs text-gray-500">{{ $hint }}</p>
+        @endif
     @enderror
 </div>

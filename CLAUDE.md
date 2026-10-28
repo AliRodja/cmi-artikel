@@ -234,6 +234,12 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Redesign halaman Daftar** (2026-10-28): sama dengan Masuk; isi panel kiri kini partial `auth/_aside`
+  ($heading, $text + kotak "Punya keluhan kesehatan?" WA) dipakai login & register. Form ikon user/envelope/lock,
+  password & konfirmasi berdampingan (sm), `x-input` prop baru `hint` (teks bantuan, disembunyikan saat error via
+  `@error … @else`), indikator "✓ Password cocok / belum sama" (JS kecil di `@push('scripts')`, validasi tetap
+  `confirmed` di server), tombol Daftar + "Masuk", kembali ke beranda. Subjudul lama "mulai menulis artikel" diganti
+  (pendaftar = pembaca).
 - [x] **Redesign halaman Masuk** (2026-10-28): `x-auth-card` punya slot opsional `aside` (panel biru tua kiri, hanya
   lg; tanpa aside = kartu tengah seperti dulu → daftar/lupa/reset tidak berubah). Login (revisi user: panel kiri cukup
   ringkas, tanpa daftar manfaat): logo, "Selamat datang kembali" + 1 kalimat, kotak "Punya keluhan kesehatan?" + link WA; form dengan ikon, tombol Masuk & "Daftar akun baru", "Kembali ke beranda".

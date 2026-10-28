@@ -61,6 +61,17 @@ class AuthTest extends TestCase
             ->assertSee(route('register'));
     }
 
+    public function test_register_page_has_icons_hint_and_login_link(): void
+    {
+        $this->get('/register')
+            ->assertOk()
+            ->assertSee('Bergabung bersama kami')
+            ->assertSee('Punya keluhan kesehatan?')
+            ->assertSee('Minimal 8 karakter.')
+            ->assertSee('data-password-toggle aria-controls="password_confirmation"', false)
+            ->assertSee(route('login'));
+    }
+
     public function test_user_can_login_with_correct_credentials(): void
     {
         $user = User::factory()->create();
