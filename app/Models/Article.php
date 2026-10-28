@@ -30,7 +30,7 @@ class Article extends Model
         'ginjal' => 'Ginjal',
     ];
 
-    protected $fillable = ['user_id', 'title', 'slug', 'content', 'category', 'image', 'status', 'review_note'];
+    protected $fillable = ['user_id', 'medical_reviewer_id', 'title', 'slug', 'content', 'sources', 'category', 'image', 'status', 'review_note'];
 
     protected $casts = [
         'status' => 'integer',
@@ -45,6 +45,18 @@ class Article extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** Dokter yang meninjau isi artikel ("Ditinjau secara medis oleh ..."). */
+    public function medicalReviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'medical_reviewer_id');
+    }
+
+    /** Sumber rujukan per baris, baris kosong dibuang. */
+    public function getSourceListAttribute(): array
+    {
+        return array_values(array_filter(array_map('trim', preg_split('/\R/', (string) $this->sources))));
     }
 
     public function comments(): HasMany

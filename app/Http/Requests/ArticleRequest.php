@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Article;
+use App\Models\User;
 use App\Support\ArticleContent;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
@@ -31,6 +32,11 @@ class ArticleRequest extends FormRequest
                 },
             ],
             'category' => ['required', Rule::in(array_keys(Article::CATEGORIES))],
+            'sources' => ['nullable', 'string', 'max:5000'],
+            // Peninjau medis hanya ditentukan admin; penulis yang menyisipkan field ini lewat DevTools ditolak.
+            'medical_reviewer_id' => $this->user()->isAdmin()
+                ? ['nullable', 'integer', Rule::exists('users', 'id')->whereIn('role', [User::ROLE_ADMIN, User::ROLE_PENULIS])]
+                : ['prohibited'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             // Penulis yang memalsukan status=1 lewat DevTools tetap ditolak di sini.
             'status' => ['required', Rule::in(Article::allowedStatusesFor($this->user(), $this->route('article')))],
@@ -44,9 +50,18 @@ class ArticleRequest extends FormRequest
             'title' => 'judul',
             'content' => 'isi artikel',
             'category' => 'jenis artikel',
+            'sources' => 'sumber rujukan',
+            'medical_reviewer_id' => 'peninjau medis',
             'image' => 'gambar',
             'status' => 'status',
             'remove_image' => 'hapus gambar',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'medical_reviewer_id.prohibited' => 'Peninjau medis hanya dapat ditentukan oleh admin.',
         ];
     }
 }

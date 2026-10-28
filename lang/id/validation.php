@@ -26,5 +26,6 @@ return [
         'password' => 'password',
         'password_confirmation' => 'konfirmasi password',
         'current_password' => 'password saat ini',
+        'profession' => 'gelar / profesi',
     ],
 ];

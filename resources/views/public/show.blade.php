@@ -32,7 +32,7 @@
                         <x-avatar :name="$article->user?->name" size="md" tone="dark" />
                         <div class="leading-tight">
                             <p class="font-semibold text-white">{{ $article->user?->name ?? 'Anonim' }}</p>
-                            <p class="text-xs">Penulis · {{ config('app.name') }}</p>
+                            <p class="text-xs">{{ $article->user?->profession ?? 'Penulis · '.config('app.name') }}</p>
                         </div>
                     </div>
                     <span class="hidden h-8 w-px bg-white/15 sm:block"></span>
@@ -48,6 +48,12 @@
                         <x-icon name="eye" size="size-4" class="text-brand-300" />
                         {{ number_format($article->view_count, 0, ',', '.') }} kali dilihat
                     </span>
+                    @if ($article->medicalReviewer)
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-white">
+                            <x-icon name="shield" size="size-4" class="text-brand-300" />
+                            Ditinjau oleh {{ $article->medicalReviewer->name }}
+                        </span>
+                    @endif
                 </div>
             </div>
         </div>
@@ -79,12 +85,41 @@
                     <div class="article-content article-lead">{!! $article->content_html !!}</div>
                 </div>
 
-                {{-- Akhir artikel: ajakan menyimpan & membagikan. --}}
-                <footer class="flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 bg-gray-50/70 px-6 py-5 sm:px-12">
-                    <p class="text-sm font-semibold text-gray-900">Artikel ini bermanfaat? Bagikan ke keluarga &amp; teman.</p>
-                    <div class="flex items-center gap-2">
-                        <x-share-buttons :article="$article" />
+                {{-- Tinjauan medis & sumber rujukan: penanda kredibilitas informasi kesehatan. --}}
+                @if ($article->medicalReviewer || $article->source_list)
+                    <div class="space-y-6 border-t border-gray-100 px-6 py-6 sm:px-12">
+                        @if ($article->medicalReviewer)
+                            <div class="flex items-start gap-3 rounded-xl bg-brand-50 p-4">
+                                <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-brand-600">
+                                    <x-icon name="shield" size="size-5" />
+                                </span>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900">Ditinjau secara medis oleh {{ $article->medicalReviewer->name }}</p>
+                                    @if ($article->medicalReviewer->profession)
+                                        <p class="text-sm text-gray-700">{{ $article->medicalReviewer->profession }}</p>
+                                    @endif
+                                    <p class="mt-1 text-xs text-gray-600">Terakhir diperbarui <x-date :value="$article->updated_at" format="d F Y" /></p>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($article->source_list)
+                            <section>
+                                <h2 class="text-sm font-bold tracking-wider text-gray-600 uppercase">Sumber rujukan</h2>
+                                <ol class="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-gray-700">
+                                    @foreach ($article->source_list as $source)
+                                        <li><x-source-line :line="$source" /></li>
+                                    @endforeach
+                                </ol>
+                            </section>
+                        @endif
                     </div>
+                @endif
+
+                {{-- Akhir artikel: ajakan menyimpan & membagikan. --}}
+                <footer class="border-t border-gray-100 bg-gray-50/70 px-6 py-5 sm:px-12">
+                    <p class="text-sm font-semibold text-gray-900">Artikel ini bermanfaat? Bagikan ke keluarga &amp; teman.</p>
+                    <x-share-buttons :article="$article" labels class="mt-3 flex-wrap" />
                 </footer>
             </article>
 
@@ -94,7 +129,7 @@
                     <div class="min-w-0 flex-1">
                         <p class="text-xs font-semibold tracking-wider text-gray-500 uppercase">Ditulis oleh</p>
                         <p class="font-bold text-gray-900">{{ $article->user->name }}</p>
-                        <p class="text-sm text-gray-500">Penulis di {{ config('app.name') }}</p>
+                        <p class="text-sm text-gray-600">{{ $article->user->profession ?? 'Penulis di '.config('app.name') }}</p>
                     </div>
                     @include('public._bookmark-button', ['class' => 'btn btn-secondary btn-sm', 'withLabel' => true])
                 </section>
@@ -153,7 +188,7 @@
                                                   onsubmit="return confirm('Hapus komentar ini?')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" title="Hapus komentar" class="cursor-pointer rounded-md p-1 text-gray-500 hover:bg-red-50 hover:text-red-600">
+                                                <button type="submit" title="Hapus komentar" class="cursor-pointer rounded-md p-2 text-gray-500 hover:bg-red-50 hover:text-red-600">
                                                     <x-icon name="trash" size="size-3" />
                                                     <span class="sr-only">Hapus komentar</span>
                                                 </button>

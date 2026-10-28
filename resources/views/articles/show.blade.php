@@ -60,10 +60,13 @@
                 <p class="mt-1 text-sm text-gray-500">Terbitkan jika sudah layak tayang, atau kembalikan ke penulis dengan catatan perbaikan.</p>
 
                 <div class="mt-4 grid gap-4 sm:grid-cols-[auto_1fr] sm:items-start">
-                    <form action="{{ route('review.publish', $article) }}" method="POST"
+                    <form action="{{ route('review.publish', $article) }}" method="POST" class="space-y-3 sm:w-72"
                           onsubmit="return confirm('Terbitkan artikel ini ke situs publik?')">
                         @csrf
                         @method('PATCH')
+                        <div>
+                            @include('articles._reviewer-select', ['selected' => old('medical_reviewer_id', $article->medical_reviewer_id)])
+                        </div>
                         <button type="submit" class="btn btn-primary w-full">
                             <x-icon name="check-circle" size="size-4" /> Terbitkan
                         </button>

@@ -47,7 +47,7 @@ class UserController extends Controller
 
     public function store(UserRequest $request): RedirectResponse
     {
-        $user = new User($request->safe()->only(['name', 'email', 'password']));
+        $user = new User($request->safe()->only(['name', 'profession', 'email', 'password']));
         // role tidak ada di $fillable, jadi diisi langsung. Hanya admin (di sini) yang bisa menentukannya.
         $user->role = $request->validated('role');
         $user->save();
@@ -67,7 +67,7 @@ class UserController extends Controller
     {
         $data = $request->validated();
 
-        $user->fill(['name' => $data['name'], 'email' => $data['email']]);
+        $user->fill(['name' => $data['name'], 'profession' => $data['profession'] ?? null, 'email' => $data['email']]);
 
         // Password kosong = tidak diganti. Cast "hashed" di model yang meng-hash-nya.
         if (filled($data['password'] ?? null)) {

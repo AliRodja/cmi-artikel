@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ArticleRequest;
 use App\Models\Article;
+use App\Models\User;
 use App\Support\ArticleNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -34,9 +36,9 @@ class ArticleController extends Controller
         return view('articles.index', compact('articles', 'search', 'status', 'statusCounts'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('articles.create');
+        return view('articles.create', ['reviewers' => $this->reviewersFor($request->user())]);
     }
 
     public function store(ArticleRequest $request): RedirectResponse
@@ -60,7 +62,7 @@ class ArticleController extends Controller
             : 'Artikel berhasil dibuat.');
     }
 
-    public function show(Article $article): View
+    public function show(Request $request, Article $article): View
     {
         Gate::authorize('view', $article);
 
@@ -68,14 +70,17 @@ class ArticleController extends Controller
         $weeklyViews = $article->views()->where('viewed_at', '>=', now()->subDays(7))->count();
         $recentViews = $article->views()->with('user:id,name')->latest('viewed_at')->take(5)->get();
 
-        return view('articles.show', compact('article', 'weeklyViews', 'recentViews'));
+        $article->load('medicalReviewer:id,name,profession');
+        $reviewers = $this->reviewersFor($request->user());
+
+        return view('articles.show', compact('article', 'weeklyViews', 'recentViews', 'reviewers'));
     }
 
-    public function edit(Article $article): View
+    public function edit(Request $request, Article $article): View
     {
         Gate::authorize('update', $article);
 
-        return view('articles.edit', compact('article'));
+        return view('articles.edit', ['article' => $article, 'reviewers' => $this->reviewersFor($request->user())]);
     }
 
     public function update(ArticleRequest $request, Article $article): RedirectResponse
@@ -131,5 +136,11 @@ class ArticleController extends Controller
         if ($article->image) {
             Storage::disk('public')->delete($article->image);
         }
+    }
+
+    /** Pilihan "peninjau medis" (penulis & admin) — hanya admin yang boleh menentukannya. */
+    private function reviewersFor(User $user): Collection
+    {
+        return $user->isAdmin() ? User::query()->writers()->get(['id', 'name', 'profession']) : collect();
     }
 }

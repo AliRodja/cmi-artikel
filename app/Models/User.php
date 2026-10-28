@@ -27,6 +27,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'profession',
         'email',
         'password',
     ];
@@ -74,6 +75,12 @@ class User extends Authenticatable
     public function scopeWithRole(Builder $query, string $role): Builder
     {
         return $query->where('role', $role);
+    }
+
+    /** Penulis & admin: calon "peninjau medis" artikel (dipilih admin), urut nama. */
+    public function scopeWriters(Builder $query): Builder
+    {
+        return $query->whereIn('role', [self::ROLE_ADMIN, self::ROLE_PENULIS])->orderBy('name');
     }
 
     public function isAdmin(): bool

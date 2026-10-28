@@ -18,6 +18,9 @@
         <section class="card p-6">
             <h2 class="mb-4 font-bold text-gray-900">Data Akun</h2>
             <x-input name="name" label="Nama" :value="$user?->name" required maxlength="255" autocomplete="off" />
+            <x-input name="profession" label="Gelar / profesi (opsional)" icon="stethoscope" :value="$user?->profession"
+                     placeholder="mis. Dokter Spesialis Jantung (Sp.JP)" maxlength="100"
+                     hint="Untuk penulis/dokter. Tampil di bawah nama penulis dan sebagai peninjau medis." />
             <x-input name="email" label="Email" type="email" :value="$user?->email" required maxlength="255" autocomplete="off" />
         </section>
 

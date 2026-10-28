@@ -179,7 +179,7 @@
                     <a href="{{ route('home', array_filter(['jenis' => $value, 'search' => $search], 'filled')) }}#daftar-artikel"
                        @if ($isActive) aria-current="page" @endif
                        @class([
-                           'flex shrink-0 items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium transition',
+                           'flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium transition',
                            'border-brand-600 bg-brand-600 text-white' => $isActive,
                            'border-gray-200 bg-white text-gray-700 hover:border-brand-300 hover:text-brand-700' => ! $isActive,
                        ])>

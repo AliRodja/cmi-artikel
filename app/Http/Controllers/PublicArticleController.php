@@ -102,7 +102,8 @@ class PublicArticleController extends Controller
         ArticleViewCounter::record($article, $request);
 
         $article->load([
-            'user:id,name',
+            'user:id,name,profession',
+            'medicalReviewer:id,name,profession',
             // Komentar terlama di atas (urutan percakapan), sekaligus nama & peran penulisnya.
             'comments' => fn ($query) => $query->with('user:id,name,role')->oldest(),
         ]);

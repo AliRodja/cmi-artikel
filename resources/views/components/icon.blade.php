@@ -53,6 +53,7 @@
         'envelope-open' => 'fa-regular fa-envelope-open',
         'key' => 'fa-solid fa-key',
         'rotate' => 'fa-solid fa-rotate-right',
+        'map-pin' => 'fa-solid fa-location-dot',
         'chart-line' => 'fa-solid fa-chart-line',
         // Logo merek (gaya brands).
         'whatsapp' => 'fa-brands fa-whatsapp',

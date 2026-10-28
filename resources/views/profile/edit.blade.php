@@ -40,6 +40,9 @@
                 <p class="mt-1 mb-4 text-xs text-gray-500">Nama tampil sebagai penulis artikel dan pada komentar Anda.</p>
 
                 <x-input name="name" label="Nama" :value="$user->name" required maxlength="255" autocomplete="name" />
+                <x-input name="profession" label="Gelar / profesi (opsional)" icon="stethoscope" :value="$user->profession"
+                     placeholder="mis. Dokter Spesialis Jantung (Sp.JP)" maxlength="100"
+                     hint="Tampil di bawah nama penulis pada artikel." />
                 <x-input name="email" label="Email" type="email" :value="$user->email" required maxlength="255" autocomplete="email" />
 
                 <div class="flex flex-wrap items-center justify-between gap-3">

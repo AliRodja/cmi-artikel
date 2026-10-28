@@ -234,6 +234,20 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Kredibilitas & aksesibilitas (rekomendasi no. 4 & 5)** (2026-10-28). Migration `add_profession_to_users_table`
+  (`users.profession` string 100, fillable) & `add_medical_review_and_sources_to_articles_table`
+  (`medical_reviewer_id` FK users nullOnDelete, `sources` text) — MySQL dimigrasi, backup
+  `artikel_app-sebelum-kredibilitas-*.sql`. `Article::medicalReviewer()`, accessor `source_list`; `User::scopeWriters()`.
+  `ArticleRequest`: `sources` nullable max 5000; `medical_reviewer_id` admin → exists users role admin/penulis,
+  selain admin → `prohibited`. `ArticleReviewController@publish` menerima `medical_reviewer_id` opsional. Partial
+  `articles/_reviewer-select` (form admin & panel Terbitkan; `$reviewers` dari `ArticleController::reviewersFor()`).
+  Publik: profesi di bawah nama penulis, chip "Ditinjau oleh" di hero, kotak "Ditinjau secara medis oleh … · Terakhir
+  diperbarui" + "Sumber rujukan" (`x-source-line`: hanya http/https jadi link, tampil host) di akhir artikel.
+  Footer 3 kolom: "Hubungi Kami" dari `config/clinic.php` (`CLINIC_ADDRESS/HOURS/EMAIL/MAPS_URL/ACCREDITATION` di
+  .env, kosong = disembunyikan) + WhatsApp CS `whatsapp_display` (0821-2159-0000, dari link resmi). **Data alamat,
+  jam, email, akreditasi CMI belum diisi — tunggu dari user; jangan dikarang.** No. 4: `.nav-icon-btn` & `.share-btn`
+  44px, tombol navbar "Cari" berlabel (sm+), `x-share-buttons labels` (dipakai di akhir artikel), pill jenis py-2.5,
+  tombol tutup pop-up 40px. Test `CredibilityTest` (6) → 113 test / 442 assertion.
 - [x] **Keterbacaan untuk pembaca usia matang** (2026-10-28; target user: 25+, mayoritas orang tua & mapan). Token
   `@theme`: `--text-xs` 14px, `--text-sm` 15px (dulu 12/14) → teks < 14px di beranda 52 → 0. `x-icon` size-3/size-4
   kini nilai tetap `text-[0.75rem]`/`text-[0.875rem]` agar ikon tidak ikut membesar. Semua `text-gray-400` →

@@ -56,7 +56,8 @@
     .link            { @apply font-medium text-brand-700 hover:text-brand-600; }
 
     /* Tombol ikon bulat di navbar (burger, cari, lonceng). */
-    .nav-icon-btn       { @apply flex size-10 cursor-pointer items-center justify-center rounded-full text-brand-900 transition hover:bg-white hover:shadow-xs focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none; }
+    /* size-11 = 44px: area sentuh minimal yang disarankan, agar mudah ditekan jari. */
+    .nav-icon-btn       { @apply flex size-11 cursor-pointer items-center justify-center rounded-full text-brand-900 transition hover:bg-white hover:shadow-xs focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none; }
 
     /* Link menu di drawer samping (partials/nav-drawer). */
     .drawer-link        { @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-brand-50 hover:text-brand-800; }
@@ -95,7 +96,7 @@
     .article-lead > :where(p:first-child) { @apply text-xl leading-9 text-gray-900; }
 
     /* Tombol bulat bagikan / simpan (components/share-buttons, rel kiri public/show). */
-    .share-btn       { @apply flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white shadow-xs ring-1 ring-gray-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-transparent; }
+    .share-btn       { @apply flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white shadow-xs ring-1 ring-gray-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-transparent; }
 }
 
 /*

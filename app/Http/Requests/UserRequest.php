@@ -22,6 +22,7 @@ class UserRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
+            'profession' => ['nullable', 'string', 'max:100'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($target)],
             // Admin yang mengedit akunnya sendiri tidak boleh mengirim role (UserPolicy::changeRole),
             // walaupun input-nya ditambahkan lewat DevTools.
@@ -37,6 +38,7 @@ class UserRequest extends FormRequest
     {
         return [
             'name' => 'nama',
+            'profession' => 'gelar / profesi',
             'email' => 'email',
             'role' => 'peran',
             'password' => 'password',

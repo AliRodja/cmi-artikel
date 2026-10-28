@@ -61,6 +61,17 @@
                 <p class="form-error">{{ $message }}</p>
             @enderror
         </div>
+
+        <div class="mt-5">
+            <label for="sources" class="form-label">Sumber rujukan <span class="font-normal text-gray-500">(opsional)</span></label>
+            <textarea id="sources" name="sources" rows="4" maxlength="5000"
+                      placeholder="Satu sumber per baris, mis.&#10;Kementerian Kesehatan RI, Pedoman Hipertensi 2024 https://kemkes.go.id/..."
+                      @class(['form-input', 'form-input-error' => $errors->has('sources')])>{{ old('sources', $article?->sources) }}</textarea>
+            <p class="mt-1 text-xs text-gray-500">Satu sumber per baris. Tautan yang diawali http:// atau https:// otomatis bisa diklik.</p>
+            @error('sources')
+                <p class="form-error">{{ $message }}</p>
+            @enderror
+        </div>
     </div>
 
     {{-- Sidebar: publikasi & gambar --}}
@@ -87,6 +98,12 @@
             @error('status')
                 <p class="form-error">{{ $message }}</p>
             @enderror
+
+            @if ($isAdmin)
+                <div class="mt-5">
+                    @include('articles._reviewer-select', ['selected' => old('medical_reviewer_id', $article?->medical_reviewer_id)])
+                </div>
+            @endif
 
             <div class="mt-5 flex flex-col gap-2">
                 <button type="submit" class="btn btn-primary w-full">{{ $submitLabel }}</button>

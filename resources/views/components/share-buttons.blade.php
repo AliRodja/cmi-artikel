@@ -1,4 +1,4 @@
-@props(['article'])
+@props(['article', 'labels' => false])
 
 @php
     // Link bagikan. http_build_query() meng-encode judul & URL agar aman dipakai di query string.
@@ -25,22 +25,25 @@
     ];
 @endphp
 
-{{-- Tombol bagikan + salin tautan. Arah susunan (mendatar/menurun) diatur pemanggil lewat class. --}}
+{{--
+    Tombol bagikan + salin tautan. Arah susunan (mendatar/menurun) diatur pemanggil lewat class.
+    labels: tampilkan teks di samping ikon ("WhatsApp", "Salin tautan", ...) — lebih jelas bagi pembaca usia matang.
+--}}
 <div {{ $attributes->class('flex items-center gap-2') }}>
     @foreach ($shareLinks as $link)
         <a href="{{ $link['href'] }}" target="_blank" rel="noopener noreferrer" title="Bagikan ke {{ $link['label'] }}"
-           class="share-btn {{ $link['class'] }} hover:text-white">
+           @class(['share-btn', 'w-auto gap-2 px-4 text-sm font-semibold' => $labels, $link['class'], 'hover:text-white'])>
             <x-icon :name="$link['icon']" size="size-5" />
-            <span class="sr-only">Bagikan ke {{ $link['label'] }}</span>
+            <span @class(['sr-only' => ! $labels])>@unless ($labels)Bagikan ke @endunless{{ $link['label'] }}</span>
         </a>
     @endforeach
 
     {{-- Ditangani JS di public/show (data-copy-link). Ikon centang disembunyikan dengan atribut hidden,
          bukan class: CSS Font Awesome yang tak berlayer menimpa class "hidden" Tailwind. --}}
     <button type="button" data-copy-link="{{ $shareUrl }}" title="Salin tautan"
-            class="share-btn text-gray-600 hover:bg-brand-600 hover:text-white">
+            @class(['share-btn text-gray-700 hover:bg-brand-600 hover:text-white', 'w-auto gap-2 px-4 text-sm font-semibold' => $labels])>
         <x-icon name="link" size="size-4" data-copy-icon />
         <x-icon name="check" size="size-4" data-copy-done hidden />
-        <span class="sr-only" data-copy-label>Salin tautan</span>
+        <span @class(['sr-only' => ! $labels]) data-copy-label>Salin tautan</span>
     </button>
 </div>

@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         $admin = User::factory()->admin()->create([
             'name' => 'Admin Demo',
+            'profession' => 'Dokter Spesialis Penyakit Dalam (Sp.PD)',
             'email' => 'admin@example.com',
         ]);
 
@@ -23,10 +24,15 @@ class DatabaseSeeder extends Seeder
         // Penulis demo: contoh setiap tahap alur review.
         $penulis = User::factory()->create([
             'name' => 'Penulis Demo',
+            'profession' => 'Dokter Umum',
             'email' => 'penulis@example.com',
         ]);
 
-        Article::factory(3)->for($penulis)->published()->create();
+        // Artikel tayang penulis demo: contoh "Ditinjau secara medis oleh" + sumber rujukan.
+        Article::factory(3)->for($penulis)->published()->create([
+            'medical_reviewer_id' => $admin->id,
+            'sources' => "World Health Organization (WHO) https://www.who.int\nKementerian Kesehatan RI https://www.kemkes.go.id",
+        ]);
         Article::factory(2)->for($penulis)->inReview()->create();
         Article::factory()->for($penulis)->draft()->create([
             'review_note' => 'Mohon tambahkan sumber rujukan medis di akhir artikel sebelum diajukan lagi.',

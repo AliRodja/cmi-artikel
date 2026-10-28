@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\User;
 use App\Support\ArticleNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /*
@@ -41,7 +43,17 @@ class ArticleReviewController extends Controller
     {
         Gate::authorize('review', $article);
 
-        $article->update(['status' => Article::STATUS_PUBLISHED, 'review_note' => null]);
+        // Opsional: dokter yang meninjau isi artikel sebelum diterbitkan.
+        $validated = $request->validate(
+            ['medical_reviewer_id' => ['nullable', 'integer', Rule::exists('users', 'id')->whereIn('role', [User::ROLE_ADMIN, User::ROLE_PENULIS])]],
+            attributes: ['medical_reviewer_id' => 'peninjau medis'],
+        );
+
+        $article->update([
+            'status' => Article::STATUS_PUBLISHED,
+            'review_note' => null,
+            'medical_reviewer_id' => $validated['medical_reviewer_id'] ?? $article->medical_reviewer_id,
+        ]);
         ArticleNotifier::published($article, $request->user());
 
         return redirect()->route('review.index')

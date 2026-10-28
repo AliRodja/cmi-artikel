@@ -52,6 +52,9 @@ cp .env.example .env
 copy .env.example .env
 ```
 
+Opsional: isi info klinik untuk footer (`CLINIC_ADDRESS`, `CLINIC_HOURS`, `CLINIC_EMAIL`, `CLINIC_MAPS_URL`,
+`CLINIC_ACCREDITATION`). Yang dikosongkan tidak ditampilkan; nomor WhatsApp CS sudah ada di `config/clinic.php`.
+
 Lalu buat *application key* (dipakai untuk enkripsi session & cookie):
 
 ```bash
@@ -415,9 +418,16 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
   CSRF kedaluwarsa (419), misalnya saat **Keluar** dari halaman yang lama terbuka, dikembalikan ke halaman sebelumnya
   dengan pop-up gagal, bukan halaman error. Catatan Laravel 13: middleware `PreventRequestForgery` menerima request
   ber-header `Sec-Fetch-Site: same-origin` dari browser modern tanpa memeriksa token.
+- **Kredibilitas informasi kesehatan:** gelar/profesi penulis (`users.profession`, diisi lewat Kelola Akun / Kelola
+  Pengguna) tampil di bawah nama penulis; admin memilih **peninjau medis** (`articles.medical_reviewer_id`, FK ke
+  users, `nullOnDelete`) di form artikel atau panel Terbitkan. Penulis yang menyisipkan field ini ditolak aturan
+  `prohibited`. **Sumber rujukan** (`articles.sources`, satu per baris) tampil sebagai daftar bernomor; hanya tautan
+  http/https yang dijadikan link (komponen `x-source-line`, tetap di-escape `{{ }}`). Footer menampilkan info klinik
+  dari `config/clinic.php` / `.env`.
 - **Ramah pembaca usia matang** (target CMI: 25+, mayoritas orang tua): huruf terkecil 14px (token `--text-xs`),
   teks abu-abu dengan kontras ≥ 4,5:1 (WCAG AA), tombol WhatsApp hijau gelap (kontras 5,4:1), tanggal pasti
-  (`x-date`: relatif hanya bila < 24 jam), pop-up gagal tidak hilang sendiri.
+  (`x-date`: relatif hanya bila < 24 jam), pop-up gagal tidak hilang sendiri, tombol ikon diberi teks ("Cari",
+  "WhatsApp", "Salin tautan") dan area sentuh 44px.
 - **Statistik dashboard per user**, bukan statistik seluruh situs.
 - **Laporan Artikel (Soal 2) hanya untuk admin**, karena menampilkan email semua penulis (data pribadi) sementara
   siapa pun bisa mendaftar. Laporan menampilkan artikel Published **semua penulis**, sesuai soal. Penilai dapat
@@ -492,6 +502,7 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/LiveSearchTest.php` | 6 | Panel live search ada di navbar; hasil hanya Published, kata kunci ditandai, judul yang cocok di urutan pertama; maksimal 6 + tautan "Lihat semua"; judul tetap di-escape walau ditandai; kata < 2 huruf / tidak ditemukan; endpoint yang dibuka langsung diarahkan ke halaman hasil |
 | `tests/Feature/ProfileTest.php` | 5 | Semua peran bisa membuka Kelola Akun (tamu → login); menu avatar → Kelola Akun untuk semua, Kelola Pengguna hanya muncul untuk admin; ubah nama/email (email unik), `role` yang disisipkan diabaikan; ganti password wajib password saat ini yang benar; password baru harus berbeda & terkonfirmasi |
 | `tests/Feature/PopupMessageTest.php` | 6 | Pop-up berhasil saat keluar & menyimpan artikel; keluar dengan token CSRF kedaluwarsa → kembali + pop-up gagal (bukan 419), tetap login; tamu menekan Simpan → Masuk + pop-up gagal, setelah login kembali ke artikel; form tidak valid → pop-up gagal umum; tanpa pesan → tidak ada pop-up |
+| `tests/Feature/CredibilityTest.php` | 6 | Profesi penulis, "Ditinjau secara medis oleh", sumber rujukan (link hanya http/https, teks di-escape); hanya admin yang boleh menentukan peninjau (penulis ditolak), peninjau harus penulis/admin dan bisa dipilih saat Terbitkan; profesi diisi lewat Kelola Akun; footer hanya menampilkan info klinik yang terisi; tombol ikon punya teks |
 | `tests/Feature/ReadabilityTest.php` | 3 | Tanggal relatif hanya < 24 jam, selebihnya tanggal pasti + `datetime`/`title`; pop-up gagal tanpa bar waktu, pop-up berhasil 8 detik; tombol WhatsApp memakai hijau berkontras tinggi |
 | `tests/Feature/ArticleContentTest.php` | 6 | Rich text: format dipertahankan, HTML berbahaya (`<script>`, `onclick`, `javascript:`) dibuang, link diberi `rel=noopener`, editor kosong ditolak |
 | `tests/Feature/ArticleRoleTest.php` | 11 | Pendaftar selalu pembaca walau mengirim `role=admin`; penulis tidak bisa langsung Published; artikel yang diajukan tidak tampil di publik; penulis tidak bisa edit/hapus artikel yang sudah tayang; penulis **403** di halaman admin; admin mengelola artikel siapa pun; terbitkan & kembalikan (catatan wajib); catatan hilang saat diajukan ulang; command `user:role` |
@@ -499,7 +510,7 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
 | `tests/Feature/UserManagementTest.php` | 8 | Hanya admin (penulis & pembaca **403**); cari nama/email + filter peran (search tidak menembus filter); tambah akun dengan peran, password ter-hash & bisa login; validasi (email unik, peran tidak dikenal, konfirmasi password); edit dengan password kosong = tidak diganti; reset password orang lain; admin tidak bisa mengubah peran / menghapus akun sendiri; hapus akun → artikel tetap tanpa penulis, komentar/Baca Nanti/notifikasi ikut terhapus |
 
-Hasil: **107 test, 415 assertion, semua lulus.**
+Hasil: **113 test, 442 assertion, semua lulus.**
 
 ---
 

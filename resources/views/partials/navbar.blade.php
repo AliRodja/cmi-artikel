@@ -14,11 +14,12 @@
                 <span class="sr-only sm:hidden">Buka menu</span>
             </button>
 
-            {{-- Ikon saja; panel pencarian (partials/search-panel, live search) muncul saat ditekan atau dengan tombol "/". --}}
+            {{-- Tombol (bukan kolom); panel pencarian (partials/search-panel, live search) muncul saat ditekan atau dengan "/". --}}
             <button type="button" data-dialog-open="search-panel" aria-controls="search-panel" aria-expanded="false"
-                    title="Cari artikel (/)" class="nav-icon-btn">
+                    title="Cari artikel (/)" class="nav-icon-btn sm:w-auto sm:gap-2 sm:px-3">
                 <x-icon name="magnifying-glass" size="size-4" />
-                <span class="sr-only">Cari artikel</span>
+                <span class="hidden text-sm font-semibold sm:inline">Cari</span>
+                <span class="sr-only sm:hidden">Cari artikel</span>
             </button>
         </div>
 

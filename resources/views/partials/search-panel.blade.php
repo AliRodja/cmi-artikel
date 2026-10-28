@@ -33,7 +33,7 @@
                 <div class="mt-2 flex flex-wrap gap-2">
                     @foreach (\App\Models\Article::CATEGORIES as $value => $label)
                         <a href="{{ route('home', ['jenis' => $value]) }}#daftar-artikel"
-                           class="rounded-full border border-gray-200 px-4 py-1.5 text-sm font-medium text-gray-700 transition hover:border-brand-300 hover:text-brand-700">{{ $label }}</a>
+                           class="rounded-full border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:border-brand-300 hover:text-brand-700">{{ $label }}</a>
                     @endforeach
                 </div>
             </div>
