@@ -48,15 +48,24 @@ Rubrik (100): INNER JOIN 30 · Filter status 15 · Sorting 10 · Pagination 15 �
   relasi `user()`, scope `published()` & `draft()`, `isPublished()`, slug otomatis unik di `booted()`
   (`generateUniqueSlug()`; slug **tidak** berubah saat judul diedit), accessor `image_url` & `excerpt`.
 - Model `User`: relasi `articles()` (hasMany). Password otomatis di-hash oleh cast `'password' => 'hashed'`.
-- **Authorization:** user hanya bisa lihat/edit/hapus artikel miliknya (`ArticlePolicy`: view/update/delete →
-  `$user->id === $article->user_id`). Di controller pakai `Gate::authorize()` (base Controller Laravel 11+ tidak punya
-  `$this->authorize()`).
-- **Statistik dashboard per user** (milik user yang login).
-- Halaman Soal 2 berada **di area login** karena menampilkan email penulis.
+- **Authorization (sejak 2026-10-28 ada peran):** `users.role` = `admin` | `penulis` (default penulis, TIDAK di
+  `$fillable`; ubah via `php artisan user:role email admin`). `ArticlePolicy`: view → admin atau pemilik;
+  update/delete → admin, atau pemilik **selama belum Published**; `review` → admin dan artikel berstatus Review.
+  Middleware alias `admin` (`EnsureUserIsAdmin`, didaftarkan di `bootstrap/app.php`) menjaga `review.*` dan
+  `articles.report`. Di controller pakai `Gate::authorize()` (base Controller Laravel 11+ tidak punya
+  `$this->authorize()`). Status yang boleh dipilih: `Article::allowedStatusesFor($user, $article)` — dipakai validasi
+  `ArticleRequest` DAN form `_form` (penulis: Draft/Review; admin: Draft/Published, + Review bila artikel sedang Review).
+- Status artikel: `0` Draft, `1` Published, `2` Menunggu Review (`STATUS_REVIEW`, scope `inReview()`). Admin
+  menerbitkan / mengembalikan lewat `ArticleReviewController` (`review.publish`, `review.return` + `review_note`
+  wajib). `review_note` dikosongkan saat status bukan Draft.
+- **Statistik dashboard per user** (milik user yang login) + kartu Menunggu Review; admin juga melihat jumlah antrean.
+  Angka antrean di navbar dari View Composer di `AppServiceProvider`.
+- Halaman Soal 2 berada **di area login, khusus admin** karena menampilkan email semua penulis.
 - Gambar disimpan di disk `public` folder `articles/`; file lama dihapus saat diganti / checkbox `remove_image` /
   artikel dihapus. Butuh `php artisan storage:link`.
 - Validasi artikel lewat **Form Request** `ArticleRequest` (dipakai store & update), pesan & atribut Bahasa Indonesia.
-- Seeder: akun demo `admin@example.com` / `password` (20 artikel), 10 artikel milik user lain, **3 artikel tanpa
+- Seeder: akun demo `admin@example.com` / `password` (role admin, 20 artikel), `penulis@example.com` / `password`
+  (3 Published, 2 Review, 1 Draft dengan catatan admin), 10 artikel milik user lain, **3 artikel tanpa
   penulis** (`user_id = null`, **sengaja Published**) untuk uji INNER JOIN — kalau Draft, artikel itu sudah tersaring
   oleh `status = 1` dan tidak membuktikan JOIN. Hasil uji: 19 Published → 16 setelah INNER JOIN.
 - Timezone: `config/app.php` membaca `env('APP_TIMEZONE', 'UTC')` (default Laravel menulis mati `'UTC'`),
@@ -191,6 +200,13 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `$submitLabel`/`$cancelUrl`; status = kartu radio; dropzone gambar), detail milik sendiri (banner Draft), laporan &
   auth-card memakai header/logo baru. `status-badge` Draft = amber. Hapus query mati `$latestArticles` di LoginController.
 - Pelajaran CSS: selector toolbar Trix diberi awalan `form` (trix.css dimuat setelah app.css); kolom grid perlu `min-w-0`.
+  Pembungkus tabel `overflow-x-auto` wajib `relative`, kalau tidak teks `sr-only` (position:absolute) lolos dan
+  membuat halaman melebar di ponsel.
+- [x] Peran admin/penulis + alur review (2026-10-28): migration `add_role_to_users_table` &
+  `add_review_note_to_articles_table` (sudah dijalankan di MySQL, backup `storage/app/backups/artikel_app-sebelum-role-*.sql`;
+  akun `rodjaali@gmail.com` = admin). Halaman `review/index` (tab Menunggu Review/Published/Draft/Semua), panel
+  Tinjau di `articles/show`, komponen `x-review-note`, `status-badge` violet untuk Review. `ArticleRoleTest` (11) →
+  total 46 test / 175 assertion, terbukti gagal bila middleware/policy/validasi status disabotase.
 
 - Persiapan tanya-jawab: middleware vs policy, alur reset password, INNER JOIN vs LEFT JOIN, jebakan
   `orWhere` tanpa closure, N+1 & eager loading, mass assignment & `$fillable`, CSRF, route model binding dengan slug.

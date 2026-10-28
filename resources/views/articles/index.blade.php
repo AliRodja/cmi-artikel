@@ -17,13 +17,14 @@
         $tabs = [
             ['label' => 'Semua', 'value' => null, 'count' => $statusCounts->sum()],
             ['label' => 'Published', 'value' => '1', 'count' => $statusCounts->get(\App\Models\Article::STATUS_PUBLISHED, 0)],
+            ['label' => 'Review', 'value' => '2', 'count' => $statusCounts->get(\App\Models\Article::STATUS_REVIEW, 0)],
             ['label' => 'Draft', 'value' => '0', 'count' => $statusCounts->get(\App\Models\Article::STATUS_DRAFT, 0)],
         ];
-        $activeStatus = in_array($status, ['0', '1'], true) ? $status : null;
+        $activeStatus = in_array($status, ['0', '1', '2'], true) ? $status : null;
     @endphp
 
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <nav class="flex gap-1 rounded-lg bg-gray-100 p-1" aria-label="Filter status">
+        <nav class="flex flex-wrap gap-1 rounded-lg bg-gray-100 p-1" aria-label="Filter status">
             @foreach ($tabs as $tab)
                 <a href="{{ route('articles.index', array_filter(['status' => $tab['value'], 'search' => $search], 'filled')) }}"
                    @class([
@@ -65,7 +66,7 @@
                 @endif
             </div>
         @else
-            <div class="overflow-x-auto">
+            <div class="relative overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -83,7 +84,11 @@
                                         <x-article-thumb :article="$article" class="h-11 w-16" />
                                         <div class="min-w-0">
                                             <a href="{{ route('articles.show', $article) }}" class="line-clamp-1 font-semibold text-gray-900 hover:text-brand-700">{{ $article->title }}</a>
-                                            <p class="line-clamp-1 text-xs text-gray-500">{{ $article->excerpt }}</p>
+                                            @if ($article->review_note)
+                                                <p class="line-clamp-1 text-xs font-medium text-amber-700">Ada catatan dari admin</p>
+                                            @else
+                                                <p class="line-clamp-1 text-xs text-gray-500">{{ $article->excerpt }}</p>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
@@ -98,20 +103,24 @@
                                                 <span class="sr-only">Lihat di situs publik</span>
                                             </a>
                                         @endif
-                                        <a href="{{ route('articles.edit', $article) }}" title="Edit"
-                                           class="rounded-md p-2 text-gray-500 hover:bg-brand-50 hover:text-brand-700">
-                                            <x-icon name="pencil-square" size="size-4" />
-                                            <span class="sr-only">Edit</span>
-                                        </a>
-                                        <form action="{{ route('articles.destroy', $article) }}" method="POST"
-                                              onsubmit="return confirm('Hapus artikel ini? Tindakan ini tidak bisa dibatalkan.')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" title="Hapus" class="cursor-pointer rounded-md p-2 text-gray-500 hover:bg-red-50 hover:text-red-600">
-                                                <x-icon name="trash" size="size-4" />
-                                                <span class="sr-only">Hapus</span>
-                                            </button>
-                                        </form>
+                                        @can('update', $article)
+                                            <a href="{{ route('articles.edit', $article) }}" title="Edit"
+                                               class="rounded-md p-2 text-gray-500 hover:bg-brand-50 hover:text-brand-700">
+                                                <x-icon name="pencil-square" size="size-4" />
+                                                <span class="sr-only">Edit</span>
+                                            </a>
+                                        @endcan
+                                        @can('delete', $article)
+                                            <form action="{{ route('articles.destroy', $article) }}" method="POST"
+                                                  onsubmit="return confirm('Hapus artikel ini? Tindakan ini tidak bisa dibatalkan.')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" title="Hapus" class="cursor-pointer rounded-md p-2 text-gray-500 hover:bg-red-50 hover:text-red-600">
+                                                    <x-icon name="trash" size="size-4" />
+                                                    <span class="sr-only">Hapus</span>
+                                                </button>
+                                            </form>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

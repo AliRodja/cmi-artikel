@@ -6,7 +6,7 @@
     <div class="mx-auto max-w-md py-12 text-center">
         <p class="text-6xl font-bold text-brand-700">403</p>
         <h1 class="mt-4 text-2xl font-bold text-gray-900">Akses Ditolak</h1>
-        <p class="mt-2 text-sm text-gray-500">Anda tidak memiliki izin untuk membuka halaman ini. Anda hanya dapat mengelola artikel milik Anda sendiri.</p>
+        <p class="mt-2 text-sm text-gray-500">Anda tidak memiliki izin untuk membuka halaman ini atau melakukan tindakan tersebut.</p>
 
         <div class="mt-6 flex justify-center gap-2">
             @auth

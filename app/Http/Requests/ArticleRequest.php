@@ -31,7 +31,8 @@ class ArticleRequest extends FormRequest
                 },
             ],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'status' => ['required', Rule::in([Article::STATUS_DRAFT, Article::STATUS_PUBLISHED])],
+            // Penulis yang memalsukan status=1 lewat DevTools tetap ditolak di sini.
+            'status' => ['required', Rule::in(Article::allowedStatusesFor($this->user(), $this->route('article')))],
             'remove_image' => ['nullable', 'boolean'],
         ];
     }

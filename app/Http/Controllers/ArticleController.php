@@ -19,7 +19,7 @@ class ArticleController extends Controller
 
         $articles = $request->user()->articles()
             ->when($search !== '', fn ($query) => $query->where('title', 'like', "%{$search}%"))
-            ->when(in_array($status, ['0', '1'], true), fn ($query) => $query->where('status', (int) $status))
+            ->when(in_array($status, ['0', '1', '2'], true), fn ($query) => $query->where('status', (int) $status))
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -48,7 +48,9 @@ class ArticleController extends Controller
 
         $article = $request->user()->articles()->create($data);
 
-        return redirect()->route('articles.show', $article)->with('success', 'Artikel berhasil dibuat.');
+        return redirect()->route('articles.show', $article)->with('success', $article->isInReview()
+            ? 'Artikel berhasil dibuat dan diajukan ke admin untuk direview.'
+            : 'Artikel berhasil dibuat.');
     }
 
     public function show(Article $article): View
@@ -79,19 +81,29 @@ class ArticleController extends Controller
             $data['image'] = null;
         }
 
+        // Catatan admin hanya relevan selama artikel kembali berstatus Draft.
+        if ((int) $data['status'] !== Article::STATUS_DRAFT) {
+            $data['review_note'] = null;
+        }
+
         $article->update($data);
 
-        return redirect()->route('articles.show', $article)->with('success', 'Artikel berhasil diperbarui.');
+        return redirect()->route('articles.show', $article)->with('success', $article->isInReview()
+            ? 'Artikel berhasil diperbarui dan diajukan ke admin untuk direview.'
+            : 'Artikel berhasil diperbarui.');
     }
 
-    public function destroy(Article $article): RedirectResponse
+    public function destroy(Request $request, Article $article): RedirectResponse
     {
         Gate::authorize('delete', $article);
 
         $this->deleteImage($article);
         $article->delete();
 
-        return redirect()->route('articles.index')->with('success', 'Artikel berhasil dihapus.');
+        // Admin yang menghapus artikel orang lain dikembalikan ke halaman review.
+        $redirectRoute = $article->user_id === $request->user()->id ? 'articles.index' : 'review.index';
+
+        return redirect()->route($redirectRoute)->with('success', 'Artikel berhasil dihapus.');
     }
 
     private function deleteImage(Article $article): void

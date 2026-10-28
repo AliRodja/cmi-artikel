@@ -31,23 +31,25 @@ class ArticleAuthorizationTest extends TestCase
         return array_merge([
             'title' => 'Judul Baru',
             'content' => 'Isi artikel baru.',
-            'status' => Article::STATUS_PUBLISHED,
+            'status' => Article::STATUS_DRAFT,
         ], $overrides);
     }
 
-    public function test_owner_can_view_edit_update_and_delete_own_article(): void
+    public function test_owner_can_view_edit_update_and_delete_own_unpublished_article(): void
     {
+        $draft = Article::factory()->for($this->owner)->draft()->create();
+
         $this->actingAs($this->owner);
 
-        $this->get(route('articles.show', $this->article))->assertOk();
-        $this->get(route('articles.edit', $this->article))->assertOk();
+        $this->get(route('articles.show', $draft))->assertOk();
+        $this->get(route('articles.edit', $draft))->assertOk();
 
-        $this->put(route('articles.update', $this->article), $this->validPayload(['title' => 'Judul Diedit']))
-            ->assertRedirect(route('articles.show', $this->article));
-        $this->assertSame('Judul Diedit', $this->article->fresh()->title);
+        $this->put(route('articles.update', $draft), $this->validPayload(['title' => 'Judul Diedit']))
+            ->assertRedirect(route('articles.show', $draft));
+        $this->assertSame('Judul Diedit', $draft->fresh()->title);
 
-        $this->delete(route('articles.destroy', $this->article))->assertRedirect(route('articles.index'));
-        $this->assertModelMissing($this->article);
+        $this->delete(route('articles.destroy', $draft))->assertRedirect(route('articles.index'));
+        $this->assertModelMissing($draft);
     }
 
     public function test_other_user_cannot_view_or_edit_article(): void

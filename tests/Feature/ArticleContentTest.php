@@ -26,7 +26,7 @@ class ArticleContentTest extends TestCase
         return $this->actingAs($this->user)->post(route('articles.store'), [
             'title' => 'Artikel Rich Text',
             'content' => $content,
-            'status' => Article::STATUS_PUBLISHED,
+            'status' => Article::STATUS_DRAFT,
         ]);
     }
 

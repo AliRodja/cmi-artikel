@@ -11,10 +11,23 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    public const ROLE_ADMIN = 'admin';
+
+    public const ROLE_PENULIS = 'penulis';
+
+    /*
+     * "role" sengaja TIDAK ada di $fillable: walaupun seseorang menambahkan
+     * input role=admin ke form register, User::create() akan mengabaikannya.
+     */
     protected $fillable = [
         'name',
         'email',
         'password',
+    ];
+
+    // Sama dengan default kolom di database, agar model yang baru dibuat langsung tahu perannya.
+    protected $attributes = [
+        'role' => self::ROLE_PENULIS,
     ];
 
     protected $hidden = [
@@ -33,5 +46,15 @@ class User extends Authenticatable
     public function articles(): HasMany
     {
         return $this->hasMany(Article::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function getRoleLabelAttribute(): string
+    {
+        return $this->isAdmin() ? 'Admin' : 'Penulis';
     }
 }

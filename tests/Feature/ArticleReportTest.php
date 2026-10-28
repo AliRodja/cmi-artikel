@@ -17,7 +17,7 @@ class ArticleReportTest extends TestCase
     {
         parent::setUp();
 
-        $this->viewer = User::factory()->create(['name' => 'Penilai']);
+        $this->viewer = User::factory()->admin()->create(['name' => 'Penilai']);
     }
 
     private function reportTitles(array $query = []): array

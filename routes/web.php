@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ArticleReportController;
+use App\Http\Controllers\ArticleReviewController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -35,7 +36,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::prefix('dashboard')->group(function () {
-        Route::get('laporan-artikel', ArticleReportController::class)->name('articles.report');
         Route::resource('articles', ArticleController::class);
+
+        Route::middleware('admin')->group(function () {
+            Route::get('laporan-artikel', ArticleReportController::class)->name('articles.report');
+
+            Route::get('review', [ArticleReviewController::class, 'index'])->name('review.index');
+            Route::patch('articles/{article}/publish', [ArticleReviewController::class, 'publish'])->name('review.publish');
+            Route::patch('articles/{article}/return', [ArticleReviewController::class, 'sendBack'])->name('review.return');
+        });
     });
 });

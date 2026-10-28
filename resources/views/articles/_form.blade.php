@@ -1,10 +1,25 @@
+@use('App\Models\Article')
+
 @php
     $article ??= null;
-    $currentStatus = (string) old('status', $article?->status ?? \App\Models\Article::STATUS_DRAFT);
-    $statusOptions = [
-        ['value' => (string) \App\Models\Article::STATUS_DRAFT, 'label' => 'Draft', 'hint' => 'Disimpan, belum tampil di situs publik.'],
-        ['value' => (string) \App\Models\Article::STATUS_PUBLISHED, 'label' => 'Published', 'hint' => 'Langsung tampil untuk semua pengunjung.'],
+    $isAdmin = auth()->user()->isAdmin();
+
+    $labels = [
+        Article::STATUS_DRAFT => ['label' => 'Draft', 'hint' => $isAdmin ? 'Disimpan, belum tampil di situs publik.' : 'Simpan dulu, belum dikirim ke admin.'],
+        Article::STATUS_REVIEW => $isAdmin
+            ? ['label' => 'Menunggu Review', 'hint' => 'Biarkan tetap di antrean review.']
+            : ['label' => 'Ajukan ke Admin', 'hint' => 'Admin meninjau dulu sebelum artikel tayang.'],
+        Article::STATUS_PUBLISHED => ['label' => 'Published', 'hint' => 'Langsung tampil untuk semua pengunjung.'],
     ];
+
+    // Pilihan status mengikuti aturan yang sama dengan validasi di ArticleRequest.
+    $statusOptions = collect(Article::allowedStatusesFor(auth()->user(), $article))
+        ->map(fn (int $value) => ['value' => (string) $value] + $labels[$value]);
+
+    $currentStatus = (string) old('status', $article?->status ?? Article::STATUS_DRAFT);
+    if (! $statusOptions->contains('value', $currentStatus)) {
+        $currentStatus = (string) Article::STATUS_DRAFT;
+    }
 @endphp
 
 <div class="grid items-start gap-6 lg:grid-cols-3">
@@ -36,6 +51,9 @@
     <aside class="min-w-0 space-y-6 lg:sticky lg:top-24">
         <section class="card p-5">
             <h2 class="font-bold text-gray-900">Publikasi</h2>
+            @unless ($isAdmin)
+                <p class="mt-1 text-xs text-gray-500">Artikel tayang setelah disetujui admin.</p>
+            @endunless
 
             <fieldset class="mt-4 space-y-2">
                 <legend class="sr-only">Status</legend>

@@ -18,12 +18,29 @@
         $stats = [
             ['label' => 'Jumlah Artikel', 'value' => $totalCount, 'icon' => 'document-text', 'tone' => 'bg-brand-50 text-brand-700'],
             ['label' => 'Published', 'value' => $publishedCount, 'icon' => 'check-circle', 'tone' => 'bg-green-50 text-green-700'],
+            ['label' => 'Menunggu Review', 'value' => $reviewCount, 'icon' => 'clock', 'tone' => 'bg-violet-50 text-violet-700'],
             ['label' => 'Draft', 'value' => $draftCount, 'icon' => 'pencil-square', 'tone' => 'bg-amber-50 text-amber-700'],
         ];
         $publishedPercent = $totalCount > 0 ? round($publishedCount / $totalCount * 100) : 0;
     @endphp
 
-    <div class="grid gap-4 sm:grid-cols-3">
+    @if ($pendingReviewCount > 0)
+        <a href="{{ route('review.index') }}" class="mb-6 flex items-center gap-3 rounded-xl border border-violet-200 bg-violet-50 px-5 py-4 text-sm text-violet-900 hover:bg-violet-100">
+            <x-icon name="clock" class="shrink-0 text-violet-600" />
+            <p class="flex-1"><strong>{{ $pendingReviewCount }} artikel</strong> dari penulis menunggu review Anda.</p>
+            <span class="font-semibold">Tinjau &rarr;</span>
+        </a>
+    @endif
+
+    @if ($returnedCount > 0)
+        <a href="{{ route('articles.index', ['status' => \App\Models\Article::STATUS_DRAFT]) }}" class="mb-6 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900 hover:bg-amber-100">
+            <x-icon name="exclamation-triangle" class="shrink-0 text-amber-500" />
+            <p class="flex-1"><strong>{{ $returnedCount }} artikel</strong> dikembalikan admin dengan catatan perbaikan.</p>
+            <span class="font-semibold">Lihat &rarr;</span>
+        </a>
+    @endif
+
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ($stats as $stat)
             <div class="card flex items-center gap-4 p-5">
                 <span class="flex size-12 items-center justify-center rounded-xl {{ $stat['tone'] }}">
@@ -65,7 +82,8 @@
                     </span>
                     <p class="mt-4 font-semibold text-gray-900">Belum ada artikel</p>
                     <p class="mx-auto mt-1 max-w-sm text-sm text-gray-500">
-                        Tulis artikel pertama Anda. Simpan sebagai Draft dulu, lalu publikasikan saat sudah siap.
+                        Tulis artikel pertama Anda. Simpan sebagai Draft dulu, lalu
+                        {{ auth()->user()->isAdmin() ? 'publikasikan' : 'ajukan ke admin' }} saat sudah siap.
                     </p>
                     <a href="{{ route('articles.create') }}" class="btn btn-primary mt-5">
                         <x-icon name="plus" size="size-4" /> Tulis Artikel Pertama
@@ -85,7 +103,9 @@
                                     Diperbarui {{ $article->updated_at->diffForHumans() }}
                                 </p>
                             </div>
-                            <a href="{{ route('articles.edit', $article) }}" class="btn btn-secondary btn-sm">Edit</a>
+                            @can('update', $article)
+                                <a href="{{ route('articles.edit', $article) }}" class="btn btn-secondary btn-sm">Edit</a>
+                            @endcan
                         </li>
                     @endforeach
                 </ul>
@@ -102,9 +122,14 @@
                     <a href="{{ route('articles.index', ['status' => \App\Models\Article::STATUS_DRAFT]) }}" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
                         <x-icon name="clock" class="text-gray-400" /> Lanjutkan draft
                     </a>
-                    <a href="{{ route('articles.report') }}" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
-                        <x-icon name="chart-bar" class="text-gray-400" /> Laporan artikel
-                    </a>
+                    @if (auth()->user()->isAdmin())
+                        <a href="{{ route('review.index') }}" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
+                            <x-icon name="check-circle" class="text-gray-400" /> Review artikel penulis
+                        </a>
+                        <a href="{{ route('articles.report') }}" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
+                            <x-icon name="chart-bar" class="text-gray-400" /> Laporan artikel
+                        </a>
+                    @endif
                     <a href="{{ route('home') }}" target="_blank" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
                         <x-icon name="globe-alt" class="text-gray-400" /> Lihat situs publik
                     </a>

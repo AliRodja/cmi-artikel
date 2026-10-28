@@ -17,7 +17,10 @@ class Article extends Model
 
     public const STATUS_PUBLISHED = 1;
 
-    protected $fillable = ['user_id', 'title', 'slug', 'content', 'image', 'status'];
+    /** Diajukan penulis, menunggu admin menerbitkan atau mengembalikannya. */
+    public const STATUS_REVIEW = 2;
+
+    protected $fillable = ['user_id', 'title', 'slug', 'content', 'image', 'status', 'review_note'];
 
     protected $casts = [
         'status' => 'integer',
@@ -43,9 +46,36 @@ class Article extends Model
         return $query->where('status', self::STATUS_DRAFT);
     }
 
+    public function scopeInReview(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_REVIEW);
+    }
+
     public function isPublished(): bool
     {
         return $this->status === self::STATUS_PUBLISHED;
+    }
+
+    public function isInReview(): bool
+    {
+        return $this->status === self::STATUS_REVIEW;
+    }
+
+    /**
+     * Status yang boleh dipilih $user di form tulis/edit. Dipakai oleh validasi
+     * (ArticleRequest) dan oleh form, sehingga keduanya tidak pernah berbeda.
+     * Penulis tidak bisa menerbitkan sendiri; ia mengajukan review ke admin.
+     */
+    public static function allowedStatusesFor(User $user, ?self $article = null): array
+    {
+        if (! $user->isAdmin()) {
+            return [self::STATUS_DRAFT, self::STATUS_REVIEW];
+        }
+
+        // Admin yang mengedit artikel di antrean boleh membiarkannya tetap menunggu review.
+        return $article?->isInReview()
+            ? [self::STATUS_DRAFT, self::STATUS_REVIEW, self::STATUS_PUBLISHED]
+            : [self::STATUS_DRAFT, self::STATUS_PUBLISHED];
     }
 
     protected static function booted(): void

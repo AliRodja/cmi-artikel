@@ -33,4 +33,9 @@ class ArticleFactory extends Factory
     {
         return $this->state(['status' => Article::STATUS_DRAFT]);
     }
+
+    public function inReview(): static
+    {
+        return $this->state(['status' => Article::STATUS_REVIEW]);
+    }
 }
