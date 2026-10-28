@@ -3,7 +3,7 @@
         <div>
             <x-logo tone="dark" />
             <p class="mt-4 max-w-sm text-sm leading-relaxed text-white/85">
-                Berita, kabar, dan artikel terbaru dari perusahaan.
+                Informasi kesehatan, kabar terbaru, dan pengumuman resmi untuk pasien dan masyarakat.
             </p>
         </div>
 

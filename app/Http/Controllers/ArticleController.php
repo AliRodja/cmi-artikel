@@ -24,7 +24,13 @@ class ArticleController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('articles.index', compact('articles', 'search', 'status'));
+        // Jumlah per status untuk tab filter (Semua / Published / Draft).
+        $statusCounts = $request->user()->articles()
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        return view('articles.index', compact('articles', 'search', 'status', 'statusCounts'));
     }
 
     public function create(): View

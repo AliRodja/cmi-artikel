@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Article;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,9 +13,7 @@ class LoginController extends Controller
 {
     public function create(): View
     {
-        $latestArticles = Article::published()->with('user:id,name')->latest()->take(3)->get();
-
-        return view('auth.login', compact('latestArticles'));
+        return view('auth.login');
     }
 
     public function store(Request $request): RedirectResponse

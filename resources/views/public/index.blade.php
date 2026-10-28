@@ -9,8 +9,8 @@
 
         <div class="container-page relative py-16 sm:py-20">
             <p class="eyebrow text-brand-300">Pusat Informasi</p>
-            <h1 class="mt-3 max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Berita &amp; Artikel Perusahaan</h1>
-            <p class="mt-4 max-w-xl text-base text-brand-200">Kabar terbaru, wawasan, dan informasi resmi dari perusahaan.</p>
+            <h1 class="mt-3 max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Berita &amp; Artikel Kesehatan</h1>
+            <p class="mt-4 max-w-xl text-base text-brand-200">Informasi kesehatan, kabar terbaru, dan pengumuman resmi dari {{ config('app.name') }}.</p>
 
             <form action="{{ route('home') }}" method="GET" class="mt-8 flex max-w-xl gap-2 rounded-xl bg-white p-1.5 shadow-xl">
                 <label for="search" class="sr-only">Cari artikel</label>

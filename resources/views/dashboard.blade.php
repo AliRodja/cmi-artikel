@@ -2,67 +2,123 @@
 
 @section('title', 'Dashboard')
 
+@section('hero')
+    <x-page-header :title="'Halo, '.auth()->user()->name"
+                   :subtitle="now()->translatedFormat('l, d F Y').' · Ringkasan artikel Anda.'">
+        <x-slot:actions>
+            <a href="{{ route('articles.create') }}" class="btn btn-primary">
+                <x-icon name="plus" size="size-4" /> Tulis Artikel
+            </a>
+        </x-slot:actions>
+    </x-page-header>
+@endsection
+
 @section('content')
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-            <p class="text-sm text-gray-500">Halo, {{ auth()->user()->name }}. Berikut ringkasan artikel Anda.</p>
-        </div>
-        <a href="{{ route('articles.create') }}" class="btn btn-primary">+ Tulis Artikel</a>
-    </div>
+    @php
+        $stats = [
+            ['label' => 'Jumlah Artikel', 'value' => $totalCount, 'icon' => 'document-text', 'tone' => 'bg-brand-50 text-brand-700'],
+            ['label' => 'Published', 'value' => $publishedCount, 'icon' => 'check-circle', 'tone' => 'bg-green-50 text-green-700'],
+            ['label' => 'Draft', 'value' => $draftCount, 'icon' => 'pencil-square', 'tone' => 'bg-amber-50 text-amber-700'],
+        ];
+        $publishedPercent = $totalCount > 0 ? round($publishedCount / $totalCount * 100) : 0;
+    @endphp
 
-    <div class="mb-8 grid gap-4 sm:grid-cols-3">
-        <div class="card p-5">
-            <p class="text-sm text-gray-500">Jumlah Artikel</p>
-            <p class="mt-1 text-3xl font-bold text-gray-900">{{ $totalCount }}</p>
-        </div>
-        <div class="card p-5">
-            <p class="text-sm text-gray-500">Published</p>
-            <p class="mt-1 text-3xl font-bold text-green-600">{{ $publishedCount }}</p>
-        </div>
-        <div class="card p-5">
-            <p class="text-sm text-gray-500">Draft</p>
-            <p class="mt-1 text-3xl font-bold text-gray-600">{{ $draftCount }}</p>
-        </div>
-    </div>
-
-    <div class="card overflow-hidden">
-        <div class="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-            <h2 class="font-semibold text-gray-900">Artikel Terbaru</h2>
-            <a href="{{ route('articles.index') }}" class="link text-sm">Lihat semua</a>
-        </div>
-
-        @if ($latestArticles->isEmpty())
-            <p class="px-4 py-8 text-center text-sm text-gray-500">
-                Belum ada artikel. <a href="{{ route('articles.create') }}" class="link">Tulis artikel pertama Anda</a>.
-            </p>
-        @else
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="th">Judul</th>
-                            <th class="th">Status</th>
-                            <th class="th">Dibuat</th>
-                            <th class="th"></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @foreach ($latestArticles as $article)
-                            <tr>
-                                <td class="td font-medium text-gray-900">
-                                    <a href="{{ route('articles.show', $article) }}" class="hover:text-brand-700">{{ $article->title }}</a>
-                                </td>
-                                <td class="td"><x-status-badge :status="$article->status" /></td>
-                                <td class="td whitespace-nowrap text-gray-500">{{ $article->created_at->format('d M Y') }}</td>
-                                <td class="td text-right">
-                                    <a href="{{ route('articles.edit', $article) }}" class="link text-sm">Edit</a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+    <div class="grid gap-4 sm:grid-cols-3">
+        @foreach ($stats as $stat)
+            <div class="card flex items-center gap-4 p-5">
+                <span class="flex size-12 items-center justify-center rounded-xl {{ $stat['tone'] }}">
+                    <x-icon :name="$stat['icon']" size="size-6" />
+                </span>
+                <div>
+                    <p class="text-sm font-medium text-gray-500">{{ $stat['label'] }}</p>
+                    <p class="text-3xl font-extrabold tracking-tight text-gray-900">{{ $stat['value'] }}</p>
+                </div>
             </div>
-        @endif
+        @endforeach
+    </div>
+
+    @if ($totalCount > 0)
+        <div class="card mt-4 p-5">
+            <div class="flex items-center justify-between text-sm">
+                <span class="font-medium text-gray-700">Artikel yang sudah dipublikasikan</span>
+                <span class="font-semibold text-gray-900">{{ $publishedPercent }}%</span>
+            </div>
+            <div class="mt-3 h-2 overflow-hidden rounded-full bg-gray-100">
+                <div class="h-full rounded-full bg-green-500" style="width: {{ $publishedPercent }}%"></div>
+            </div>
+        </div>
+    @endif
+
+    <div class="mt-8 grid gap-6 lg:grid-cols-3">
+        <section class="card overflow-hidden lg:col-span-2">
+            <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+                <h2 class="font-bold text-gray-900">Artikel Terbaru</h2>
+                @if ($latestArticles->isNotEmpty())
+                    <a href="{{ route('articles.index') }}" class="link text-sm">Lihat semua</a>
+                @endif
+            </div>
+
+            @if ($latestArticles->isEmpty())
+                <div class="px-6 py-14 text-center">
+                    <span class="mx-auto flex size-14 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                        <x-icon name="pencil-square" size="size-7" />
+                    </span>
+                    <p class="mt-4 font-semibold text-gray-900">Belum ada artikel</p>
+                    <p class="mx-auto mt-1 max-w-sm text-sm text-gray-500">
+                        Tulis artikel pertama Anda. Simpan sebagai Draft dulu, lalu publikasikan saat sudah siap.
+                    </p>
+                    <a href="{{ route('articles.create') }}" class="btn btn-primary mt-5">
+                        <x-icon name="plus" size="size-4" /> Tulis Artikel Pertama
+                    </a>
+                </div>
+            @else
+                <ul class="divide-y divide-gray-100">
+                    @foreach ($latestArticles as $article)
+                        <li class="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50">
+                            <x-article-thumb :article="$article" class="size-12" />
+                            <div class="min-w-0 flex-1">
+                                <a href="{{ route('articles.show', $article) }}" class="block truncate font-semibold text-gray-900 hover:text-brand-700">
+                                    {{ $article->title }}
+                                </a>
+                                <p class="mt-0.5 flex items-center gap-2 text-xs text-gray-500">
+                                    <x-status-badge :status="$article->status" />
+                                    Diperbarui {{ $article->updated_at->diffForHumans() }}
+                                </p>
+                            </div>
+                            <a href="{{ route('articles.edit', $article) }}" class="btn btn-secondary btn-sm">Edit</a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </section>
+
+        <aside class="space-y-6">
+            <section class="card p-5">
+                <h2 class="font-bold text-gray-900">Aksi Cepat</h2>
+                <nav class="mt-3 -mx-2 space-y-1 text-sm">
+                    <a href="{{ route('articles.create') }}" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
+                        <x-icon name="pencil-square" class="text-gray-400" /> Tulis artikel baru
+                    </a>
+                    <a href="{{ route('articles.index', ['status' => \App\Models\Article::STATUS_DRAFT]) }}" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
+                        <x-icon name="clock" class="text-gray-400" /> Lanjutkan draft
+                    </a>
+                    <a href="{{ route('articles.report') }}" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
+                        <x-icon name="chart-bar" class="text-gray-400" /> Laporan artikel
+                    </a>
+                    <a href="{{ route('home') }}" target="_blank" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
+                        <x-icon name="globe-alt" class="text-gray-400" /> Lihat situs publik
+                    </a>
+                </nav>
+            </section>
+
+            <section class="rounded-xl bg-brand-600 p-5 text-white">
+                <h2 class="font-bold">Tips Menulis</h2>
+                <ul class="mt-3 list-disc space-y-1.5 pl-5 text-sm text-white/90">
+                    <li>Gunakan judul yang jelas dan spesifik.</li>
+                    <li>Pakai subjudul agar artikel mudah dipindai.</li>
+                    <li>Tambahkan gambar utama agar menarik di beranda.</li>
+                </ul>
+            </section>
+        </aside>
     </div>
 @endsection

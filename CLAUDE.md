@@ -106,7 +106,8 @@ lang/id/{auth,passwords,validation}.php, lang/id.json
 ## Konvensi
 - Blade: selalu `{{ }}` (escape). Jangan pakai `{!! !!}` — **satu-satunya pengecualian**:
   `{!! $article->content_html !!}` (HTML isi artikel yang sudah disanitasi `App\Support\ArticleContent`), dengan class
-  `.article-content`. Jangan pernah `{!! $article->content !!}` atau `{!! !!}` untuk data lain.
+  `.article-content`. Jangan pernah `{!! $article->content !!}` atau `{!! !!}` untuk data lain. (Komponen `x-icon` juga
+  memakai `{!! !!}` untuk path SVG Heroicons yang statis di file itu — bukan data user.)
 - Tailwind: **jangan merangkai nama class dinamis** (mis. `text-{{ $color }}-600`); tulis class lengkap.
 - Pagination memakai view Tailwind bawaan Laravel (jangan aktifkan `Paginator::useBootstrapFive()`).
 - Form upload wajib `enctype="multipart/form-data"`; form PUT/DELETE pakai `@csrf` + `@method`.
@@ -117,8 +118,13 @@ lang/id/{auth,passwords,validation}.php, lang/id.json
 npm run dev                 # terminal 1 (biarkan berjalan)
 php artisan optimize:clear  # terminal 2
 php artisan serve           # http://localhost:8000
-php artisan migrate:fresh --seed   # reset database + data dummy
 ```
+
+> ⚠️ **Sejak 2026-10-28 database MySQL lokal berisi DATA REAL** (diinput user lewat halaman). **JANGAN** menjalankan
+> `migrate:fresh`, `migrate:refresh`, `migrate:reset`, `db:wipe`, atau `db:seed` pada MySQL. Untuk uji/screenshot pakai
+> SQLite sementara: `DB_CONNECTION=sqlite DB_DATABASE=/path/tmp.sqlite php artisan migrate --seed --force` lalu
+> `php artisan serve` dengan env yang sama (env shell mengalahkan `.env`). Seeder tetap untuk penilai (instalasi baru).
+> Backup sebelum pembersihan data dummy: `storage/app/backups/` (gitignored).
 
 ## Progres
 - [x] Tahap 1 — Database (migration, model, factory, seeder)
@@ -176,7 +182,15 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   editor kosong (`<div><br></div>`). Test: `ArticleContentTest` (6) → total 35 test / 130 assertion, terbukti gagal
   bila sanitizer dimatikan.
 - [x] Favicon dari tanda salib logo: `public/favicon.ico` (16/32/48) + `public/apple-touch-icon.png`.
-- [ ] Area penulis: dashboard, Artikel Saya, form tulis/edit.
+- [x] Nama situs `APP_NAME="Klinik Utama CMI"` (.env & .env.example); copy hero/footer bertema klinik.
+- [x] Database dibersihkan dari data dummy (akun user `rodjaali@gmail.com` dipertahankan), backup di
+  `storage/app/backups/`.
+- [x] Area penulis: komponen `x-page-header` (di `@section('hero')`, slot `meta`/`actions`), `x-icon` (Heroicons,
+  prop `size`), `x-article-thumb`. Dashboard (kartu statistik + progres published + empty state + aksi cepat),
+  Artikel Saya (tab status + jumlah dari `$statusCounts` groupBy, aksi ikon), form 2 kolom (`_form` menerima
+  `$submitLabel`/`$cancelUrl`; status = kartu radio; dropzone gambar), detail milik sendiri (banner Draft), laporan &
+  auth-card memakai header/logo baru. `status-badge` Draft = amber. Hapus query mati `$latestArticles` di LoginController.
+- Pelajaran CSS: selector toolbar Trix diberi awalan `form` (trix.css dimuat setelah app.css); kolom grid perlu `min-w-0`.
 
 - Persiapan tanya-jawab: middleware vs policy, alur reset password, INNER JOIN vs LEFT JOIN, jebakan
   `orWhere` tanpa closure, N+1 & eager loading, mass assignment & `$fillable`, CSRF, route model binding dengan slug.

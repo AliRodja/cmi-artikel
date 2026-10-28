@@ -81,9 +81,10 @@
  * tanpa layer selalu menang atas aturan di dalam layer. Selector ini lebih
  * spesifik dari "trix-editor" milik trix.css, sehingga tampilan kita yang dipakai.
  */
-trix-toolbar .trix-button-row        { @apply mb-2 flex-wrap gap-y-2; }
-trix-toolbar .trix-button-group      { @apply mb-0 rounded-lg border-gray-300; }
-trix-toolbar .trix-button.trix-active { @apply bg-brand-100; }
+/* Awalan "form" menaikkan spesifisitas: trix.css dimuat SETELAH app.css dengan selector yang sama. */
+form trix-toolbar .trix-button-row         { @apply mb-2 flex-wrap gap-y-2 overflow-visible; }
+form trix-toolbar .trix-button-group       { @apply mb-0 rounded-lg border-gray-300; }
+form trix-toolbar .trix-button.trix-active { @apply bg-brand-100; }
 
 trix-editor.article-editor {
     @apply block min-h-80 rounded-lg border border-gray-300 bg-white px-4 py-3 shadow-sm;

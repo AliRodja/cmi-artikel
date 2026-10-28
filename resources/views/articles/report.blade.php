@@ -2,22 +2,26 @@
 
 @section('title', 'Laporan Artikel')
 
-@section('content')
-    <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Laporan Artikel</h1>
-            <p class="text-sm text-gray-500">Artikel Published beserta penulisnya (INNER JOIN articles × users), terbaru di atas.</p>
-        </div>
+@section('hero')
+    <x-page-header title="Laporan Artikel"
+                   subtitle="Artikel Published beserta penulisnya (INNER JOIN articles × users), terbaru di atas.">
+        <x-slot:actions>
+            <form action="{{ route('articles.report') }}" method="GET" class="flex w-full gap-2 sm:w-auto">
+                <div class="relative w-full sm:w-72">
+                    <x-icon name="magnifying-glass" size="size-4" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+                    <input type="search" name="search" value="{{ $search }}" placeholder="Cari judul, penulis, email..."
+                           class="form-input pl-9">
+                </div>
+                <button type="submit" class="btn btn-primary">Cari</button>
+                @if ($search !== '')
+                    <a href="{{ route('articles.report') }}" class="btn btn-secondary">Reset</a>
+                @endif
+            </form>
+        </x-slot:actions>
+    </x-page-header>
+@endsection
 
-        <form action="{{ route('articles.report') }}" method="GET" class="flex w-full gap-2 sm:w-auto">
-            <input type="search" name="search" value="{{ $search }}" placeholder="Cari judul, penulis, email..."
-                   class="form-input sm:w-72">
-            <button type="submit" class="btn btn-primary">Cari</button>
-            @if ($search !== '')
-                <a href="{{ route('articles.report') }}" class="btn btn-secondary">Reset</a>
-            @endif
-        </form>
-    </div>
+@section('content')
 
     <p class="mb-3 text-sm text-gray-600">
         Total {{ $articles->total() }} artikel
