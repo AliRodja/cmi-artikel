@@ -30,6 +30,7 @@ class ArticleRequest extends FormRequest
                     }
                 },
             ],
+            'category' => ['required', Rule::in(array_keys(Article::CATEGORIES))],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             // Penulis yang memalsukan status=1 lewat DevTools tetap ditolak di sini.
             'status' => ['required', Rule::in(Article::allowedStatusesFor($this->user(), $this->route('article')))],
@@ -42,6 +43,7 @@ class ArticleRequest extends FormRequest
         return [
             'title' => 'judul',
             'content' => 'isi artikel',
+            'category' => 'jenis artikel',
             'image' => 'gambar',
             'status' => 'status',
             'remove_image' => 'hapus gambar',

@@ -21,7 +21,15 @@ class Article extends Model
     /** Diajukan penulis, menunggu admin menerbitkan atau mengembalikannya. */
     public const STATUS_REVIEW = 2;
 
-    protected $fillable = ['user_id', 'title', 'slug', 'content', 'image', 'status', 'review_note'];
+    /** Jenis artikel: key disimpan di kolom "category", value untuk tampilan. */
+    public const CATEGORIES = [
+        'diabetes' => 'Diabetes',
+        'jantung' => 'Jantung',
+        'kanker' => 'Kanker',
+        'ginjal' => 'Ginjal',
+    ];
+
+    protected $fillable = ['user_id', 'title', 'slug', 'content', 'category', 'image', 'status', 'review_note'];
 
     protected $casts = [
         'status' => 'integer',
@@ -55,6 +63,17 @@ class Article extends Model
     public function scopeInReview(Builder $query): Builder
     {
         return $query->where('status', self::STATUS_REVIEW);
+    }
+
+    public function scopeOfCategory(Builder $query, string $category): Builder
+    {
+        return $query->where('category', $category);
+    }
+
+    /** "Jantung", atau null untuk artikel lama yang belum diberi jenis. */
+    public function getCategoryLabelAttribute(): ?string
+    {
+        return $this->category ? (self::CATEGORIES[$this->category] ?? null) : null;
     }
 
     public function isPublished(): bool

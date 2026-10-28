@@ -1,8 +1,10 @@
-// Font Awesome Free: hanya gaya solid & regular (gaya brands tidak dipakai, hemat ±115 KB).
+// Font Awesome Free: gaya solid, regular, dan brands (logo WhatsApp/X/Facebook untuk tombol bagikan).
+// File font brands (±115 KB) hanya diunduh browser di halaman yang benar-benar memakai ikon brand.
 // Ikon dipanggil lewat komponen <x-icon>, bukan menulis class "fa-..." langsung di view.
 import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/solid.css';
 import '@fortawesome/fontawesome-free/css/regular.css';
+import '@fortawesome/fontawesome-free/css/brands.css';
 
 // Dialog navbar: drawer menu (partials/nav-drawer) & panel pencarian (partials/search-panel).
 // Tombol pembuka: data-dialog-open="<id dialog>"; tombol penutup di dalam dialog: data-dialog-close.

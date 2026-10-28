@@ -39,6 +39,14 @@
         'exclamation-triangle' => 'fa-solid fa-triangle-exclamation',
         'cloud-arrow-up' => 'fa-solid fa-cloud-arrow-up',
         'x-mark' => 'fa-solid fa-xmark',
+        'tag' => 'fa-solid fa-tag',
+        'chevron-right' => 'fa-solid fa-chevron-right',
+        'share' => 'fa-solid fa-share-nodes',
+        'stethoscope' => 'fa-solid fa-stethoscope',
+        // Logo merek (gaya brands).
+        'whatsapp' => 'fa-brands fa-whatsapp',
+        'x-twitter' => 'fa-brands fa-x-twitter',
+        'facebook' => 'fa-brands fa-facebook-f',
     ];
 
     // Ikon FA adalah huruf (font), jadi ukurannya diatur lewat font-size. CSS Font Awesome

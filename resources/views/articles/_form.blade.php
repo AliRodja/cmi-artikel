@@ -35,6 +35,22 @@
             @enderror
         </div>
 
+        <fieldset class="mb-5">
+            <legend class="form-label">Jenis Artikel</legend>
+            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                @foreach (Article::CATEGORIES as $value => $label)
+                    <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-700 transition has-checked:border-brand-500 has-checked:bg-brand-50/60 has-checked:text-brand-800">
+                        <input type="radio" name="category" value="{{ $value }}" required
+                               @checked(old('category', $article?->category) === $value) class="accent-brand-600">
+                        {{ $label }}
+                    </label>
+                @endforeach
+            </div>
+            @error('category')
+                <p class="form-error">{{ $message }}</p>
+            @enderror
+        </fieldset>
+
         <div>
             <label for="content-editor" class="form-label">Isi Artikel</label>
             {{-- Trix menulis HTML ke input tersembunyi ini; nilainya yang dikirim ke server. --}}

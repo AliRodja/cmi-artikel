@@ -210,7 +210,7 @@ Link reset berlaku 60 menit dan hanya bisa dipakai satu kali.
 | 6 | Upload & Pengelolaan Gambar | 10 | Disimpan di disk `public` folder `articles/` (nama file acak); preview sebelum upload; file lama **dihapus dari disk** saat gambar diganti, saat checkbox "Hapus gambar" dicentang, dan saat artikel dihapus | Tulis artikel dengan gambar → edit → ganti/hapus gambar |
 | 7 | Validation Form | 5 | Form Request `ArticleRequest` (dipakai `store` & `update`): judul wajib maks 255, isi wajib, gambar `jpg/jpeg/png/webp` maks 2 MB, status hanya 0/1; pesan error Bahasa Indonesia, input lama dipertahankan (`old()`) | Kirim form kosong |
 | 8 | Authorization / Middleware | 10 | Middleware `auth` (area dashboard), `guest` (halaman login/daftar), `throttle`, dan middleware buatan sendiri `admin` (`EnsureUserIsAdmin`, halaman Review & Laporan); `ArticlePolicy` + `Gate::authorize()` → penulis hanya mengelola artikel **miliknya** yang belum tayang, admin mengelola semua (lainnya **403**); penulis tidak bisa memilih status Published (divalidasi di server); `user_id` dan `role` tidak pernah diambil dari input form | Buka `/dashboard` tanpa login → diarahkan ke login. Login sebagai penulis lalu buka `/dashboard/review` atau edit artikel user lain → 403 |
-| 9 | Halaman Publik Artikel | 5 | `PublicArticleController` — daftar artikel **Published** (search, 9 per halaman, eager loading penulis), detail artikel; artikel Draft → **404**; tidak ada tombol tambah/edit/hapus | Buka `/` tanpa login |
+| 9 | Halaman Publik Artikel | 5 | `PublicArticleController` — daftar artikel **Published** (search, filter jenis, 9 per halaman, eager loading penulis), detail artikel 3 kolom (bagikan WhatsApp/X/Facebook · isi · artikel lainnya, jenis artikel, tombol konsultasi WhatsApp); artikel Draft → **404**; tidak ada tombol tambah/edit/hapus | Buka `/` tanpa login |
 | 10 | Database & Migration | 5 | Migration `articles` dengan foreign key, unique slug, index (`status`, `created_at`); factory & seeder | `php artisan migrate:fresh --seed` |
 | 11 | Blade & UI | 5 | Layout `layouts/app`, partial (`navbar`, `flash`), Blade component (`x-input`, `x-status-badge`, `x-auth-card`), form bersama `articles/_form`, Tailwind CSS v4, responsif, halaman 403 custom | — |
 | 12 | Kerapihan Struktur & Code Quality | 5 | Validasi di Form Request, otorisasi di Policy, query scope (`published()`, `draft()`), konstanta status, accessor (`image_url`, `excerpt`), controller tipis | — |
@@ -295,7 +295,8 @@ name                                       user_id     FK → users.id, NULLABLE
 email         UNIQUE                       title
 password      (bcrypt)                     slug        UNIQUE  (dipakai di URL)
 remember_token                             content     LONGTEXT
-timestamps                                 image       NULLABLE (path, mis. articles/abc.jpg)
+timestamps                                 category    NULLABLE, INDEX: diabetes | jantung | kanker | ginjal
+                                           image       NULLABLE (path, mis. articles/abc.jpg)
                                            status      TINYINT  0 = Draft, 1 = Published
 password_reset_tokens                      timestamps
 ─────────────────────                      INDEX (status, created_at)
@@ -316,7 +317,7 @@ Tabel bawaan Laravel lainnya: `sessions`, `cache`, `jobs`.
 
 | Method | URL | Nama | Middleware | Keterangan |
 |---|---|---|---|---|
-| GET | `/` | `home` | — | Daftar artikel Published |
+| GET | `/` | `home` | — | Daftar artikel Published (`?search=`, `?jenis=jantung`) |
 | GET | `/artikel/{slug}` | `public.articles.show` | — | Detail artikel Published |
 | GET/POST | `/register` | `register` | `guest` | Daftar akun |
 | GET/POST | `/login` | `login` | `guest` (+ `throttle` saat POST) | Masuk |
@@ -366,6 +367,13 @@ Tabel bawaan Laravel lainnya: `sessions`, `cache`, `jobs`.
   - Menghapus akun **tidak menghapus artikelnya**: artikel tetap ada tanpa penulis (FK `nullOnDelete`), sehingga juga
     tidak muncul di Laporan INNER JOIN. Komentar & Baca Nanti ikut terhapus (`cascadeOnDelete`); notifikasi
     (relasi polymorphic, tanpa FK) dihapus manual dalam satu `DB::transaction`.
+- **Jenis artikel** (`articles.category`): Diabetes, Jantung, Kanker, Ginjal (`Article::CATEGORIES`), wajib dipilih di
+  form (`Rule::in`). Kolomnya nullable agar artikel lama tetap valid; halamannya tetap tampil tanpa badge jenis.
+  - Halaman detail artikel memakai 3 kolom: **Bagikan** (link WhatsApp/X/Facebook dibuat dengan `http_build_query()`
+    agar judul & URL ter-encode, + salin tautan), **isi artikel & komentar**, dan **sidebar** (Artikel Lainnya,
+    Jenis Artikel beserta jumlahnya, kartu "Alami gejala …? Konsultasi segera").
+  - Tombol konsultasi membuka WhatsApp customer service CMI. URL-nya ada di `config/clinic.php` (satu tempat, tidak
+    ditulis mati di view).
 - **Statistik dashboard per user**, bukan statistik seluruh situs.
 - **Laporan Artikel (Soal 2) hanya untuk admin**, karena menampilkan email semua penulis (data pribadi) sementara
   siapa pun bisa mendaftar. Laporan menampilkan artikel Published **semua penulis**, sesuai soal. Penilai dapat
@@ -434,13 +442,14 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/AuthTest.php` | 11 | Register (+ validasi, password ter-hash), login benar/salah, throttle login (429), logout, kirim link reset, reset password + token tidak bisa dipakai ulang, token palsu ditolak, middleware `auth` & `guest` |
 | `tests/Feature/ArticleAuthorizationTest.php` | 9 | Pemilik bisa lihat/edit/update/hapus artikel yang belum tayang; user lain **403** (lihat, edit, update, hapus); daftar hanya artikel sendiri; tamu diarahkan ke login; `user_id` tidak bisa disisipkan dari form; publik hanya melihat Published (Draft 404) dan tidak ada tombol kelola |
 | `tests/Feature/ArticleReportTest.php` | 9 | Soal 2: INNER JOIN membuang artikel tanpa penulis, hanya `status = 1`, nama & email dari tabel `users`, urut `created_at` terbaru, 10 per halaman, search judul/nama/email, search tidak membocorkan Draft, kata kunci terbawa di link pagination, tamu ditolak |
+| `tests/Feature/ArticleCategoryTest.php` | 4 | Jenis artikel wajib & hanya 4 pilihan; filter `?jenis=` di beranda (nilai asing diabaikan); halaman detail berisi link bagikan ter-encode, jumlah per jenis (hanya Published), judul "Alami gejala jantung?" & URL WhatsApp CS persis; artikel lama tanpa jenis tetap tampil |
 | `tests/Feature/ArticleContentTest.php` | 6 | Rich text: format dipertahankan, HTML berbahaya (`<script>`, `onclick`, `javascript:`) dibuang, link diberi `rel=noopener`, editor kosong ditolak |
 | `tests/Feature/ArticleRoleTest.php` | 11 | Pendaftar selalu pembaca walau mengirim `role=admin`; penulis tidak bisa langsung Published; artikel yang diajukan tidak tampil di publik; penulis tidak bisa edit/hapus artikel yang sudah tayang; penulis **403** di halaman admin; admin mengelola artikel siapa pun; terbitkan & kembalikan (catatan wajib); catatan hilang saat diajukan ulang; command `user:role` |
 | `tests/Feature/ReaderFeaturesTest.php` | 8 | Pembaca **403** di area penulis & diarahkan ke beranda setelah login; komentar (wajib login, validasi, di-escape, tidak bisa di artikel Draft, hapus hanya pemilik/admin); Baca Nanti (simpan/batal, artikel yang ditarik hilang dari daftar) |
 | `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
 | `tests/Feature/UserManagementTest.php` | 8 | Hanya admin (penulis & pembaca **403**); cari nama/email + filter peran (search tidak menembus filter); tambah akun dengan peran, password ter-hash & bisa login; validasi (email unik, peran tidak dikenal, konfirmasi password); edit dengan password kosong = tidak diganti; reset password orang lain; admin tidak bisa mengubah peran / menghapus akun sendiri; hapus akun → artikel tetap tanpa penulis, komentar/Baca Nanti/notifikasi ikut terhapus |
 
-Hasil: **71 test, 267 assertion, semua lulus.**
+Hasil: **75 test, 287 assertion, semua lulus.**
 
 ---
 

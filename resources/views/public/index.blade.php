@@ -13,6 +13,9 @@
             <p class="mt-4 max-w-xl text-base text-brand-200">Informasi kesehatan, kabar terbaru, dan pengumuman resmi dari {{ config('app.name') }}.</p>
 
             <form action="{{ route('home') }}" method="GET" class="mt-8 flex max-w-xl gap-2 rounded-xl bg-white p-1.5 shadow-xl">
+                @if ($category)
+                    <input type="hidden" name="jenis" value="{{ $category }}">
+                @endif
                 <label for="search" class="sr-only">Cari artikel</label>
                 <input type="search" id="search" name="search" value="{{ $search }}" placeholder="Cari judul atau isi artikel..."
                        class="w-full rounded-lg border-0 bg-transparent px-3 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none">
@@ -24,13 +27,25 @@
 
 @section('content')
     @php
-        // Tampilan "featured" hanya di halaman pertama tanpa pencarian.
-        $showFeatured = $search === '' && $articles->onFirstPage() && $articles->count() >= 3;
+        // Tampilan "featured" hanya di halaman pertama tanpa pencarian & tanpa filter jenis.
+        $showFeatured = $search === '' && ! $category && $articles->onFirstPage() && $articles->count() >= 3;
         $items = collect($articles->items());
         $featured = $showFeatured ? $items->first() : null;
         $highlights = $showFeatured ? $items->slice(1, 2) : collect();
         $gridArticles = $showFeatured ? $items->slice(3) : $items;
     @endphp
+
+    {{-- Filter jenis artikel (?jenis=...). Kata kunci pencarian ikut terbawa. --}}
+    <nav class="mb-8 flex gap-2 overflow-x-auto pb-1" aria-label="Jenis artikel">
+        @foreach (['' => 'Semua'] + \App\Models\Article::CATEGORIES as $value => $label)
+            <a href="{{ route('home', array_filter(['jenis' => $value, 'search' => $search], 'filled')) }}"
+               @class([
+                   'shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition',
+                   'border-brand-600 bg-brand-600 text-white' => $category === ($value ?: null),
+                   'border-gray-200 bg-white text-gray-700 hover:border-brand-300 hover:text-brand-700' => $category !== ($value ?: null),
+               ])>{{ $label }}</a>
+        @endforeach
+    </nav>
 
     @if ($search !== '')
         <div class="mb-8 flex flex-wrap items-center justify-between gap-3">

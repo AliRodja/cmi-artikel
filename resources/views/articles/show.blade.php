@@ -13,6 +13,7 @@
         <x-slot:meta>
             <p class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
                 <x-status-badge :status="$article->status" />
+                <x-category-badge :article="$article" />
                 @unless ($isOwner)
                     <span>Oleh <span class="font-medium text-gray-700">{{ $article->user?->name ?? 'Tanpa penulis' }}</span></span>
                     <span>·</span>

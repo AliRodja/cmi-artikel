@@ -234,6 +234,16 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Jenis artikel + detail 3 kolom** (2026-10-28): migration `add_category_to_articles_table` (`category` string
+  nullable + index; MySQL sudah dimigrasi, backup `storage/app/backups/artikel_app-sebelum-jenis-artikel-*.sql`).
+  `Article::CATEGORIES` (diabetes/jantung/kanker/ginjal), `category_label` (null-safe, PHP 8.5 menolak offset null),
+  scope `ofCategory`. `ArticleRequest`: `category` required + `Rule::in`. Form: radio pill di bawah Judul. Komponen
+  `x-category-badge` (warna per jenis). Beranda: tab filter `?jenis=` (featured mati saat difilter). `public/show`:
+  grid `lg:grid-cols-[4.5rem_minmax(0,1fr)_18rem]` → kolom Bagikan (sticky; WA/X/FB via `http_build_query`, salin
+  tautan ikon-saja — ikon centang disembunyikan pakai atribut `hidden`, bukan class, karena CSS FA tak berlayer),
+  kolom isi + komentar, sidebar (Artikel Lainnya 5, Jenis Artikel + jumlah Published, kartu CTA "Alami gejala …?"
+  → `config('clinic.whatsapp_consultation_url')`). Font Awesome **brands** kini diimpor di `app.js` (ikon `whatsapp`,
+  `x-twitter`, `facebook`). Test `ArticleCategoryTest` (4) → 75 test / 287 assertion.
 - [x] **Kelola Pengguna** (2026-10-28, admin): `UserController` resource `users.*` tanpa show (`/dashboard/users`, grup
   middleware `admin`), `UserRequest` (store & update; email unik `ignore`; password wajib saat tambah, kosong = tidak
   diganti saat edit; `role` → `prohibited` bila `cannot('changeRole')`), `UserPolicy` (`changeRole`, `delete`: admin

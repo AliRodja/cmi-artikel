@@ -11,10 +11,15 @@ class PublicArticleController extends Controller
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search'));
+        // ?jenis=jantung → hanya artikel jenis itu; nilai yang tidak dikenal diabaikan.
+        $category = array_key_exists((string) $request->query('jenis'), Article::CATEGORIES)
+            ? (string) $request->query('jenis')
+            : null;
 
         $articles = Article::query()
             ->published()
             ->with('user:id,name')
+            ->when($category, fn ($query) => $query->ofCategory($category))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('title', 'like', "%{$search}%")
@@ -25,7 +30,7 @@ class PublicArticleController extends Controller
             ->paginate(9)
             ->withQueryString();
 
-        return view('public.index', compact('articles', 'search'));
+        return view('public.index', compact('articles', 'search', 'category'));
     }
 
     public function show(Request $request, Article $article): View
@@ -40,14 +45,21 @@ class PublicArticleController extends Controller
 
         $isBookmarked = (bool) $request->user()?->hasBookmarked($article);
 
+        // Sidebar kanan: daftar artikel terbaru lainnya + jumlah artikel per jenis.
         $relatedArticles = Article::query()
             ->published()
             ->whereKeyNot($article->getKey())
-            ->with('user:id,name')
             ->latest()
-            ->take(3)
-            ->get();
+            ->take(5)
+            ->get(['id', 'title', 'slug', 'category', 'image', 'created_at']);
 
-        return view('public.show', compact('article', 'relatedArticles', 'isBookmarked'));
+        $categoryCounts = Article::query()
+            ->published()
+            ->whereNotNull('category')
+            ->selectRaw('category, COUNT(*) as total')
+            ->groupBy('category')
+            ->pluck('total', 'category');
+
+        return view('public.show', compact('article', 'relatedArticles', 'categoryCounts', 'isBookmarked'));
     }
 }
