@@ -202,3 +202,35 @@ html:has(dialog.nav-drawer[open], dialog.search-panel[open]) { overflow: hidden;
 @supports not (animation-timeline: scroll()) {
     .reading-progress { display: none; }
 }
+
+/*
+ * Pop-up notifikasi (partials/flash). Muncul dengan meluncur halus, hilang saat bar waktu
+ * (.toast-timer) selesai beranimasi. Bar berhenti selama pop-up disorot kursor/fokus, sehingga
+ * pesan tidak hilang ketika sedang dibaca. Lama tampil diatur variabel --toast-duration.
+ */
+.toast {
+    transition: opacity 0.2s ease, translate 0.2s ease;
+}
+
+@starting-style {
+    .toast { opacity: 0; translate: 0 -0.5rem; }
+}
+
+.toast.toast-leaving { opacity: 0; translate: 0 -0.5rem; }
+
+.toast-timer {
+    transform-origin: left;
+    animation: toast-timer var(--toast-duration, 5s) linear forwards;
+}
+
+.toast:hover .toast-timer,
+.toast:focus-within .toast-timer { animation-play-state: paused; }
+
+@keyframes toast-timer {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toast { transition: none; }
+}

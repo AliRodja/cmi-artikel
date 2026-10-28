@@ -12,11 +12,11 @@
 <body class="flex min-h-screen flex-col bg-gray-50 font-sans text-gray-900 antialiased">
 
     @include('partials.navbar')
+    @include('partials.flash')
 
     @yield('hero')
 
     <main class="container-page flex-1 py-10">
-        @include('partials.flash')
         @yield('content')
     </main>
 

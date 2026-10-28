@@ -11,6 +11,7 @@ use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicArticleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +50,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifikasi', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifikasi/{id}/buka', [NotificationController::class, 'open'])->name('notifications.open');
     Route::post('/notifikasi/baca-semua', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+
+    // Kelola Akun: data akun milik user yang login (semua peran).
+    Route::get('/akun', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/akun', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/akun/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 });
 
 Route::middleware(['auth', 'writer'])->group(function () {

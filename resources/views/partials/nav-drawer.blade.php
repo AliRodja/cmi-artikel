@@ -1,6 +1,7 @@
 {{--
     Menu navigasi samping (hanya navigasi). Dibuka oleh tombol burger di navbar (resources/js/app.js).
-    Akun (profil, Baca Nanti, Kelola Pengguna, Keluar) ada di dropdown kanan: partials/user-menu.
+    Akun (profil, Kelola Akun, Baca Nanti, Keluar) ada di dropdown kanan: partials/user-menu.
+    Kelola Pengguna (semua user) khusus admin, ada di bagian Admin di bawah.
     Data $pendingReviewCount datang dari View Composer navbar (AppServiceProvider),
     dan ikut tersedia di sini karena @include mewarisi data view induknya.
 --}}
@@ -60,6 +61,9 @@
                         </a>
                         <a href="{{ route('articles.report') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('articles.report')])>
                             <x-icon name="chart-bar" class="text-gray-400" /> Laporan Artikel
+                        </a>
+                        <a href="{{ route('users.index') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('users.*')])>
+                            <x-icon name="users" class="text-gray-400" /> Kelola Pengguna
                         </a>
                     </div>
                 @endif

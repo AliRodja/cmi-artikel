@@ -44,6 +44,7 @@
         'share' => 'fa-solid fa-share-nodes',
         'stethoscope' => 'fa-solid fa-stethoscope',
         'fire' => 'fa-solid fa-fire',
+        'info' => 'fa-solid fa-circle-info',
         'chart-line' => 'fa-solid fa-chart-line',
         // Logo merek (gaya brands).
         'whatsapp' => 'fa-brands fa-whatsapp',

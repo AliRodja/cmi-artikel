@@ -3,6 +3,8 @@
 return [
     'boolean' => ':Attribute harus bernilai benar atau salah.',
     'confirmed' => 'Konfirmasi :attribute tidak cocok.',
+    'current_password' => 'Password saat ini salah.',
+    'different' => ':Attribute harus berbeda dengan :other.',
     'email' => ':Attribute harus berupa alamat email yang valid.',
     'image' => ':Attribute harus berupa gambar.',
     'in' => ':Attribute yang dipilih tidak valid.',
@@ -23,5 +25,6 @@ return [
         'email' => 'email',
         'password' => 'password',
         'password_confirmation' => 'konfirmasi password',
+        'current_password' => 'password saat ini',
     ],
 ];

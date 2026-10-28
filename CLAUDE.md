@@ -209,7 +209,7 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   disembunyikan di ponsel), kanan tamu: Masuk/Daftar (Daftar disembunyikan di ponsel; halaman Masuk punya link Daftar) |
   login: lonceng + tombol avatar saja (nama/peran hanya di header dropdown) → dropdown akun `partials/user-menu` (Popover API `popover`/`popovertarget`; klik luar & Esc
   bawaan browser; posisi top/right di-set JS saat `beforetoggle`, digeser bila keluar layar saat `toggle`). Isi:
-  profil, Kelola Pengguna (admin), Baca Nanti,
+  profil, **Kelola Akun** (`profile.edit`, akun sendiri, semua peran), Baca Nanti,
   Notifikasi, Keluar. Drawer kiri hanya
   navigasi (tanpa profil/Masuk/Daftar/Keluar).
   Redesign 2026-10-28: garis aksen `brand-600` di atas, tinggi `h-16`, tombol ikon bulat `.nav-icon-btn` (app.css),
@@ -234,6 +234,22 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Kelola Akun** (2026-10-28, koreksi user: "Kelola Pengguna" di menu avatar maksudnya akun milik user itu sendiri,
+  bukan seluruh user). `ProfileController` (`/akun` GET/PATCH, `/akun/password` PUT; selalu `$request->user()`; role
+  tidak bisa diubah; password baru wajib `current_password` + `different:current_password`). View `profile/edit`
+  (form Data Akun + Ganti Password, kartu ringkasan: avatar `size="lg"` baru, peran, jumlah artikel/komentar/tersimpan).
+  Menu avatar: Kelola Akun untuk semua; **Kelola Pengguna (UserController) pindah ke drawer kiri bagian Admin**.
+  Test `ProfileTest` (5) → 93 test / 360 assertion.
+- [x] **Pop-up berhasil/gagal** (2026-10-28): `partials/flash` kini toast (di-include langsung di `<body>` setelah navbar,
+  bukan di `<main>`): `success`/`status`/`error` + pop-up gagal umum bila `$errors->any()`. Auto-hilang lewat
+  `animationend` bar `.toast-timer` (CSS, berhenti saat hover/focus; durasi `[--toast-duration:5s]`), tombol × →
+  `.toast-leaving`. Gagal keluar/simpan: `bootstrap/app.php` → `redirectGuestsTo` flash error untuk tamu di
+  `bookmarks.toggle` (kembali ke artikel setelah login sudah otomatis: `redirect()->guest()` untuk POST memakai URL
+  sebelumnya sebagai intended) + render `HttpException` 419 → `back()->withInput(...)->with('error', ...)` (pesan
+  khusus untuk route `logout`). Tombol Simpan tamu kini form POST (bukan link). **Laravel 13**: middleware CSRF =
+  `PreventRequestForgery`; request ber-header `Sec-Fetch-Site: same-origin` lolos tanpa cek token, jadi 419 praktis
+  hanya terjadi tanpa header itu (HTTP non-localhost / browser lama) — diuji dengan curl. Test `PopupMessageTest` (6)
+  memalsukan token gagal dengan `app()->instance(PreventRequestForgery::class, ...)` → 88 test / 335 assertion.
 - [x] **Redesign beranda** (2026-10-28): hero biru tua tetap (tanpa pola garis). `PublicArticleController@index` kirim
   `$isLanding` (tanpa cari/filter & halaman 1), `$popularArticles` (hanya saat landing), `$categoryCounts`. Urutan:
   Sorotan (1 besar + 2 kartu kecil dengan thumbnail & jenis) → Artikel Terpopuler (komponen `x-popular-article`,

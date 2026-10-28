@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,9 +22,36 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // User yang sudah login lalu membuka /login atau /register: pembaca ke beranda, lainnya ke dashboard.
         $middleware->redirectUsersTo(fn (Request $request) => $request->user()?->canWrite() ? route('dashboard') : route('home'));
+
+        // Tamu yang menekan Simpan (Baca Nanti): diarahkan ke Masuk dengan pop-up penjelasan. Kembali ke artikelnya
+        // setelah login sudah otomatis: untuk request POST, redirect()->guest() bawaan Laravel menyimpan halaman
+        // sebelumnya (artikel tadi) sebagai tujuan redirect()->intended() di LoginController.
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->routeIs('bookmarks.toggle')) {
+                $request->session()->flash('error', 'Artikel belum tersimpan. Silakan masuk terlebih dahulu.');
+            }
+
+            return route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // 419 = token CSRF kedaluwarsa (halaman dibuka terlalu lama / sudah keluar di tab lain). Daripada halaman
+        // error "Page Expired", kembalikan ke halaman sebelumnya (dengan token baru) disertai pop-up gagal.
+        $exceptions->render(function (HttpException $e, Request $request) {
+            if ($e->getStatusCode() !== 419 || $request->expectsJson()) {
+                return null;
+            }
+
+            $message = $request->routeIs('logout')
+                ? 'Anda belum keluar karena sesi halaman sudah kedaluwarsa. Silakan coba lagi.'
+                : 'Permintaan belum diproses karena halaman sudah terlalu lama dibuka. Silakan coba lagi.';
+
+            return back()
+                ->withInput($request->except(['_token', 'password', 'password_confirmation']))
+                ->with('error', $message);
+        });
     })->create();

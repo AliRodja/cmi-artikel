@@ -172,7 +172,8 @@ Buka **http://localhost:8000** di browser.
 
 User lain hasil seeder juga memakai password `password` (email-nya dapat dilihat di tabel `users`).
 Akun yang mendaftar lewat halaman **Daftar** selalu berperan **pembaca**. Admin mengubah peran (dan menambah,
-mengedit, atau menghapus akun) lewat menu akun → **Kelola Pengguna** (`/dashboard/users`). Lewat terminal juga bisa,
+mengedit, atau menghapus akun) lewat menu kiri → Admin → **Kelola Pengguna** (`/dashboard/users`). Setiap user
+mengubah nama, email, dan password miliknya sendiri lewat menu avatar → **Kelola Akun** (`/akun`). Lewat terminal juga bisa,
 misalnya untuk menunjuk admin pertama pada instalasi baru:
 
 ```bash
@@ -338,6 +339,8 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
 | GET | `/notifikasi` | `notifications.index` | `auth` | Daftar notifikasi |
 | GET | `/notifikasi/{id}/buka` | `notifications.open` | `auth` | Tandai dibaca lalu buka tujuan |
 | POST | `/notifikasi/baca-semua` | `notifications.read-all` | `auth` | Tandai semua dibaca |
+| GET / PATCH | `/akun` | `profile.edit` / `profile.update` | `auth` | Kelola Akun: nama & email milik sendiri |
+| PUT | `/akun/password` | `profile.password` | `auth` | Ganti password (wajib password saat ini) |
 | GET | `/dashboard` | `dashboard` | `auth`, `writer` | Statistik & artikel terbaru |
 | — | `/dashboard/articles/...` | `articles.*` | `auth`, `writer` + Policy | CRUD artikel (resource) |
 | GET | `/dashboard/laporan-artikel` | `articles.report` | `auth`, `writer`, `admin` | Soal 2 — INNER JOIN |
@@ -367,7 +370,11 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
     `ArticlePolicy` ("bolehkah user ini mengubah artikel INI?"), dan validasi status di `ArticleRequest`
     (`Article::allowedStatusesFor()`, sehingga status Published yang dipalsukan lewat DevTools tetap ditolak).
   - `role` tidak ada di `$fillable`, jadi input `role=admin` yang disisipkan ke form Daftar diabaikan.
-- **Kelola Pengguna (admin):** tambah, edit (nama, email, peran, ganti password), dan hapus akun.
+- **Kelola Akun vs Kelola Pengguna:** *Kelola Akun* (`ProfileController`, menu avatar, semua peran) hanya mengubah akun
+  milik user yang login. Controller selalu memakai `$request->user()` dan tidak ada id di URL, jadi tidak mungkin
+  mengubah akun orang lain. Peran tidak bisa diubah di sini, dan ganti password wajib menyertakan password saat ini
+  (aturan `current_password`).
+- **Kelola Pengguna (admin, menu kiri bagian Admin):** tambah, edit (nama, email, peran, ganti password), dan hapus akun.
   - Admin **tidak bisa mengubah peran atau menghapus akunnya sendiri** (`UserPolicy`; input `role` untuk akun
     sendiri ditolak aturan `prohibited` di `UserRequest`). Karena itu situs selalu punya minimal satu admin.
   - Menghapus akun **tidak menghapus artikelnya**: artikel tetap ada tanpa penulis (FK `nullOnDelete`), sehingga juga
@@ -392,6 +399,12 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
     `config('clinic.popular_min_views')` (default 5), diurutkan terbanyak. Tampil di halaman detail dan di beranda
     (hanya halaman awal tanpa cari/filter, agar hasil pencarian tetap jadi fokus). **Artikel Terkait** = artikel Published dengan jenis yang sama.
   - Penulis/admin melihat total, 7 hari terakhir, dan 5 kunjungan terbaru di halaman detail artikelnya.
+- **Pop-up berhasil/gagal (toast):** semua pesan flash (`success` / `status` / `error`) dan error validasi tampil
+  sebagai pop-up di `partials/flash` yang hilang sendiri. Dua jalur gagal ditangani di `bootstrap/app.php`:
+  tamu yang menekan **Simpan** diarahkan ke Masuk dengan pop-up penjelasan (lalu kembali ke artikelnya), dan token
+  CSRF kedaluwarsa (419), misalnya saat **Keluar** dari halaman yang lama terbuka, dikembalikan ke halaman sebelumnya
+  dengan pop-up gagal, bukan halaman error. Catatan Laravel 13: middleware `PreventRequestForgery` menerima request
+  ber-header `Sec-Fetch-Site: same-origin` dari browser modern tanpa memeriksa token.
 - **Statistik dashboard per user**, bukan statistik seluruh situs.
 - **Laporan Artikel (Soal 2) hanya untuk admin**, karena menampilkan email semua penulis (data pribadi) sementara
   siapa pun bisa mendaftar. Laporan menampilkan artikel Published **semua penulis**, sesuai soal. Penilai dapat
@@ -422,6 +435,7 @@ app/
 │   │   ├── BookmarkController.php         Baca Nanti
 │   │   ├── NotificationController.php     notifikasi
 │   │   ├── UserController.php             Kelola Pengguna (admin)
+│   │   ├── ProfileController.php          Kelola Akun (akun sendiri)
 │   │   ├── PublicArticleController.php    halaman publik
 │   │   └── ArticleReportController.php    Soal 2 (INNER JOIN)
 │   ├── Middleware/EnsureUserIsAdmin.php   middleware "admin"
@@ -462,13 +476,15 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/ArticleReportTest.php` | 9 | Soal 2: INNER JOIN membuang artikel tanpa penulis, hanya `status = 1`, nama & email dari tabel `users`, urut `created_at` terbaru, 10 per halaman, search judul/nama/email, search tidak membocorkan Draft, kata kunci terbawa di link pagination, tamu ditolak |
 | `tests/Feature/ArticleCategoryTest.php` | 4 | Jenis artikel wajib & hanya 4 pilihan; filter `?jenis=` di beranda (nilai asing diabaikan); halaman detail berisi link bagikan ter-encode, jumlah per jenis (hanya Published), judul "Alami gejala jantung?" & URL WhatsApp CS persis; artikel lama tanpa jenis tetap tampil |
 | `tests/Feature/ArticleViewTest.php` | 7 | Tamu dihitung sekali per sesi (sesi disimpan ter-hash), user login sekali, penulis sendiri tidak dihitung; `updated_at` tidak berubah & Draft tidak dihitung; Terpopuler butuh minimal kunjungan, urut terbanyak, tanpa Draft & artikel yang sedang dibuka; Terkait = jenis sama; beranda menampilkan Terpopuler hanya di halaman awal (tidak saat cari/filter) + banner WhatsApp; statistik & riwayat di area penulis |
+| `tests/Feature/ProfileTest.php` | 5 | Semua peran bisa membuka Kelola Akun (tamu → login); menu avatar → Kelola Akun untuk semua, Kelola Pengguna hanya muncul untuk admin; ubah nama/email (email unik), `role` yang disisipkan diabaikan; ganti password wajib password saat ini yang benar; password baru harus berbeda & terkonfirmasi |
+| `tests/Feature/PopupMessageTest.php` | 6 | Pop-up berhasil saat keluar & menyimpan artikel; keluar dengan token CSRF kedaluwarsa → kembali + pop-up gagal (bukan 419), tetap login; tamu menekan Simpan → Masuk + pop-up gagal, setelah login kembali ke artikel; form tidak valid → pop-up gagal umum; tanpa pesan → tidak ada pop-up |
 | `tests/Feature/ArticleContentTest.php` | 6 | Rich text: format dipertahankan, HTML berbahaya (`<script>`, `onclick`, `javascript:`) dibuang, link diberi `rel=noopener`, editor kosong ditolak |
 | `tests/Feature/ArticleRoleTest.php` | 11 | Pendaftar selalu pembaca walau mengirim `role=admin`; penulis tidak bisa langsung Published; artikel yang diajukan tidak tampil di publik; penulis tidak bisa edit/hapus artikel yang sudah tayang; penulis **403** di halaman admin; admin mengelola artikel siapa pun; terbitkan & kembalikan (catatan wajib); catatan hilang saat diajukan ulang; command `user:role` |
 | `tests/Feature/ReaderFeaturesTest.php` | 8 | Pembaca **403** di area penulis & diarahkan ke beranda setelah login; komentar (wajib login, validasi, di-escape, tidak bisa di artikel Draft, hapus hanya pemilik/admin); Baca Nanti (simpan/batal, artikel yang ditarik hilang dari daftar) |
 | `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
 | `tests/Feature/UserManagementTest.php` | 8 | Hanya admin (penulis & pembaca **403**); cari nama/email + filter peran (search tidak menembus filter); tambah akun dengan peran, password ter-hash & bisa login; validasi (email unik, peran tidak dikenal, konfirmasi password); edit dengan password kosong = tidak diganti; reset password orang lain; admin tidak bisa mengubah peran / menghapus akun sendiri; hapus akun → artikel tetap tanpa penulis, komentar/Baca Nanti/notifikasi ikut terhapus |
 
-Hasil: **82 test, 312 assertion, semua lulus.**
+Hasil: **93 test, 360 assertion, semua lulus.**
 
 ---
 

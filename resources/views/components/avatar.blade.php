@@ -12,4 +12,5 @@
     'bg-white/10 text-white ring-1 ring-white/20' => $tone === 'dark',
     'size-8 text-xs' => $size === 'sm',
     'size-11 text-sm' => $size === 'md',
+    'size-16 text-lg' => $size === 'lg',
 ]) }}>{{ $initials }}</span>

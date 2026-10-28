@@ -45,6 +45,24 @@ document.querySelectorAll('dialog.nav-drawer, dialog.search-panel').forEach((dia
     });
 });
 
+// Pop-up notifikasi (partials/flash): ditutup lewat tombol ×, atau otomatis saat bar waktunya habis
+// (event animationend dari animasi CSS .toast-timer, yang berhenti selama pop-up disorot kursor).
+document.querySelectorAll('[data-toast]').forEach((toast) => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const dismiss = () => {
+        if (reduceMotion) {
+            toast.remove();
+            return;
+        }
+        toast.classList.add('toast-leaving');
+        toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+    };
+
+    toast.querySelector('[data-toast-close]').addEventListener('click', dismiss);
+    toast.querySelector('[data-toast-timer]').addEventListener('animationend', dismiss);
+});
+
 // Pintasan "/" membuka panel pencarian, kecuali saat sedang mengetik di kolom isian/editor.
 document.addEventListener('keydown', (event) => {
     const typing = event.target.closest('input, textarea, select, [contenteditable], trix-editor');

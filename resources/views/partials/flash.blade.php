@@ -1,16 +1,64 @@
-
+{{--
+    Pop-up notifikasi (toast) dari flash session: ->with('success' | 'status' | 'error', 'pesan').
+    Bila ada error validasi tanpa pesan 'error', ditampilkan pop-up gagal umum.
+    Hilang sendiri saat bar waktunya habis (berhenti selama disorot kursor) atau ditutup lewat tombol ×;
+    perilakunya di resources/js/app.js, animasinya di .toast pada app.css.
+--}}
 @php
-    $flashStyles = [
-        'success' => 'border-green-200 bg-green-50 text-green-800',
-        'status'  => 'border-blue-200 bg-blue-50 text-blue-800',
-        'error'   => 'border-red-200 bg-red-50 text-red-800',
+    $toastTypes = [
+        'success' => [
+            'title' => 'Berhasil',
+            'icon' => 'check-circle',
+            'role' => 'status',
+            'iconClass' => 'bg-green-50 text-green-600',
+            'timerClass' => 'bg-green-500 [--toast-duration:5s]',
+        ],
+        'status' => [
+            'title' => 'Informasi',
+            'icon' => 'info',
+            'role' => 'status',
+            'iconClass' => 'bg-brand-50 text-brand-600',
+            'timerClass' => 'bg-brand-500 [--toast-duration:6s]',
+        ],
+        'error' => [
+            'title' => 'Gagal',
+            'icon' => 'exclamation-triangle',
+            'role' => 'alert',
+            'iconClass' => 'bg-red-50 text-red-600',
+            'timerClass' => 'bg-red-500 [--toast-duration:8s]',
+        ],
     ];
+
+    $toasts = collect($toastTypes)
+        ->map(fn ($type, $key) => $type + ['message' => session($key)])
+        ->filter(fn ($toast) => filled($toast['message']));
+
+    if ($errors->any() && ! $toasts->has('error')) {
+        $toasts->put('error', $toastTypes['error'] + ['message' => 'Periksa kembali isian yang ditandai merah, lalu coba lagi.']);
+    }
 @endphp
 
-@foreach ($flashStyles as $key => $classes)
-    @if (session($key))
-        <div class="mb-6 rounded-lg border px-4 py-3 text-sm {{ $classes }}">
-            {{ session($key) }}
-        </div>
-    @endif
-@endforeach
+@if ($toasts->isNotEmpty())
+    <div class="pointer-events-none fixed inset-x-4 top-20 z-50 flex flex-col items-center gap-3 sm:inset-x-auto sm:right-6 sm:items-end">
+        @foreach ($toasts as $toast)
+            <div data-toast role="{{ $toast['role'] }}"
+                 class="toast pointer-events-auto w-full max-w-sm overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                <div class="flex items-start gap-3 p-4">
+                    <span class="flex size-9 shrink-0 items-center justify-center rounded-full {{ $toast['iconClass'] }}">
+                        <x-icon :name="$toast['icon']" size="size-4" />
+                    </span>
+                    <div class="min-w-0 flex-1 pt-0.5">
+                        <p class="text-sm font-semibold text-gray-900">{{ $toast['title'] }}</p>
+                        <p class="mt-0.5 text-sm text-gray-600">{{ $toast['message'] }}</p>
+                    </div>
+                    <button type="button" data-toast-close
+                            class="-mt-1 -mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700">
+                        <x-icon name="x-mark" size="size-4" />
+                        <span class="sr-only">Tutup</span>
+                    </button>
+                </div>
+                <div data-toast-timer class="toast-timer h-1 {{ $toast['timerClass'] }}"></div>
+            </div>
+        @endforeach
+    </div>
+@endif

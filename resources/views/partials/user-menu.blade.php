@@ -14,11 +14,10 @@
     </div>
 
     <div class="p-2">
-        @if (auth()->user()->isAdmin())
-            <a href="{{ route('users.index') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('users.*')])>
-                <x-icon name="users" size="size-4" class="text-gray-400" /> Kelola Pengguna
-            </a>
-        @endif
+        {{-- Akun milik user ini sendiri. Manajemen seluruh pengguna (admin) ada di menu kiri: partials/nav-drawer. --}}
+        <a href="{{ route('profile.edit') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('profile.*')])>
+            <x-icon name="user" size="size-4" class="text-gray-400" /> Kelola Akun
+        </a>
         <a href="{{ route('bookmarks.index') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('bookmarks.*')])>
             <x-icon name="bookmark" size="size-4" class="text-gray-400" /> Baca Nanti
         </a>
