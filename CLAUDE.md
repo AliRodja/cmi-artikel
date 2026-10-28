@@ -234,6 +234,12 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Redesign Lupa & Reset Password** (2026-10-28): panel `auth/_aside`. Lupa password: form email (ikon, hint) →
+  setelah terkirim (`session('status')`) kartu berganti "Cek email Anda" (email dari `old('email')` — controller kini
+  `withInput` juga saat sukses, masa berlaku dari `config('auth.passwords.users.expire')`, langkah, tombol Masuk &
+  "Kirim ulang link"; throttle 60 dtk bawaan broker → error "Mohon tunggu…"). Reset: "Buat password baru", ikon,
+  hint, `auth/_password-match` (indikator cocok kini generik di app.js `[data-password-match]`, dipakai juga Daftar).
+  Catatan uji: `LOG_SINGLE_PATH` tidak dipakai config proyek; email reset uji masuk `storage/logs/laravel.log`.
 - [x] **Redesign halaman Daftar** (2026-10-28): sama dengan Masuk; isi panel kiri kini partial `auth/_aside`
   ($heading, $text + kotak "Punya keluhan kesehatan?" WA) dipakai login & register. Form ikon user/envelope/lock,
   password & konfirmasi berdampingan (sm), `x-input` prop baru `hint` (teks bantuan, disembunyikan saat error via

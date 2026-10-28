@@ -23,8 +23,9 @@ class ForgotPasswordController extends Controller
 
         $status = Password::sendResetLink($request->only('email'));
 
+        // Email ikut dibawa (withInput) agar halaman bisa menampilkan "dikirim ke ..." dan tombol kirim ulang.
         return $status === Password::RESET_LINK_SENT
-            ? back()->with('status', __($status))
+            ? back()->withInput($request->only('email'))->with('status', __($status))
             : back()->withInput($request->only('email'))->withErrors(['email' => __($status)]);
     }
 }

@@ -91,6 +91,28 @@ document.querySelectorAll('[data-password-toggle]').forEach((button) => {
     input.addEventListener('blur', () => (capsLockHint.hidden = true));
 });
 
+// Indikator "password cocok" (auth/_password-match, halaman Daftar & Reset Password): dicek langsung saat
+// mengetik konfirmasi. Validasi sebenarnya tetap di server (rule "confirmed").
+document.querySelectorAll('[data-password-match]').forEach((status) => {
+    const password = document.getElementById(status.dataset.password);
+    const confirmation = document.getElementById(status.dataset.confirmation);
+
+    const update = () => {
+        if (confirmation.value === '') {
+            status.hidden = true;
+            return;
+        }
+        const match = confirmation.value === password.value;
+        status.hidden = false;
+        status.textContent = match ? '✓ Password cocok' : 'Password belum sama';
+        status.classList.toggle('text-green-700', match);
+        status.classList.toggle('text-amber-700', !match);
+    };
+
+    password.addEventListener('input', update);
+    confirmation.addEventListener('input', update);
+});
+
 // Pintasan "/" membuka panel pencarian, kecuali saat sedang mengetik di kolom isian/editor.
 document.addEventListener('keydown', (event) => {
     const typing = event.target.closest('input, textarea, select, [contenteditable], trix-editor');

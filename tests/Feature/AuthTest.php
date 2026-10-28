@@ -132,6 +132,34 @@ class AuthTest extends TestCase
         $this->assertDatabaseHas('password_reset_tokens', ['email' => $user->email]);
     }
 
+    public function test_forgot_password_page_switches_to_check_email_state_after_sending(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create(['email' => 'siti@cmi.test']);
+
+        $this->get('/forgot-password')
+            ->assertSee('Lupa password')
+            ->assertSee('Kirim link reset password')
+            ->assertDontSee('Cek email Anda');
+
+        $this->from('/forgot-password')
+            ->followingRedirects()
+            ->post('/forgot-password', ['email' => $user->email])
+            ->assertSee('Cek email Anda')
+            ->assertSee('siti@cmi.test')
+            ->assertSee('60 menit')
+            ->assertSee('Kirim ulang link');
+    }
+
+    public function test_reset_password_page_has_new_password_form(): void
+    {
+        $this->get('/reset-password/token-apa-saja?email=siti%40cmi.test')
+            ->assertOk()
+            ->assertSee('Buat password baru')
+            ->assertSee('value="siti@cmi.test"', false)
+            ->assertSee('data-password-match', false);
+    }
+
     public function test_user_can_reset_password_and_token_cannot_be_reused(): void
     {
         Notification::fake();

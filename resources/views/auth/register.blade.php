@@ -24,8 +24,7 @@
                 <x-input name="password_confirmation" label="Konfirmasi password" type="password" icon="lock" placeholder="Ulangi password"
                          required autocomplete="new-password" />
             </div>
-            {{-- Diisi JS di bawah: memberi tahu apakah kedua password sudah sama sebelum form dikirim. --}}
-            <p id="password-match" class="-mt-2 mb-4 flex items-center gap-1.5 text-xs font-medium" aria-live="polite" hidden></p>
+            @include('auth._password-match')
 
             <button type="submit" class="btn btn-primary mt-2 w-full py-2.5">
                 <x-icon name="user-plus" size="size-4" /> Daftar
@@ -46,29 +45,3 @@
         </x-slot:footer>
     </x-auth-card>
 @endsection
-
-@push('scripts')
-    <script>
-        // Cek "password cocok" langsung saat mengetik konfirmasi. Validasi sebenarnya tetap di server (rule "confirmed").
-        (() => {
-            const password = document.getElementById('password');
-            const confirmation = document.getElementById('password_confirmation');
-            const status = document.getElementById('password-match');
-
-            const update = () => {
-                if (confirmation.value === '') {
-                    status.hidden = true;
-                    return;
-                }
-                const match = confirmation.value === password.value;
-                status.hidden = false;
-                status.textContent = match ? '✓ Password cocok' : 'Password belum sama';
-                status.classList.toggle('text-green-700', match);
-                status.classList.toggle('text-amber-700', !match);
-            };
-
-            password.addEventListener('input', update);
-            confirmation.addEventListener('input', update);
-        })();
-    </script>
-@endpush

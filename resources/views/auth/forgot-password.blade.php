@@ -2,18 +2,76 @@
 
 @section('title', 'Lupa Password')
 
+@php
+    // Setelah link terkirim (flash "status" dari ForgotPasswordController), kartu berganti ke tampilan "Cek email Anda".
+    $linkSent = session()->has('status');
+@endphp
+
 @section('content')
-    <x-auth-card title="Lupa Password" subtitle="Masukkan email akun Anda. Kami akan mengirim link untuk mengatur ulang password.">
-        <form action="{{ route('password.email') }}" method="POST">
-            @csrf
+    <x-auth-card :title="$linkSent ? 'Cek email Anda' : 'Lupa password'"
+                 :subtitle="$linkSent ? 'Link untuk membuat password baru sudah dikirim.' : 'Masukkan email akun Anda. Kami akan mengirim link untuk membuat password baru.'">
+        <x-slot:aside>
+            @include('auth._aside', [
+                'heading' => 'Lupa password?',
+                'text' => 'Tidak masalah. Kami bantu Anda membuat password baru melalui link yang dikirim ke email Anda.',
+            ])
+        </x-slot:aside>
 
-            <x-input name="email" label="Email" type="email" required autofocus autocomplete="email" />
+        @if ($linkSent)
+            <div class="flex items-start gap-4 rounded-xl border border-green-200 bg-green-50 p-4">
+                <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-green-600">
+                    <x-icon name="envelope-open" size="size-5" />
+                </span>
+                <p class="text-sm text-green-900">
+                    Kami sudah mengirim link ke <span class="font-semibold break-all">{{ old('email') }}</span>.
+                    Link berlaku <span class="font-semibold">{{ config('auth.passwords.users.expire') }} menit</span>.
+                </p>
+            </div>
 
-            <button type="submit" class="btn btn-primary mt-2 w-full">Kirim Link Reset Password</button>
-        </form>
+            <ul class="mt-5 space-y-2 text-sm text-gray-600">
+                <li class="flex gap-2">
+                    <x-icon name="check" size="size-3" class="mt-1 text-brand-600" />
+                    <span>Buka email tersebut, lalu klik tombol <span class="font-medium text-gray-900">Reset Password</span>.</span>
+                </li>
+                <li class="flex gap-2">
+                    <x-icon name="check" size="size-3" class="mt-1 text-brand-600" />
+                    <span>Belum masuk? Periksa folder Spam atau Promosi.</span>
+                </li>
+            </ul>
+
+            <a href="{{ route('login') }}" class="btn btn-primary mt-6 w-full py-2.5">
+                <x-icon name="login" size="size-4" /> Kembali ke halaman Masuk
+            </a>
+
+            {{-- Kirim ulang memakai form yang sama. Laravel membatasi 1 permintaan per 60 detik per email. --}}
+            <form action="{{ route('password.email') }}" method="POST" class="mt-3">
+                @csrf
+                <input type="hidden" name="email" value="{{ old('email') }}">
+                <button type="submit" class="btn btn-secondary w-full py-2.5">
+                    <x-icon name="rotate" size="size-4" /> Kirim ulang link
+                </button>
+            </form>
+        @else
+            <form action="{{ route('password.email') }}" method="POST">
+                @csrf
+
+                <x-input name="email" label="Email" type="email" icon="envelope" placeholder="nama@email.com"
+                         hint="Gunakan email yang Anda pakai saat mendaftar." required autofocus autocomplete="email" />
+
+                <button type="submit" class="btn btn-primary mt-2 w-full py-2.5">
+                    <x-icon name="paper-plane" size="size-4" /> Kirim link reset password
+                </button>
+            </form>
+
+            <a href="{{ route('login') }}" class="link mt-6 flex items-center justify-center gap-1.5 text-sm">
+                <x-icon name="arrow-left" size="size-3" /> Ingat password? Kembali ke halaman Masuk
+            </a>
+        @endif
 
         <x-slot:footer>
-            Ingat password? <a href="{{ route('login') }}" class="link">Masuk</a>
+            <a href="{{ route('home') }}" class="link inline-flex items-center gap-1.5">
+                <x-icon name="arrow-left" size="size-3" /> Kembali ke beranda
+            </a>
         </x-slot:footer>
     </x-auth-card>
 @endsection

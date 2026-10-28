@@ -49,6 +49,10 @@
         'lock' => 'fa-solid fa-lock',
         'eye-slash' => 'fa-regular fa-eye-slash',
         'shield' => 'fa-solid fa-shield-halved',
+        'paper-plane' => 'fa-regular fa-paper-plane',
+        'envelope-open' => 'fa-regular fa-envelope-open',
+        'key' => 'fa-solid fa-key',
+        'rotate' => 'fa-solid fa-rotate-right',
         'chart-line' => 'fa-solid fa-chart-line',
         // Logo merek (gaya brands).
         'whatsapp' => 'fa-brands fa-whatsapp',

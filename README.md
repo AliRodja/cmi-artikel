@@ -481,7 +481,7 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 
 | File | Jumlah | Yang diuji |
 |---|---|---|
-| `tests/Feature/AuthTest.php` | 13 | Register (+ validasi, password ter-hash), login benar/salah, throttle login (429), logout, kirim link reset, reset password + token tidak bisa dipakai ulang, token palsu ditolak, middleware `auth` & `guest` |
+| `tests/Feature/AuthTest.php` | 15 | Register (+ validasi, password ter-hash), login benar/salah, throttle login (429), logout, kirim link reset, reset password + token tidak bisa dipakai ulang, token palsu ditolak, middleware `auth` & `guest` |
 | `tests/Feature/ArticleAuthorizationTest.php` | 9 | Pemilik bisa lihat/edit/update/hapus artikel yang belum tayang; user lain **403** (lihat, edit, update, hapus); daftar hanya artikel sendiri; tamu diarahkan ke login; `user_id` tidak bisa disisipkan dari form; publik hanya melihat Published (Draft 404) dan tidak ada tombol kelola |
 | `tests/Feature/ArticleReportTest.php` | 9 | Soal 2: INNER JOIN membuang artikel tanpa penulis, hanya `status = 1`, nama & email dari tabel `users`, urut `created_at` terbaru, 10 per halaman, search judul/nama/email, search tidak membocorkan Draft, kata kunci terbawa di link pagination, tamu ditolak |
 | `tests/Feature/ArticleCategoryTest.php` | 4 | Jenis artikel wajib & hanya 4 pilihan; filter `?jenis=` di beranda (nilai asing diabaikan); halaman detail berisi link bagikan ter-encode, jumlah per jenis (hanya Published), judul "Alami gejala jantung?" & URL WhatsApp CS persis; artikel lama tanpa jenis tetap tampil |
@@ -495,7 +495,7 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
 | `tests/Feature/UserManagementTest.php` | 8 | Hanya admin (penulis & pembaca **403**); cari nama/email + filter peran (search tidak menembus filter); tambah akun dengan peran, password ter-hash & bisa login; validasi (email unik, peran tidak dikenal, konfirmasi password); edit dengan password kosong = tidak diganti; reset password orang lain; admin tidak bisa mengubah peran / menghapus akun sendiri; hapus akun → artikel tetap tanpa penulis, komentar/Baca Nanti/notifikasi ikut terhapus |
 
-Hasil: **102 test, 394 assertion, semua lulus.**
+Hasil: **104 test, 405 assertion, semua lulus.**
 
 ---
 
