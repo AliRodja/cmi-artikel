@@ -234,6 +234,16 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **SEO** (2026-10-28, sebelum deploy): `config/seo.php` (description bawaan, `image` = `images/og-default.png`
+  1200×630 dibuat GD dari logo, latar brand-950). `App\Support\Seo`: `isIndexable()` (hanya `home` tanpa ?search &
+  `public.articles.show`), `canonicalUrl()` (beranda: hanya ?jenis valid & ?page>1; lainnya `$request->url()`),
+  `organization()` (MedicalClinic + WebSite/SearchAction), `article()` (MedicalWebPage reviewedBy/lastReviewed +
+  Article author/jobTitle + BreadcrumbList), `JSON_FLAGS` (wajib `JSON_HEX_TAG`). `partials/seo` di layout
+  (menggantikan `<title>`): title, description, robots, canonical, theme-color, og:*, twitter:card, `@stack('seo-meta')`,
+  `@stack('structured-data')`. Halaman mengisi `@section('description'|'og_type'|'og_image')`. `SeoController`
+  `/sitemap.xml` (XMLWriter, lazy) & `/robots.txt` (dinamis; non-production `Disallow: /`) — `public/robots.txt`
+  dihapus (file statis menang atas route). `config/clinic.php` kini juga `whatsapp_number`. Test `SeoTest` (7) →
+  120 test / 477 assertion. README punya "Checklist SEO saat deploy".
 - [x] **Kredibilitas & aksesibilitas (rekomendasi no. 4 & 5)** (2026-10-28). Migration `add_profession_to_users_table`
   (`users.profession` string 100, fillable) & `add_medical_review_and_sources_to_articles_table`
   (`medical_reviewer_id` FK users nullOnDelete, `sources` text) — MySQL dimigrasi, backup

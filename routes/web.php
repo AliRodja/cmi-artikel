@@ -13,10 +13,14 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicArticleController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicArticleController::class, 'index'])->name('home');
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+// Dinamis (bukan public/robots.txt) agar isinya mengikuti APP_ENV & APP_URL.
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
 Route::get('/artikel/{article}', [PublicArticleController::class, 'show'])->name('public.articles.show');
 // Live search panel cari navbar. Dibatasi 60 permintaan/menit per pengunjung (JS sudah memberi jeda saat mengetik).
 Route::get('/cari', [PublicArticleController::class, 'liveSearch'])->middleware('throttle:60,1')->name('articles.live-search');

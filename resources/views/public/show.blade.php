@@ -1,6 +1,23 @@
 @extends('layouts.app')
 
 @section('title', $article->title)
+@section('description', Str::limit($article->excerpt, 155))
+@section('og_type', 'article')
+@if ($article->image_url)
+    @section('og_image', $article->image_url)
+@endif
+
+@push('seo-meta')
+    <meta property="article:published_time" content="{{ $article->created_at->toAtomString() }}">
+    <meta property="article:modified_time" content="{{ $article->updated_at->toAtomString() }}">
+    @if ($article->category_label)
+        <meta property="article:section" content="{{ $article->category_label }}">
+    @endif
+@endpush
+
+@push('structured-data')
+    <script type="application/ld+json">@json(\App\Support\Seo::article($article), \App\Support\Seo::JSON_FLAGS)</script>
+@endpush
 
 @section('hero')
     {{-- Bar progres membaca (CSS scroll-driven animation, lihat .reading-progress di app.css). --}}

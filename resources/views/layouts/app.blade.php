@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Beranda') · {{ config('app.name') }}</title>
+    @include('partials.seo')
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     @fonts

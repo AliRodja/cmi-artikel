@@ -329,6 +329,8 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
 |---|---|---|---|---|
 | GET | `/` | `home` | — | Daftar artikel Published (`?search=`, `?jenis=jantung`) |
 | GET | `/artikel/{slug}` | `public.articles.show` | — | Detail artikel Published |
+| GET | `/sitemap.xml` | `sitemap` | — | Sitemap otomatis (beranda, halaman jenis, artikel Published) |
+| GET | `/robots.txt` | `robots` | — | Dinamis: production → larang area pribadi + lokasi sitemap; selain itu `Disallow: /` |
 | GET | `/cari?q=` | `articles.live-search` | `throttle:60,1` | Live search panel navbar (potongan HTML untuk `fetch()`) |
 | GET/POST | `/register` | `register` | `guest` | Daftar akun |
 | GET/POST | `/login` | `login` | `guest` (+ `throttle` saat POST) | Masuk |
@@ -418,6 +420,16 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
   CSRF kedaluwarsa (419), misalnya saat **Keluar** dari halaman yang lama terbuka, dikembalikan ke halaman sebelumnya
   dengan pop-up gagal, bukan halaman error. Catatan Laravel 13: middleware `PreventRequestForgery` menerima request
   ber-header `Sec-Fetch-Site: same-origin` dari browser modern tanpa memeriksa token.
+- **SEO** (`App\Support\Seo`, `partials/seo`, `SeoController`):
+  - Setiap halaman punya `<title>`, meta description, canonical, serta Open Graph & Twitter Card. Artikel memakai
+    ringkasan & gambarnya; tanpa gambar memakai `public/images/og-default.png` (1200×630).
+  - **Hanya beranda (termasuk filter jenis) dan detail artikel yang diindeks**; hasil pencarian, login/daftar,
+    dashboard, akun, dll. diberi `noindex`. Canonical membuang parameter yang tidak mengubah isi (`?utm_*`, `?search=`).
+  - **JSON-LD schema.org**: beranda → `MedicalClinic` + `WebSite` (kotak pencarian); artikel → `MedicalWebPage`
+    (`reviewedBy` = peninjau medis), `Article` (penulis + profesi, tanggal terbit/diperbarui), `BreadcrumbList`.
+    Ditulis dengan `@json(..., JSON_HEX_TAG)` agar judul berisi `</script>` tidak bisa keluar dari tag script.
+  - `sitemap.xml` dibuat otomatis dari database dengan `XMLWriter`; `robots.txt` dinamis mengikuti `APP_ENV`
+    (server uji tidak akan terindeks).
 - **Kredibilitas informasi kesehatan:** gelar/profesi penulis (`users.profession`, diisi lewat Kelola Akun / Kelola
   Pengguna) tampil di bawah nama penulis; admin memilih **peninjau medis** (`articles.medical_reviewer_id`, FK ke
   users, `nullOnDelete`) di form artikel atau panel Terbitkan. Penulis yang menyisipkan field ini ditolak aturan
@@ -482,6 +494,16 @@ lang/id/  lang/id.json                     terjemahan Bahasa Indonesia
 
 ---
 
+### Checklist SEO saat deploy
+
+1. `.env`: `APP_URL=https://domain-asli` (semua URL di sitemap, canonical, Open Graph, JSON-LD ikut berubah),
+   `APP_ENV=production`, `APP_DEBUG=false`, lalu `php artisan config:cache`.
+2. Pastikan HTTPS aktif, lalu buka `https://domain-asli/robots.txt` → harus berisi baris `Sitemap: …`
+   (bukan `Disallow: /`).
+3. Daftarkan domain di **Google Search Console**, verifikasi, lalu kirim `https://domain-asli/sitemap.xml`.
+4. Uji satu artikel di **Rich Results Test** (search.google.com/test/rich-results) dan pratinjau tautan di
+   WhatsApp/Facebook (Sharing Debugger).
+
 ## 9. Automated Test
 
 ```bash
@@ -502,6 +524,7 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/LiveSearchTest.php` | 6 | Panel live search ada di navbar; hasil hanya Published, kata kunci ditandai, judul yang cocok di urutan pertama; maksimal 6 + tautan "Lihat semua"; judul tetap di-escape walau ditandai; kata < 2 huruf / tidak ditemukan; endpoint yang dibuka langsung diarahkan ke halaman hasil |
 | `tests/Feature/ProfileTest.php` | 5 | Semua peran bisa membuka Kelola Akun (tamu → login); menu avatar → Kelola Akun untuk semua, Kelola Pengguna hanya muncul untuk admin; ubah nama/email (email unik), `role` yang disisipkan diabaikan; ganti password wajib password saat ini yang benar; password baru harus berbeda & terkonfirmasi |
 | `tests/Feature/PopupMessageTest.php` | 6 | Pop-up berhasil saat keluar & menyimpan artikel; keluar dengan token CSRF kedaluwarsa → kembali + pop-up gagal (bukan 419), tetap login; tamu menekan Simpan → Masuk + pop-up gagal, setelah login kembali ke artikel; form tidak valid → pop-up gagal umum; tanpa pesan → tidak ada pop-up |
+| `tests/Feature/SeoTest.php` | 7 | Meta description, robots, canonical (tanpa `?utm_*`), Open Graph artikel & gambar bawaan; JSON-LD artikel (penulis + profesi, peninjau medis, breadcrumb) dan judul berisi `</script>` tidak bisa keluar dari tag; canonical beranda menyimpan `?jenis=`; halaman cari/login/dashboard/akun `noindex`; sitemap hanya artikel Published & jenis yang berisi; robots.txt tertutup selain production |
 | `tests/Feature/CredibilityTest.php` | 6 | Profesi penulis, "Ditinjau secara medis oleh", sumber rujukan (link hanya http/https, teks di-escape); hanya admin yang boleh menentukan peninjau (penulis ditolak), peninjau harus penulis/admin dan bisa dipilih saat Terbitkan; profesi diisi lewat Kelola Akun; footer hanya menampilkan info klinik yang terisi; tombol ikon punya teks |
 | `tests/Feature/ReadabilityTest.php` | 3 | Tanggal relatif hanya < 24 jam, selebihnya tanggal pasti + `datetime`/`title`; pop-up gagal tanpa bar waktu, pop-up berhasil 8 detik; tombol WhatsApp memakai hijau berkontras tinggi |
 | `tests/Feature/ArticleContentTest.php` | 6 | Rich text: format dipertahankan, HTML berbahaya (`<script>`, `onclick`, `javascript:`) dibuang, link diberi `rel=noopener`, editor kosong ditolak |
@@ -510,7 +533,7 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
 | `tests/Feature/UserManagementTest.php` | 8 | Hanya admin (penulis & pembaca **403**); cari nama/email + filter peran (search tidak menembus filter); tambah akun dengan peran, password ter-hash & bisa login; validasi (email unik, peran tidak dikenal, konfirmasi password); edit dengan password kosong = tidak diganti; reset password orang lain; admin tidak bisa mengubah peran / menghapus akun sendiri; hapus akun → artikel tetap tanpa penulis, komentar/Baca Nanti/notifikasi ikut terhapus |
 
-Hasil: **113 test, 442 assertion, semua lulus.**
+Hasil: **120 test, 477 assertion, semua lulus.**
 
 ---
 

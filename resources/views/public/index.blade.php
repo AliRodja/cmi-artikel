@@ -1,6 +1,29 @@
 @extends('layouts.app')
 
-@section('title', 'Berita & Artikel')
+@php
+    // Judul & deskripsi SEO: halaman jenis punya judul sendiri; nomor halaman ditambahkan agar tidak kembar.
+    $categoryLabel = $category ? \App\Models\Article::CATEGORIES[$category] : null;
+    $seoTitle = match (true) {
+        $search !== '' => 'Hasil pencarian "'.$search.'"',
+        $categoryLabel !== null => 'Artikel Kesehatan '.$categoryLabel,
+        default => 'Berita & Artikel Kesehatan',
+    };
+    if ($articles->currentPage() > 1) {
+        $seoTitle .= ' – Halaman '.$articles->currentPage();
+    }
+    $seoDescription = $categoryLabel
+        ? 'Kumpulan artikel kesehatan seputar '.Str::lower($categoryLabel).' dari '.config('app.name').': gejala, pencegahan, dan perawatan.'
+        : config('seo.description');
+@endphp
+
+@section('title', $seoTitle)
+@section('description', $seoDescription)
+
+@if ($isLanding)
+    @push('structured-data')
+        <script type="application/ld+json">@json(\App\Support\Seo::organization(), \App\Support\Seo::JSON_FLAGS)</script>
+    @endpush
+@endif
 
 @section('hero')
     <section class="relative overflow-hidden bg-brand-950">
