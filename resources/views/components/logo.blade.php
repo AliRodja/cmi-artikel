@@ -1,4 +1,4 @@
-@props(['tone' => 'light'])
+@props(['tone' => 'light', 'compact' => false])
 
 @php
     // Logo perusahaan diletakkan di public/images/logo-cmi.{svg,png,webp,jpg}.
@@ -18,8 +18,10 @@
         ])>{{ Str::upper(Str::substr(config('app.name'), 0, 1)) }}</span>
     @endif
 
+    {{-- compact: nama situs disembunyikan di ponsel agar logo muat di tengah navbar. --}}
     <span @class([
         'text-base font-bold tracking-tight',
+        'hidden sm:inline' => $compact,
         'text-brand-950' => $tone === 'light',
         'text-white' => $tone === 'dark',
     ])>{{ config('app.name') }}</span>

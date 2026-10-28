@@ -92,10 +92,10 @@ database/factories/ArticleFactory.php
 database/seeders/DatabaseSeeder.php
 resources/css/app.css             (Tailwind v4: @import, @source, @layer components: .card .btn .btn-sm .btn-primary
                                    .btn-secondary .btn-danger .form-label .form-input .form-input-error .form-error
-                                   .badge .link .nav-link .nav-link-active .th .td .article-content)
+                                   .badge .link .drawer-link .drawer-link-active .drawer-heading .th .td .article-content)
 resources/views/
   layouts/app.blade.php           (@vite, @yield content, @stack scripts)
-  partials/{navbar,flash}.blade.php
+  partials/{navbar,nav-drawer,search-panel,flash,footer}.blade.php
   components/{input,status-badge,auth-card}.blade.php
   auth/{login,register,forgot-password,reset-password}.blade.php
   dashboard.blade.php
@@ -202,6 +202,14 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
 - Pelajaran CSS: selector toolbar Trix diberi awalan `form` (trix.css dimuat setelah app.css); kolom grid perlu `min-w-0`.
   Pembungkus tabel `overflow-x-auto` wajib `relative`, kalau tidak teks `sr-only` (position:absolute) lolos dan
   membuat halaman melebar di ponsel.
+- [x] Navigasi: navbar grid `[1fr_auto_1fr]` → kiri burger + ikon cari, tengah logo (`<x-logo compact>`: nama situs
+  disembunyikan di ponsel), kanan tamu: Masuk/Daftar (Daftar disembunyikan di ponsel, ada di drawer) | login: avatar.
+  Ikon cari membuka `partials/search-panel` (`<dialog>` dari atas, GET ke `home?search=`, input `autofocus`).
+  JS dialog di `app.js` dipakai bersama: `data-dialog-open="<id>"` / `data-dialog-close`, Esc ditangani manual
+  (Esc pertama di `type=search` bawaan browser hanya mengosongkan teks). Semua menu di drawer kiri
+  `partials/nav-drawer` (di-@include dari navbar, jadi mewarisi `$pendingReviewCount` dari View Composer). Drawer =
+  `<dialog>` + `showModal()` (Esc, fokus terkunci, latar inert bawaan browser); JS buka/tutup + klik latar di
+  `resources/js/app.js`; animasi geser di app.css (`@starting-style` + `allow-discrete`). Tombol Keluar ada di drawer.
 - [x] Ikon **Font Awesome Free 7** (npm `@fortawesome/fontawesome-free`, hanya css solid + regular diimpor di
   `resources/js/app.js`). Semua ikon lewat `<x-icon name=".." size="size-N">`; peta nama → class `fa-*` dan
   `size-*` → font-size ada di `components/icon.blade.php` (CSS FA tidak berlayer, menimpa `width` utilitas Tailwind,

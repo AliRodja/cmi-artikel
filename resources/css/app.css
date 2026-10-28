@@ -46,9 +46,10 @@
     .badge           { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium; }
     .link            { @apply font-medium text-brand-700 hover:text-brand-600; }
 
-    /* Navbar berlatar brand-50, jadi link aktif memakai latar putih agar tetap kontras. */
-    .nav-link        { @apply rounded-md px-3 py-2 text-sm font-medium text-brand-900/80 hover:bg-white/70 hover:text-brand-900; }
-    .nav-link-active { @apply bg-white text-brand-700 shadow-sm hover:bg-white hover:text-brand-700; }
+    /* Link menu di drawer samping (partials/nav-drawer). */
+    .drawer-link        { @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-brand-50 hover:text-brand-800; }
+    .drawer-link-active { @apply bg-brand-50 font-semibold text-brand-700; }
+    .drawer-heading     { @apply mb-1 px-3 text-xs font-semibold tracking-wider text-gray-400 uppercase; }
 
     .th              { @apply px-4 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase; }
     .td              { @apply px-4 py-3 text-sm; }
@@ -94,3 +95,54 @@ trix-editor.article-editor {
 }
 trix-editor.article-editor:focus     { @apply border-brand-500 ring-2 ring-brand-500/20 outline-none; }
 trix-editor.article-editor-error     { @apply border-red-500; }
+
+/*
+ * Drawer navigasi (kiri) & panel pencarian (atas): <dialog> yang dibuka dengan
+ * showModal(), sehingga Esc, fokus keyboard, dan latar yang tidak bisa diklik
+ * sudah ditangani browser.
+ * Animasi geser: posisi awal di luar layar (translate), @starting-style memberi
+ * titik awal saat dialog baru terbuka, dan "allow-discrete" membuat animasi
+ * tutup sempat berjalan sebelum dialog disembunyikan.
+ */
+dialog.nav-drawer,
+dialog.search-panel {
+    transition: translate 0.25s ease, display 0.25s allow-discrete, overlay 0.25s allow-discrete;
+}
+
+dialog.nav-drawer {
+    @apply m-0 h-dvh max-h-none w-80 max-w-[85vw] border-0 bg-white p-0 shadow-2xl;
+    inset: 0 auto 0 0;
+    translate: -100% 0;
+}
+
+dialog.search-panel {
+    @apply m-0 w-full max-w-none border-0 bg-white p-0 shadow-xl;
+    inset: 0 0 auto 0;
+    translate: 0 -100%;
+}
+
+dialog.nav-drawer[open],
+dialog.search-panel[open] { translate: 0 0; }
+
+dialog.nav-drawer::backdrop,
+dialog.search-panel::backdrop {
+    background-color: rgb(8 38 72 / 0);
+    transition: background-color 0.25s, display 0.25s allow-discrete, overlay 0.25s allow-discrete;
+}
+dialog.nav-drawer[open]::backdrop,
+dialog.search-panel[open]::backdrop { background-color: rgb(8 38 72 / 0.45); }
+
+@starting-style {
+    dialog.nav-drawer[open] { translate: -100% 0; }
+    dialog.search-panel[open] { translate: 0 -100%; }
+    dialog.nav-drawer[open]::backdrop,
+    dialog.search-panel[open]::backdrop { background-color: rgb(8 38 72 / 0); }
+}
+
+/* Halaman di belakang tidak ikut ter-scroll selama drawer/panel terbuka. */
+html:has(dialog.nav-drawer[open], dialog.search-panel[open]) { overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+    dialog.nav-drawer, dialog.nav-drawer::backdrop,
+    dialog.search-panel, dialog.search-panel::backdrop { transition: none; }
+}
