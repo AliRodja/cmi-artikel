@@ -42,3 +42,31 @@ document.querySelectorAll('dialog.nav-drawer, dialog.search-panel').forEach((dia
         openButtons.forEach((button) => button.setAttribute('aria-expanded', 'false'));
     });
 });
+
+// Dropdown akun (partials/user-menu, Popover API). Buka/tutup, klik di luar, dan Esc
+// sudah ditangani browser; di sini hanya menaruh posisinya tepat di bawah tombol avatar.
+const userMenu = document.getElementById('user-menu');
+
+if (userMenu) {
+    const trigger = document.querySelector('[popovertarget="user-menu"]');
+
+    userMenu.addEventListener('beforetoggle', (event) => {
+        if (event.newState !== 'open') {
+            return;
+        }
+
+        const rect = trigger.getBoundingClientRect();
+        userMenu.style.top = `${rect.bottom + 8}px`;
+        userMenu.style.right = `${Math.max(16, document.documentElement.clientWidth - rect.right)}px`;
+    });
+
+    // Posisi dihitung saat dibuka; bila lebar layar berubah, tutup saja agar tidak melayang salah tempat.
+    // Hanya lebar yang dicek: di ponsel, address bar yang muncul/hilang saat scroll mengubah tinggi.
+    let lastWidth = window.innerWidth;
+    window.addEventListener('resize', () => {
+        if (window.innerWidth !== lastWidth) {
+            lastWidth = window.innerWidth;
+            userMenu.hidePopover();
+        }
+    });
+}

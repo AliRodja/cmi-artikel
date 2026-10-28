@@ -25,16 +25,20 @@
         <div class="flex items-center gap-2 justify-self-end">
             @guest
                 <a href="{{ route('login') }}" class="btn btn-secondary btn-sm">Masuk</a>
-                {{-- Di ponsel, Daftar tersedia di drawer agar logo di tengah tidak terdesak. --}}
+                {{-- Di ponsel Daftar disembunyikan agar logo di tengah tidak terdesak; halaman Masuk punya link Daftar. --}}
                 <a href="{{ route('register') }}" class="btn btn-primary btn-sm hidden sm:inline-flex">Daftar</a>
             @else
-                <div class="flex items-center gap-2">
-                    <div class="hidden text-right leading-tight lg:block">
-                        <p class="text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-gray-500">{{ auth()->user()->role_label }}</p>
-                    </div>
+                {{-- popovertarget: browser sendiri yang membuka/menutup dropdown (partials/user-menu). --}}
+                <button type="button" popovertarget="user-menu"
+                        class="-mr-2 flex cursor-pointer items-center gap-2 rounded-lg py-1 pr-2 pl-1 transition hover:bg-white/70 lg:pl-3">
+                    <span class="hidden text-right leading-tight lg:block">
+                        <span class="block text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</span>
+                        <span class="block text-xs text-gray-500">{{ auth()->user()->role_label }}</span>
+                    </span>
                     <x-avatar :name="auth()->user()->name" />
-                </div>
+                    <x-icon name="chevron-down" size="size-3" class="text-brand-900/60" />
+                    <span class="sr-only">Menu akun</span>
+                </button>
             @endguest
         </div>
     </nav>
@@ -42,3 +46,6 @@
 
 @include('partials.nav-drawer')
 @include('partials.search-panel')
+@auth
+    @include('partials.user-menu')
+@endauth

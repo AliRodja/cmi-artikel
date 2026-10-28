@@ -1,5 +1,6 @@
 {{--
-    Menu navigasi samping. Dibuka oleh tombol burger di navbar (resources/js/app.js).
+    Menu navigasi samping (hanya navigasi). Dibuka oleh tombol burger di navbar (resources/js/app.js).
+    Akun (profil, Baca Nanti, Kelola Pengguna, Keluar) ada di dropdown kanan: partials/user-menu.
     Data $pendingReviewCount datang dari View Composer navbar (AppServiceProvider),
     dan ikut tersedia di sini karena @include mewarisi data view induknya.
 --}}
@@ -13,17 +14,6 @@
                 <span class="sr-only">Tutup menu</span>
             </button>
         </div>
-
-        @auth
-            <div class="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
-                <x-avatar :name="auth()->user()->name" size="md" />
-                <div class="min-w-0 leading-tight">
-                    <p class="truncate font-semibold text-gray-900">{{ auth()->user()->name }}</p>
-                    <p class="truncate text-xs text-gray-500">{{ auth()->user()->email }}</p>
-                    <span class="badge mt-1 bg-brand-50 text-brand-700">{{ auth()->user()->role_label }}</span>
-                </div>
-            </div>
-        @endauth
 
         <nav class="flex-1 space-y-6 overflow-y-auto px-3 py-5">
             <div>
@@ -73,25 +63,5 @@
                 @endif
             @endauth
         </nav>
-
-        <div class="border-t border-gray-100 p-4">
-            @auth
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn btn-danger w-full">
-                        <x-icon name="logout" size="size-4" /> Keluar
-                    </button>
-                </form>
-            @else
-                <div class="grid grid-cols-2 gap-2">
-                    <a href="{{ route('login') }}" class="btn btn-secondary">
-                        <x-icon name="login" size="size-4" /> Masuk
-                    </a>
-                    <a href="{{ route('register') }}" class="btn btn-primary">
-                        <x-icon name="user-plus" size="size-4" /> Daftar
-                    </a>
-                </div>
-            @endauth
-        </div>
     </div>
 </dialog>

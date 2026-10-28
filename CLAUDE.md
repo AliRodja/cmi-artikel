@@ -95,7 +95,7 @@ resources/css/app.css             (Tailwind v4: @import, @source, @layer compone
                                    .badge .link .drawer-link .drawer-link-active .drawer-heading .th .td .article-content)
 resources/views/
   layouts/app.blade.php           (@vite, @yield content, @stack scripts)
-  partials/{navbar,nav-drawer,search-panel,flash,footer}.blade.php
+  partials/{navbar,nav-drawer,search-panel,user-menu,flash,footer}.blade.php
   components/{input,status-badge,auth-card}.blade.php
   auth/{login,register,forgot-password,reset-password}.blade.php
   dashboard.blade.php
@@ -203,13 +203,19 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   Pembungkus tabel `overflow-x-auto` wajib `relative`, kalau tidak teks `sr-only` (position:absolute) lolos dan
   membuat halaman melebar di ponsel.
 - [x] Navigasi: navbar grid `[1fr_auto_1fr]` → kiri burger + ikon cari, tengah logo (`<x-logo compact>`: nama situs
-  disembunyikan di ponsel), kanan tamu: Masuk/Daftar (Daftar disembunyikan di ponsel, ada di drawer) | login: avatar.
+  disembunyikan di ponsel), kanan tamu: Masuk/Daftar (Daftar disembunyikan di ponsel; halaman Masuk punya link Daftar) |
+  login: tombol avatar → dropdown akun `partials/user-menu` (Popover API `popover`/`popovertarget`; klik luar & Esc
+  bawaan browser; posisi top/right di-set JS saat `beforetoggle`). Isi: profil, Kelola Pengguna (admin) & Baca Nanti
+  (keduanya **belum dibuat**, tampil nonaktif "Segera" via `.drawer-link-disabled`), Keluar. Drawer kiri hanya
+  navigasi (tanpa profil/Masuk/Daftar/Keluar).
   Ikon cari membuka `partials/search-panel` (`<dialog>` dari atas, GET ke `home?search=`, input `autofocus`).
   JS dialog di `app.js` dipakai bersama: `data-dialog-open="<id>"` / `data-dialog-close`, Esc ditangani manual
   (Esc pertama di `type=search` bawaan browser hanya mengosongkan teks). Semua menu di drawer kiri
   `partials/nav-drawer` (di-@include dari navbar, jadi mewarisi `$pendingReviewCount` dari View Composer). Drawer =
   `<dialog>` + `showModal()` (Esc, fokus terkunci, latar inert bawaan browser); JS buka/tutup + klik latar di
-  `resources/js/app.js`; animasi geser di app.css (`@starting-style` + `allow-discrete`). Tombol Keluar ada di drawer.
+  `resources/js/app.js`; animasi geser di app.css (`@starting-style` + `allow-discrete`).
+  Catatan uji E2E: klik CDP (`Input.dispatchMouseEvent`) di Chrome headless kadang hilang setelah login lewat
+  `form.submit()` — terbukti bukan bug aplikasi (tetap hilang walau menu dimatikan); pakai `element.click()` bila begitu.
 - [x] Ikon **Font Awesome Free 7** (npm `@fortawesome/fontawesome-free`, hanya css solid + regular diimpor di
   `resources/js/app.js`). Semua ikon lewat `<x-icon name=".." size="size-N">`; peta nama → class `fa-*` dan
   `size-*` → font-size ada di `components/icon.blade.php` (CSS FA tidak berlayer, menimpa `width` utilitas Tailwind,
