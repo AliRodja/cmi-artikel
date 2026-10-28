@@ -62,7 +62,7 @@
             <div class="flex flex-wrap items-center gap-2 lg:flex-col lg:gap-3">
                 @include('public._bookmark-button', ['class' => 'share-btn'])
                 <span class="mx-1 h-6 w-px bg-gray-200 lg:mx-0 lg:h-px lg:w-6"></span>
-                <span class="text-[0.625rem] font-semibold tracking-widest text-gray-400 uppercase">Bagikan</span>
+                <span class="text-[0.75rem] font-semibold tracking-wide text-gray-500 uppercase">Bagikan</span>
                 <x-share-buttons :article="$article" class="lg:flex-col lg:gap-3" />
             </div>
         </aside>
@@ -92,7 +92,7 @@
                 <section class="card flex items-center gap-4 p-5 sm:p-6">
                     <x-avatar :name="$article->user->name" size="md" />
                     <div class="min-w-0 flex-1">
-                        <p class="text-xs font-semibold tracking-wider text-gray-400 uppercase">Ditulis oleh</p>
+                        <p class="text-xs font-semibold tracking-wider text-gray-500 uppercase">Ditulis oleh</p>
                         <p class="font-bold text-gray-900">{{ $article->user->name }}</p>
                         <p class="text-sm text-gray-500">Penulis di {{ config('app.name') }}</p>
                     </div>
@@ -146,14 +146,14 @@
                                         @elseif ($comment->user->isAdmin())
                                             <span class="badge bg-gray-100 text-gray-600">Admin</span>
                                         @endif
-                                        <span class="text-xs text-gray-400">· {{ $comment->created_at->diffForHumans() }}</span>
+                                        <span class="text-xs text-gray-500">· <x-date :value="$comment->created_at" format="d M Y, H:i" /></span>
 
                                         @can('delete', $comment)
                                             <form action="{{ route('comments.destroy', $comment) }}" method="POST" class="ml-auto"
                                                   onsubmit="return confirm('Hapus komentar ini?')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" title="Hapus komentar" class="cursor-pointer rounded-md p-1 text-gray-400 hover:bg-red-50 hover:text-red-600">
+                                                <button type="submit" title="Hapus komentar" class="cursor-pointer rounded-md p-1 text-gray-500 hover:bg-red-50 hover:text-red-600">
                                                     <x-icon name="trash" size="size-3" />
                                                     <span class="sr-only">Hapus komentar</span>
                                                 </button>

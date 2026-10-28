@@ -234,6 +234,15 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Keterbacaan untuk pembaca usia matang** (2026-10-28; target user: 25+, mayoritas orang tua & mapan). Token
+  `@theme`: `--text-xs` 14px, `--text-sm` 15px (dulu 12/14) → teks < 14px di beranda 52 → 0. `x-icon` size-3/size-4
+  kini nilai tetap `text-[0.75rem]`/`text-[0.875rem]` agar ikon tidak ikut membesar. Semua `text-gray-400` →
+  `text-gray-500` (2,5:1 → 4,8:1), placeholder & `.drawer-heading` juga. Hijau WhatsApp untuk tombol/ikon di latar
+  terang `#0E7A3F` (hover `#0B6534`), kontras 5,4:1 (dulu #25D366 = 2,0:1); `#25D366` hanya di panel gelap auth.
+  Angka peringkat terpopuler `text-brand-400` (3,3:1). Komponen `x-date` (`<time>`; < 24 jam relatif, selebihnya
+  tanggal pasti; title tanggal-jam lengkap) dipakai di beranda & komentar. Pop-up: berhasil 8 dtk, info 10 dtk,
+  gagal tanpa timer (hanya tombol ×). Test `ReadabilityTest` (3) → 107 test / 415 assertion. Catatan alat audit:
+  warna latar `oklch()` & teks di atas gambar/gradien terbaca salah sebagai kontras rendah — cek manual.
 - [x] **Redesign Lupa & Reset Password** (2026-10-28): panel `auth/_aside`. Lupa password: form email (ikon, hint) →
   setelah terkirim (`session('status')`) kartu berganti "Cek email Anda" (email dari `old('email')` — controller kini
   `withInput` juga saat sukses, masa berlaku dari `config('auth.passwords.users.expire')`, langkah, tombol Masuk &

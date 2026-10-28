@@ -18,7 +18,7 @@
                 @endif
                 <label for="search" class="sr-only">Cari artikel</label>
                 <input type="search" id="search" name="search" value="{{ $search }}" placeholder="Cari judul atau isi artikel..."
-                       class="w-full rounded-lg border-0 bg-transparent px-3 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none">
+                       class="w-full rounded-lg border-0 bg-transparent px-3 text-sm text-gray-900 placeholder:text-gray-500 focus:ring-0 focus:outline-none">
                 <button type="submit" class="btn btn-primary shrink-0">Cari</button>
             </form>
         </div>
@@ -62,7 +62,7 @@
                             <p class="mt-3 line-clamp-2 hidden max-w-2xl text-sm text-brand-100 sm:block">{{ $featured->excerpt }}</p>
                             <p class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-brand-200">
                                 <span class="inline-flex items-center gap-1.5"><x-icon name="user" size="size-3" /> {{ $featured->user?->name ?? 'Anonim' }}</span>
-                                <span class="inline-flex items-center gap-1.5"><x-icon name="clock" size="size-3" /> {{ $featured->created_at->diffForHumans() }}</span>
+                                <span class="inline-flex items-center gap-1.5"><x-icon name="calendar" size="size-3" /> <x-date :value="$featured->created_at" format="d F Y" /></span>
                             </p>
                         </div>
                     </a>
@@ -80,7 +80,7 @@
                                         <p class="text-xs font-semibold text-brand-700">{{ $article->category_label }}</p>
                                     @endif
                                     <h3 class="mt-0.5 line-clamp-3 font-serif text-[0.95rem] leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $article->title }}</h3>
-                                    <p class="mt-1.5 text-xs text-gray-500">{{ $article->created_at->diffForHumans() }}</p>
+                                    <p class="mt-1.5 text-xs text-gray-500"><x-date :value="$article->created_at" /></p>
                                 </div>
                                 <x-article-thumb :article="$article" class="size-20" />
                             </a>
@@ -107,7 +107,7 @@
                                     <a href="{{ route('public.articles.show', $lead) }}" class="hover:text-brand-700">{{ $lead->title }}</a>
                                 </h3>
                                 <p class="mt-2 line-clamp-2 text-sm text-gray-600">{{ $lead->excerpt }}</p>
-                                <p class="mt-2 text-xs text-gray-500">{{ $lead->user?->name ?? 'Anonim' }} · {{ $lead->created_at->diffForHumans() }}</p>
+                                <p class="mt-2 text-xs text-gray-500">{{ $lead->user?->name ?? 'Anonim' }} · <x-date :value="$lead->created_at" format="d F Y" /></p>
 
                                 @if ($items->count() > 1)
                                     <ul class="mt-4 divide-y divide-gray-100 border-t border-gray-100">
@@ -138,7 +138,7 @@
                             @foreach ($popularArticles as $popular)
                                 <li>
                                     <a href="{{ route('public.articles.show', $popular) }}" class="group flex gap-4 py-3.5 first:pt-0">
-                                        <span class="w-6 shrink-0 font-serif text-3xl leading-none font-semibold text-brand-200 tabular-nums group-hover:text-brand-500">{{ $loop->iteration }}</span>
+                                        <span class="w-6 shrink-0 font-serif text-3xl leading-none font-semibold text-brand-400 tabular-nums group-hover:text-brand-600">{{ $loop->iteration }}</span>
                                         <div class="min-w-0">
                                             <h3 class="line-clamp-3 font-serif text-[0.95rem] leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $popular->title }}</h3>
                                             <p class="mt-1.5 inline-flex items-center gap-1 text-xs text-gray-500">
@@ -229,7 +229,7 @@
                 </div>
             </div>
             <a href="{{ config('clinic.whatsapp_consultation_url') }}" target="_blank" rel="noopener noreferrer"
-               class="btn shrink-0 bg-[#25D366] px-6 py-3 text-white shadow-sm hover:bg-[#1DA851] focus-visible:ring-white">
+               class="btn shrink-0 bg-[#0E7A3F] px-6 py-3 text-white shadow-sm hover:bg-[#0B6534] focus-visible:ring-white">
                 <x-icon name="whatsapp" size="size-5" /> Konsultasi via WhatsApp
             </a>
         </section>

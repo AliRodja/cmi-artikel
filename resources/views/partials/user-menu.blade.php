@@ -16,13 +16,13 @@
     <div class="p-2">
         {{-- Akun milik user ini sendiri. Manajemen seluruh pengguna (admin) ada di menu kiri: partials/nav-drawer. --}}
         <a href="{{ route('profile.edit') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('profile.*')])>
-            <x-icon name="user" size="size-4" class="text-gray-400" /> Kelola Akun
+            <x-icon name="user" size="size-4" class="text-gray-500" /> Kelola Akun
         </a>
         <a href="{{ route('bookmarks.index') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('bookmarks.*')])>
-            <x-icon name="bookmark" size="size-4" class="text-gray-400" /> Baca Nanti
+            <x-icon name="bookmark" size="size-4" class="text-gray-500" /> Baca Nanti
         </a>
         <a href="{{ route('notifications.index') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('notifications.*')])>
-            <x-icon name="bell" size="size-4" class="text-gray-400" />
+            <x-icon name="bell" size="size-4" class="text-gray-500" />
             <span class="flex-1">Notifikasi</span>
             @if ($unreadNotificationCount > 0)
                 <span class="rounded-full bg-red-600 px-2 text-xs font-semibold text-white">{{ $unreadNotificationCount }}</span>

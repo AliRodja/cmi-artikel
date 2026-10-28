@@ -116,7 +116,7 @@
             ])>
                 <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp"
                        class="absolute inset-0 size-full cursor-pointer opacity-0">
-                <x-icon name="cloud-arrow-up" size="size-8" class="mx-auto text-gray-400" />
+                <x-icon name="cloud-arrow-up" size="size-8" class="mx-auto text-gray-500" />
                 <p class="mt-2 text-sm font-medium text-gray-700">
                     {{ $article?->image_url ? 'Ganti gambar' : 'Pilih atau seret gambar ke sini' }}
                 </p>

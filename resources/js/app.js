@@ -49,6 +49,7 @@ document.querySelectorAll('dialog.nav-drawer, dialog.search-panel').forEach((dia
 
 // Pop-up notifikasi (partials/flash): ditutup lewat tombol ×, atau otomatis saat bar waktunya habis
 // (event animationend dari animasi CSS .toast-timer, yang berhenti selama pop-up disorot kursor).
+// Pop-up gagal tidak punya bar waktu, jadi hanya tertutup lewat tombol ×.
 document.querySelectorAll('[data-toast]').forEach((toast) => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -62,7 +63,7 @@ document.querySelectorAll('[data-toast]').forEach((toast) => {
     };
 
     toast.querySelector('[data-toast-close]').addEventListener('click', dismiss);
-    toast.querySelector('[data-toast-timer]').addEventListener('animationend', dismiss);
+    toast.querySelector('[data-toast-timer]')?.addEventListener('animationend', dismiss);
 });
 
 // Kolom password (components/input): tombol mata menampilkan/menyembunyikan isi password,

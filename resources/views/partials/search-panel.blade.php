@@ -10,7 +10,7 @@
             <form action="{{ route('home') }}" method="GET" role="search" class="flex items-center gap-2"
                   data-live-search-url="{{ route('articles.live-search') }}">
                 <div class="relative flex-1">
-                    <x-icon name="magnifying-glass" size="size-5" class="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-gray-400" />
+                    <x-icon name="magnifying-glass" size="size-5" class="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-gray-500" />
                     <label for="navbar-search" class="sr-only">Cari artikel</label>
                     {{-- autofocus: showModal() langsung memindahkan kursor ke kolom ini. --}}
                     <input type="search" id="navbar-search" name="search" autofocus autocomplete="off"
@@ -29,7 +29,7 @@
 
             {{-- Sebelum mengetik: pintasan jenis artikel. --}}
             <div data-live-search-idle class="mt-5">
-                <p class="text-xs font-semibold tracking-wider text-gray-400 uppercase">Telusuri jenis artikel</p>
+                <p class="text-xs font-semibold tracking-wider text-gray-500 uppercase">Telusuri jenis artikel</p>
                 <div class="mt-2 flex flex-wrap gap-2">
                     @foreach (\App\Models\Article::CATEGORIES as $value => $label)
                         <a href="{{ route('home', ['jenis' => $value]) }}#daftar-artikel"

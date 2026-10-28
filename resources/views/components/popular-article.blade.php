@@ -3,7 +3,7 @@
 {{-- Satu item "Artikel Terpopuler" (beranda & halaman detail): nomor peringkat, thumbnail, judul, jumlah dilihat. --}}
 <a href="{{ route('public.articles.show', $article) }}"
    {{ $attributes->class('group card flex h-full items-center gap-4 p-4 transition hover:-translate-y-0.5 hover:shadow-lg') }}>
-    <span class="w-7 shrink-0 text-center text-3xl font-extrabold text-brand-200 tabular-nums transition group-hover:text-brand-500">{{ $rank }}</span>
+    <span class="w-7 shrink-0 text-center text-3xl font-extrabold text-brand-400 tabular-nums transition group-hover:text-brand-600">{{ $rank }}</span>
     <x-article-thumb :article="$article" class="size-16" />
     <div class="min-w-0">
         <x-category-badge :article="$article" class="mb-1" />

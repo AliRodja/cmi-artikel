@@ -20,7 +20,7 @@
             <div>
                 <p class="drawer-heading">Situs</p>
                 <a href="{{ route('home') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('home', 'public.*')])>
-                    <x-icon name="newspaper" class="text-gray-400" /> Berita &amp; Artikel
+                    <x-icon name="newspaper" class="text-gray-500" /> Berita &amp; Artikel
                 </a>
             </div>
 
@@ -37,14 +37,14 @@
                 <div>
                     <p class="drawer-heading">Area Penulis</p>
                     <a href="{{ route('dashboard') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('dashboard')])>
-                        <x-icon name="gauge" class="text-gray-400" /> Dashboard
+                        <x-icon name="gauge" class="text-gray-500" /> Dashboard
                     </a>
                     <a href="{{ route('articles.index') }}"
                        @class(['drawer-link', 'drawer-link-active' => request()->routeIs('articles.*') && ! request()->routeIs('articles.report', 'articles.create') && ! $viewingOthers])>
-                        <x-icon name="document-text" class="text-gray-400" /> Artikel Saya
+                        <x-icon name="document-text" class="text-gray-500" /> Artikel Saya
                     </a>
                     <a href="{{ route('articles.create') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('articles.create')])>
-                        <x-icon name="plus" class="text-gray-400" /> Tulis Artikel
+                        <x-icon name="plus" class="text-gray-500" /> Tulis Artikel
                     </a>
                 </div>
                 @endif
@@ -53,17 +53,17 @@
                     <div>
                         <p class="drawer-heading">Admin</p>
                         <a href="{{ route('review.index') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('review.*') || $viewingOthers])>
-                            <x-icon name="check-circle" class="text-gray-400" />
+                            <x-icon name="check-circle" class="text-gray-500" />
                             <span class="flex-1">Review</span>
                             @if ($pendingReviewCount > 0)
                                 <span class="rounded-full bg-violet-600 px-2 text-xs font-semibold text-white">{{ $pendingReviewCount }}</span>
                             @endif
                         </a>
                         <a href="{{ route('articles.report') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('articles.report')])>
-                            <x-icon name="chart-bar" class="text-gray-400" /> Laporan Artikel
+                            <x-icon name="chart-bar" class="text-gray-500" /> Laporan Artikel
                         </a>
                         <a href="{{ route('users.index') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('users.*')])>
-                            <x-icon name="users" class="text-gray-400" /> Kelola Pengguna
+                            <x-icon name="users" class="text-gray-500" /> Kelola Pengguna
                         </a>
                     </div>
                 @endif

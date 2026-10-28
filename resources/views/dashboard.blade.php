@@ -117,21 +117,21 @@
                 <h2 class="font-bold text-gray-900">Aksi Cepat</h2>
                 <nav class="mt-3 -mx-2 space-y-1 text-sm">
                     <a href="{{ route('articles.create') }}" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
-                        <x-icon name="pencil-square" class="text-gray-400" /> Tulis artikel baru
+                        <x-icon name="pencil-square" class="text-gray-500" /> Tulis artikel baru
                     </a>
                     <a href="{{ route('articles.index', ['status' => \App\Models\Article::STATUS_DRAFT]) }}" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
-                        <x-icon name="clock" class="text-gray-400" /> Lanjutkan draft
+                        <x-icon name="clock" class="text-gray-500" /> Lanjutkan draft
                     </a>
                     @if (auth()->user()->isAdmin())
                         <a href="{{ route('review.index') }}" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
-                            <x-icon name="check-circle" class="text-gray-400" /> Review artikel penulis
+                            <x-icon name="check-circle" class="text-gray-500" /> Review artikel penulis
                         </a>
                         <a href="{{ route('articles.report') }}" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
-                            <x-icon name="chart-bar" class="text-gray-400" /> Laporan artikel
+                            <x-icon name="chart-bar" class="text-gray-500" /> Laporan artikel
                         </a>
                     @endif
                     <a href="{{ route('home') }}" target="_blank" class="flex items-center gap-3 rounded-lg px-2 py-2 text-gray-700 hover:bg-brand-50 hover:text-brand-700">
-                        <x-icon name="globe-alt" class="text-gray-400" /> Lihat situs publik
+                        <x-icon name="globe-alt" class="text-gray-500" /> Lihat situs publik
                     </a>
                 </nav>
             </section>

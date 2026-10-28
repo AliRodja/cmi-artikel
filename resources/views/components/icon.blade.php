@@ -62,9 +62,10 @@
 
     // Ikon FA adalah huruf (font), jadi ukurannya diatur lewat font-size. CSS Font Awesome
     // tidak berlayer sehingga menimpa width dari utilitas size-* Tailwind.
+    // size-3 & size-4 memakai nilai tetap: token text-xs/text-sm sudah dinaikkan untuk teks, ikon tidak perlu ikut.
     $fontSizes = [
-        'size-3' => 'text-xs',
-        'size-4' => 'text-sm',
+        'size-3' => 'text-[0.75rem]',
+        'size-4' => 'text-[0.875rem]',
         'size-5' => 'text-base',
         'size-6' => 'text-xl',
         'size-7' => 'text-2xl',

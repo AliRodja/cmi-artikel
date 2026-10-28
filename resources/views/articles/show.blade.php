@@ -122,7 +122,7 @@
                         </div>
                     </dl>
                     <div class="min-w-0">
-                        <p class="text-xs font-semibold tracking-wider text-gray-400 uppercase">Kunjungan terbaru</p>
+                        <p class="text-xs font-semibold tracking-wider text-gray-500 uppercase">Kunjungan terbaru</p>
                         @if ($recentViews->isEmpty())
                             <p class="mt-2 text-sm text-gray-500">Belum ada yang membaca artikel ini.</p>
                         @else
@@ -133,14 +133,14 @@
                                             <x-avatar :name="$view->user?->name" />
                                             <span class="truncate text-gray-700">{{ $view->user?->name ?? 'Pengunjung tamu' }}</span>
                                         </span>
-                                        <span class="shrink-0 text-xs text-gray-400">{{ $view->viewed_at->diffForHumans() }}</span>
+                                        <span class="shrink-0 text-xs text-gray-500">{{ $view->viewed_at->diffForHumans() }}</span>
                                     </li>
                                 @endforeach
                             </ul>
                         @endif
                     </div>
                 </div>
-                <p class="mt-4 text-xs text-gray-400">Satu pengunjung dihitung sekali; kunjungan penulis sendiri tidak dihitung.</p>
+                <p class="mt-4 text-xs text-gray-500">Satu pengunjung dihitung sekali; kunjungan penulis sendiri tidak dihitung.</p>
             </section>
         @endif
 

@@ -8,7 +8,7 @@
         <x-slot:actions>
             <form action="{{ route('articles.report') }}" method="GET" class="flex w-full gap-2 sm:w-auto">
                 <div class="relative w-full sm:w-72">
-                    <x-icon name="magnifying-glass" size="size-4" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+                    <x-icon name="magnifying-glass" size="size-4" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-500" />
                     <input type="search" name="search" value="{{ $search }}" placeholder="Cari judul, penulis, email..."
                            class="form-input pl-9">
                 </div>

@@ -41,7 +41,7 @@
         <form action="{{ route('review.index') }}" method="GET" class="flex w-full gap-2 sm:w-auto">
             <input type="hidden" name="status" value="{{ $activeStatus }}">
             <div class="relative w-full sm:w-72">
-                <x-icon name="magnifying-glass" size="size-4" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+                <x-icon name="magnifying-glass" size="size-4" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-500" />
                 <input type="search" name="search" value="{{ $search }}" placeholder="Cari judul..." class="form-input pl-9">
             </div>
             <button type="submit" class="btn btn-secondary">Cari</button>
@@ -91,7 +91,7 @@
                                         <p class="font-medium text-gray-900">{{ $article->user->name }}</p>
                                         <p class="text-xs text-gray-500">{{ $article->user->email }}</p>
                                     @else
-                                        <span class="text-gray-400">Tanpa penulis</span>
+                                        <span class="text-gray-500">Tanpa penulis</span>
                                     @endif
                                 </td>
                                 <td class="td"><x-status-badge :status="$article->status" /></td>

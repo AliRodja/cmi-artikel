@@ -1,7 +1,8 @@
 {{--
     Pop-up notifikasi (toast) dari flash session: ->with('success' | 'status' | 'error', 'pesan').
     Bila ada error validasi tanpa pesan 'error', ditampilkan pop-up gagal umum.
-    Hilang sendiri saat bar waktunya habis (berhenti selama disorot kursor) atau ditutup lewat tombol ×;
+    Berhasil (8 dtk) & informasi (10 dtk) hilang sendiri saat bar waktunya habis (berhenti selama disorot kursor);
+    pop-up gagal tetap tampil sampai ditutup lewat tombol ×, agar pembaca sempat membaca penyebabnya;
     perilakunya di resources/js/app.js, animasinya di .toast pada app.css.
 --}}
 @php
@@ -11,21 +12,21 @@
             'icon' => 'check-circle',
             'role' => 'status',
             'iconClass' => 'bg-green-50 text-green-600',
-            'timerClass' => 'bg-green-500 [--toast-duration:5s]',
+            'timerClass' => 'bg-green-500 [--toast-duration:8s]',
         ],
         'status' => [
             'title' => 'Informasi',
             'icon' => 'info',
             'role' => 'status',
             'iconClass' => 'bg-brand-50 text-brand-600',
-            'timerClass' => 'bg-brand-500 [--toast-duration:6s]',
+            'timerClass' => 'bg-brand-500 [--toast-duration:10s]',
         ],
         'error' => [
             'title' => 'Gagal',
             'icon' => 'exclamation-triangle',
             'role' => 'alert',
             'iconClass' => 'bg-red-50 text-red-600',
-            'timerClass' => 'bg-red-500 [--toast-duration:8s]',
+            'timerClass' => null,
         ],
     ];
 
@@ -52,12 +53,14 @@
                         <p class="mt-0.5 text-sm text-gray-600">{{ $toast['message'] }}</p>
                     </div>
                     <button type="button" data-toast-close
-                            class="-mt-1 -mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700">
+                            class="-mt-1 -mr-1 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700">
                         <x-icon name="x-mark" size="size-4" />
                         <span class="sr-only">Tutup</span>
                     </button>
                 </div>
-                <div data-toast-timer class="toast-timer h-1 {{ $toast['timerClass'] }}"></div>
+                @if ($toast['timerClass'])
+                    <div data-toast-timer class="toast-timer h-1 {{ $toast['timerClass'] }}"></div>
+                @endif
             </div>
         @endforeach
     </div>

@@ -32,7 +32,7 @@
             </button>
         </form>
 
-        <div class="my-6 flex items-center gap-3 text-xs text-gray-400">
+        <div class="my-6 flex items-center gap-3 text-xs text-gray-500">
             <span class="h-px flex-1 bg-gray-200"></span> Belum punya akun? <span class="h-px flex-1 bg-gray-200"></span>
         </div>
         <a href="{{ route('register') }}" class="btn btn-secondary w-full py-2.5">

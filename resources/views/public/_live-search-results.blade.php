@@ -9,7 +9,7 @@
         <p class="mt-1 text-sm text-gray-500">Coba kata kunci lain, misalnya nama penyakit atau gejalanya.</p>
     </div>
 @else
-    <p class="px-2 text-xs font-semibold tracking-wider text-gray-400 uppercase">{{ $total }} artikel ditemukan</p>
+    <p class="px-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">{{ $total }} artikel ditemukan</p>
     <ul id="live-search-list" role="listbox" aria-label="Hasil pencarian" class="mt-2 space-y-1">
         @foreach ($results as $article)
             <li id="live-search-option-{{ $loop->index }}" role="option" aria-selected="false"

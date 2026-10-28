@@ -29,7 +29,7 @@
                     <dd class="text-lg font-bold text-gray-900">{{ $user->bookmarks_count }}</dd>
                 </div>
             </dl>
-            <p class="mt-5 text-xs text-gray-400">Bergabung {{ $user->created_at->translatedFormat('d F Y') }}</p>
+            <p class="mt-5 text-xs text-gray-500">Bergabung {{ $user->created_at->translatedFormat('d F Y') }}</p>
         </aside>
 
         <div class="min-w-0 space-y-6 lg:col-span-2">

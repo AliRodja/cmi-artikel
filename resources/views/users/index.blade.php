@@ -45,7 +45,7 @@
                 <input type="hidden" name="role" value="{{ $activeRole }}">
             @endif
             <div class="relative w-full sm:w-72">
-                <x-icon name="magnifying-glass" size="size-4" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+                <x-icon name="magnifying-glass" size="size-4" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-500" />
                 <input type="search" name="search" value="{{ $search }}" placeholder="Cari nama atau email..." class="form-input pl-9">
             </div>
             <button type="submit" class="btn btn-secondary">Cari</button>
