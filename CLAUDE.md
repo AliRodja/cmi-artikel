@@ -234,6 +234,12 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Redesign halaman Masuk** (2026-10-28): `x-auth-card` punya slot opsional `aside` (panel biru tua kiri, hanya
+  lg; tanpa aside = kartu tengah seperti dulu → daftar/lupa/reset tidak berubah). Login (revisi user: panel kiri cukup
+  ringkas, tanpa daftar manfaat): logo, "Selamat datang kembali" + 1 kalimat, kotak "Punya keluhan kesehatan?" + link WA; form dengan ikon, tombol Masuk & "Daftar akun baru", "Kembali ke beranda".
+  `x-input` kini punya prop `icon` (ikon kiri, `pl-10`) dan untuk `type="password"` otomatis tombol mata
+  (`data-password-toggle`, `aria-pressed`) + peringatan Caps Lock (`#{name}-capslock`, `getModifierState`) — JS di
+  app.js, berlaku untuk semua kolom password. Ikon baru: envelope, lock, eye-slash, shield.
 - [x] **Beranda ala portal berita (pola Kompas.id)** (2026-10-28, permintaan user; hero biru tua tetap). Hanya saat
   `$isLanding`: baris 1 dua kolom = **Sorotan** (kotak besar artikel terbaru, judul serif) | **Artikel Lainnya** (5
   berikutnya: jenis, judul serif, waktu relatif, thumbnail kanan); baris 2 = **Berita Utama** (per jenis: label jenis →

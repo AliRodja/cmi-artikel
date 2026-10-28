@@ -45,6 +45,10 @@
         'stethoscope' => 'fa-solid fa-stethoscope',
         'fire' => 'fa-solid fa-fire',
         'info' => 'fa-solid fa-circle-info',
+        'envelope' => 'fa-regular fa-envelope',
+        'lock' => 'fa-solid fa-lock',
+        'eye-slash' => 'fa-regular fa-eye-slash',
+        'shield' => 'fa-solid fa-shield-halved',
         'chart-line' => 'fa-solid fa-chart-line',
         // Logo merek (gaya brands).
         'whatsapp' => 'fa-brands fa-whatsapp',

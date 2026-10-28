@@ -65,6 +65,32 @@ document.querySelectorAll('[data-toast]').forEach((toast) => {
     toast.querySelector('[data-toast-timer]').addEventListener('animationend', dismiss);
 });
 
+// Kolom password (components/input): tombol mata menampilkan/menyembunyikan isi password,
+// dan peringatan "Caps Lock aktif" muncul selama Caps Lock menyala saat mengetik.
+document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+    const input = document.getElementById(button.getAttribute('aria-controls'));
+    const showIcon = button.querySelector('[data-password-show]');
+    const hideIcon = button.querySelector('[data-password-hide]');
+
+    button.addEventListener('click', () => {
+        const willShow = input.type === 'password';
+        input.type = willShow ? 'text' : 'password';
+        button.setAttribute('aria-pressed', String(willShow));
+        button.setAttribute('aria-label', willShow ? 'Sembunyikan password' : 'Tampilkan password');
+        showIcon.hidden = willShow;
+        hideIcon.hidden = !willShow;
+        input.focus();
+    });
+
+    const capsLockHint = document.getElementById(`${input.id}-capslock`);
+    const updateCapsLock = (event) => {
+        capsLockHint.hidden = !event.getModifierState?.('CapsLock');
+    };
+    input.addEventListener('keydown', updateCapsLock);
+    input.addEventListener('keyup', updateCapsLock);
+    input.addEventListener('blur', () => (capsLockHint.hidden = true));
+});
+
 // Pintasan "/" membuka panel pencarian, kecuali saat sedang mengetik di kolom isian/editor.
 document.addEventListener('keydown', (event) => {
     const typing = event.target.closest('input, textarea, select, [contenteditable], trix-editor');

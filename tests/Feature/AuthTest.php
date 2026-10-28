@@ -49,6 +49,18 @@ class AuthTest extends TestCase
         $this->assertDatabaseCount('users', 1);
     }
 
+    public function test_login_page_has_icons_password_toggle_and_links(): void
+    {
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('Selamat datang kembali')
+            ->assertSee('fa-envelope', false)
+            ->assertSee('data-password-toggle aria-controls="password"', false)
+            ->assertSee('id="password-capslock"', false)
+            ->assertSee(route('password.request'))
+            ->assertSee(route('register'));
+    }
+
     public function test_user_can_login_with_correct_credentials(): void
     {
         $user = User::factory()->create();
