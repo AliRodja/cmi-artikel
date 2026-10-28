@@ -43,30 +43,61 @@ document.querySelectorAll('dialog.nav-drawer, dialog.search-panel').forEach((dia
     });
 });
 
-// Dropdown akun (partials/user-menu, Popover API). Buka/tutup, klik di luar, dan Esc
-// sudah ditangani browser; di sini hanya menaruh posisinya tepat di bawah tombol avatar.
-const userMenu = document.getElementById('user-menu');
+// Pintasan "/" membuka panel pencarian, kecuali saat sedang mengetik di kolom isian/editor.
+document.addEventListener('keydown', (event) => {
+    const typing = event.target.closest('input, textarea, select, [contenteditable], trix-editor');
 
-if (userMenu) {
-    const trigger = document.querySelector('[popovertarget="user-menu"]');
+    if (event.key === '/' && !typing && !event.ctrlKey && !event.metaKey && !document.querySelector('dialog[open]')) {
+        event.preventDefault();
+        document.querySelector('[data-dialog-open="search-panel"]')?.click();
+    }
+});
 
-    userMenu.addEventListener('beforetoggle', (event) => {
+// Navbar diberi bayangan tipis begitu halaman di-scroll (class data-scrolled:* di partials/navbar).
+const navbar = document.querySelector('[data-navbar]');
+const updateNavbarShadow = () => navbar?.toggleAttribute('data-scrolled', window.scrollY > 0);
+updateNavbarShadow();
+window.addEventListener('scroll', updateNavbarShadow, { passive: true });
+
+// Dropdown navbar (partials/notification-menu & user-menu, Popover API). Buka/tutup, klik
+// di luar, dan Esc sudah ditangani browser; di sini hanya menaruh posisinya tepat di bawah
+// tombol pembukanya.
+const dropdowns = document.querySelectorAll('[popover].dropdown-panel');
+
+dropdowns.forEach((panel) => {
+    const trigger = document.querySelector(`[popovertarget="${panel.id}"]`);
+
+    panel.addEventListener('beforetoggle', (event) => {
         if (event.newState !== 'open') {
             return;
         }
 
         const rect = trigger.getBoundingClientRect();
-        userMenu.style.top = `${rect.bottom + 8}px`;
-        userMenu.style.right = `${Math.max(16, document.documentElement.clientWidth - rect.right)}px`;
+        panel.style.top = `${rect.bottom + 8}px`;
+        panel.style.right = `${Math.max(16, document.documentElement.clientWidth - rect.right)}px`;
     });
 
-    // Posisi dihitung saat dibuka; bila lebar layar berubah, tutup saja agar tidak melayang salah tempat.
-    // Hanya lebar yang dicek: di ponsel, address bar yang muncul/hilang saat scroll mengubah tinggi.
-    let lastWidth = window.innerWidth;
-    window.addEventListener('resize', () => {
-        if (window.innerWidth !== lastWidth) {
-            lastWidth = window.innerWidth;
-            userMenu.hidePopover();
+    // Lebar panel baru bisa diukur setelah tampil. Bila sisi kirinya keluar layar
+    // (mis. lonceng di ponsel), geser ke kanan sampai muat dengan jarak 16px.
+    panel.addEventListener('toggle', (event) => {
+        if (event.newState !== 'open') {
+            return;
+        }
+
+        const { left, width } = panel.getBoundingClientRect();
+
+        if (left < 16) {
+            panel.style.right = `${Math.max(16, document.documentElement.clientWidth - 16 - width)}px`;
         }
     });
-}
+});
+
+// Posisi dihitung saat dibuka; bila lebar layar berubah, tutup saja agar tidak melayang salah tempat.
+// Hanya lebar yang dicek: di ponsel, address bar yang muncul/hilang saat scroll mengubah tinggi.
+let lastWidth = window.innerWidth;
+window.addEventListener('resize', () => {
+    if (window.innerWidth !== lastWidth) {
+        lastWidth = window.innerWidth;
+        dropdowns.forEach((panel) => panel.hidePopover());
+    }
+});

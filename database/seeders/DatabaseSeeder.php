@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Article;
+use App\Models\Comment;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -35,5 +36,19 @@ class DatabaseSeeder extends Seeder
             'user_id' => null,
             'status' => Article::STATUS_PUBLISHED,
         ]);
+
+        // Pembaca demo: berkomentar & menyimpan artikel (Baca Nanti).
+        $pembaca = User::factory()->pembaca()->create([
+            'name' => 'Pembaca Demo',
+            'email' => 'pembaca@example.com',
+        ]);
+
+        $published = Article::published()->whereNotNull('user_id')->inRandomOrder()->take(5)->get();
+
+        foreach ($published as $article) {
+            Comment::factory()->for($article)->for($pembaca)->create();
+        }
+
+        $pembaca->bookmarks()->attach($published->take(3)->pluck('id'));
     }
 }

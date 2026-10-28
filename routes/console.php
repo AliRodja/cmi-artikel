@@ -9,12 +9,12 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 /*
- * Menunjuk admin: php artisan user:role email@contoh.com admin
+ * Mengubah peran: php artisan user:role email@contoh.com penulis   (admin / penulis / pembaca)
  * Tidak ada halaman untuk ini supaya peran tidak bisa diubah dari browser.
  */
-Artisan::command('user:role {email} {role : admin atau penulis}', function (string $email, string $role) {
-    if (! in_array($role, [User::ROLE_ADMIN, User::ROLE_PENULIS], true)) {
-        $this->error('Peran harus "admin" atau "penulis".');
+Artisan::command('user:role {email} {role : admin, penulis, atau pembaca}', function (string $email, string $role) {
+    if (! in_array($role, User::ROLES, true)) {
+        $this->error('Peran harus "admin", "penulis", atau "pembaca".');
 
         return 1;
     }
@@ -30,4 +30,4 @@ Artisan::command('user:role {email} {role : admin atau penulis}', function (stri
     // forceFill karena "role" sengaja tidak ada di $fillable.
     $user->forceFill(['role' => $role])->save();
     $this->info("{$user->name} sekarang berperan sebagai {$user->role_label}.");
-})->purpose('Ubah peran user (admin / penulis)');
+})->purpose('Ubah peran user (admin / penulis / pembaca)');

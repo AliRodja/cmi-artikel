@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ArticleRequest;
 use App\Models\Article;
+use App\Support\ArticleNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -48,6 +49,12 @@ class ArticleController extends Controller
 
         $article = $request->user()->articles()->create($data);
 
+        if ($article->isInReview()) {
+            ArticleNotifier::submitted($article);
+        } elseif ($article->isPublished()) {
+            ArticleNotifier::published($article, $request->user());
+        }
+
         return redirect()->route('articles.show', $article)->with('success', $article->isInReview()
             ? 'Artikel berhasil dibuat dan diajukan ke admin untuk direview.'
             : 'Artikel berhasil dibuat.');
@@ -87,6 +94,15 @@ class ArticleController extends Controller
         }
 
         $article->update($data);
+
+        // Notifikasi hanya saat status BERUBAH, agar mengedit artikel yang sudah diajukan/tayang tidak mengirim ulang.
+        if ($article->wasChanged('status')) {
+            if ($article->isInReview()) {
+                ArticleNotifier::submitted($article);
+            } elseif ($article->isPublished()) {
+                ArticleNotifier::published($article, $request->user());
+            }
+        }
 
         return redirect()->route('articles.show', $article)->with('success', $article->isInReview()
             ? 'Artikel berhasil diperbarui dan diajukan ke admin untuk direview.'

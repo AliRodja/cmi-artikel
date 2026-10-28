@@ -12,7 +12,10 @@
             <ul class="mt-4 space-y-2 text-sm text-white/90">
                 <li><a href="{{ route('home') }}" class="hover:text-white hover:underline">Berita &amp; Artikel</a></li>
                 @auth
-                    <li><a href="{{ route('dashboard') }}" class="hover:text-white hover:underline">Dashboard</a></li>
+                    @if (auth()->user()->canWrite())
+                        <li><a href="{{ route('dashboard') }}" class="hover:text-white hover:underline">Dashboard</a></li>
+                    @endif
+                    <li><a href="{{ route('bookmarks.index') }}" class="hover:text-white hover:underline">Baca Nanti</a></li>
                 @else
                     <li><a href="{{ route('login') }}" class="hover:text-white hover:underline">Masuk</a></li>
                 @endauth

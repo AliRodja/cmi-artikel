@@ -32,7 +32,7 @@ class ArticleRoleTest extends TestCase
         ], $overrides);
     }
 
-    public function test_registered_user_is_always_penulis_even_if_role_is_sent(): void
+    public function test_registered_user_is_always_pembaca_even_if_role_is_sent(): void
     {
         $this->post('/register', [
             'name' => 'Pendaftar',
@@ -42,7 +42,7 @@ class ArticleRoleTest extends TestCase
             'role' => User::ROLE_ADMIN,
         ]);
 
-        $this->assertSame(User::ROLE_PENULIS, User::where('email', 'pendaftar@example.com')->value('role'));
+        $this->assertSame(User::ROLE_PEMBACA, User::where('email', 'pendaftar@example.com')->value('role'));
     }
 
     public function test_penulis_cannot_publish_directly(): void

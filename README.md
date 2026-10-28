@@ -124,7 +124,8 @@ php artisan migrate --seed
 - `migrate` membuat tabel `users`, `articles`, `password_reset_tokens`, `sessions`, `cache`, dan `jobs`.
 - `--seed` mengisi data contoh: akun **admin** demo dengan 20 artikel, akun **penulis** demo dengan 6 artikel
   (Published, Menunggu Review, dan Draft yang dikembalikan admin), 10 artikel milik user lain,
-  dan 3 artikel **tanpa penulis** (untuk membuktikan INNER JOIN pada halaman Laporan Artikel).
+  3 artikel **tanpa penulis** (untuk membuktikan INNER JOIN pada halaman Laporan Artikel), dan akun **pembaca** demo
+  dengan beberapa komentar & artikel tersimpan.
 
 Untuk mengulang database dari nol kapan saja:
 
@@ -167,13 +168,17 @@ Buka **http://localhost:8000** di browser.
 |---|---|---|
 | `admin@example.com` | `password` | **Admin**: menerbitkan artikel, antrean Review, Laporan Artikel (Soal 2), kelola semua artikel |
 | `penulis@example.com` | `password` | **Penulis**: menulis artikel lalu mengajukannya ke admin |
+| `pembaca@example.com` | `password` | **Pembaca**: berkomentar, menyimpan artikel (Baca Nanti), menerima notifikasi artikel baru |
 
 User lain hasil seeder juga memakai password `password` (email-nya dapat dilihat di tabel `users`).
-Akun yang mendaftar lewat halaman **Daftar** selalu berperan **penulis**. Untuk menunjuk admin:
+Akun yang mendaftar lewat halaman **Daftar** selalu berperan **pembaca**. Untuk mengubah peran:
 
 ```bash
-php artisan user:role email@contoh.com admin     # atau: penulis
+php artisan user:role email@contoh.com penulis   # admin / penulis / pembaca
 ```
+
+> **Untuk menguji CRUD artikel & dashboard**, masuk dengan akun penulis/admin di atas: akun hasil Daftar adalah
+> pembaca dan tidak punya area penulis (mengakses `/dashboard` → 403).
 
 ---
 
@@ -196,7 +201,7 @@ Link reset berlaku 60 menit dan hanya bisa dipakai satu kali.
 | No | Kriteria | Bobot | Implementasi | Cara menguji |
 |---|---|---|---|---|
 | 1 | Login & Logout | 10 | `Auth\LoginController` — `Auth::attempt()`, "ingat saya", `session()->regenerate()` (cegah session fixation), `throttle:5,1` (maks 5 percobaan/menit), logout meng-*invalidate* session & token CSRF | Masuk dengan akun demo → klik **Keluar** |
-| 2 | Register | 10 | `Auth\RegisterController` — validasi nama, email unik, password min 8 + konfirmasi; password di-hash otomatis oleh cast `hashed`; langsung login setelah daftar | Klik **Daftar** |
+| 2 | Register | 10 | `Auth\RegisterController` — validasi nama, email unik, password min 8 + konfirmasi; password di-hash otomatis oleh cast `hashed`; langsung login setelah daftar sebagai **pembaca** (kolom `role` tidak bisa diisi dari form) | Klik **Daftar** → diarahkan ke beranda |
 | 3 | Lupa & Reset Password | 10 | `ForgotPasswordController` + `ResetPasswordController` dengan *password broker* Laravel; token disimpan ter-hash, berlaku 60 menit, sekali pakai; email Bahasa Indonesia | Lihat [bagian 4](#4-menguji-lupa--reset-password) |
 | 4 | Dashboard | 5 | `DashboardController` (invokable) — jumlah artikel, Published, Draft, dan 5 artikel terbaru **milik user yang login** | Masuk → halaman Dashboard |
 | 5 | CRUD Artikel | 20 | `ArticleController` (resource) — daftar milik sendiri + search judul + filter status + pagination, tambah, detail, edit, hapus dengan konfirmasi; slug unik otomatis | Menu **Artikel Saya** |
@@ -219,7 +224,7 @@ Link reset berlaku 60 menit dan hanya bisa dipakai satu kali.
 | Laravel Migration | `database/migrations` |
 | Laravel Validation | `ArticleRequest`, `$request->validate()` di controller autentikasi |
 | Authentication | Dibuat manual (tanpa Breeze/Jetstream) di `app/Http/Controllers/Auth` |
-| Middleware | `auth`, `guest`, `throttle`, dan `admin` (custom, `app/Http/Middleware/EnsureUserIsAdmin.php`) di `routes/web.php` |
+| Middleware | `auth`, `guest`, `throttle`, dan dua middleware buatan sendiri: `writer` (`EnsureUserCanWrite`, area penulis untuk admin & penulis) dan `admin` (`EnsureUserIsAdmin`) di `routes/web.php` |
 | Pagination | `paginate()` + `withQueryString()` di halaman publik, Artikel Saya, Laporan Artikel |
 | Route Model Binding | `{article}` dicari lewat kolom `slug` (`getRouteKeyName()` di model `Article`) |
 | Tanpa CMS siap pakai | ✔ |
@@ -317,20 +322,34 @@ Tabel bawaan Laravel lainnya: `sessions`, `cache`, `jobs`.
 | GET | `/reset-password/{token}` | `password.reset` | `guest` | Form password baru |
 | POST | `/reset-password` | `password.update` | `guest` | Simpan password baru |
 | POST | `/logout` | `logout` | `auth` | Keluar |
-| GET | `/dashboard` | `dashboard` | `auth` | Statistik & artikel terbaru |
-| — | `/dashboard/articles/...` | `articles.*` | `auth` + Policy | CRUD artikel (resource) |
-| GET | `/dashboard/laporan-artikel` | `articles.report` | `auth`, `admin` | Soal 2 — INNER JOIN |
-| GET | `/dashboard/review` | `review.index` | `auth`, `admin` | Antrean review & semua artikel |
-| PATCH | `/dashboard/articles/{slug}/publish` | `review.publish` | `auth`, `admin` + Policy | Terbitkan artikel yang diajukan |
-| PATCH | `/dashboard/articles/{slug}/return` | `review.return` | `auth`, `admin` + Policy | Kembalikan ke penulis dengan catatan |
+| POST | `/artikel/{slug}/komentar` | `comments.store` | `auth` (+ `throttle:10,1`) | Kirim komentar |
+| DELETE | `/komentar/{id}` | `comments.destroy` | `auth` + Policy | Hapus komentar (pemilik / admin) |
+| GET | `/baca-nanti` | `bookmarks.index` | `auth` | Artikel tersimpan |
+| POST | `/artikel/{slug}/simpan` | `bookmarks.toggle` | `auth` | Simpan / batal simpan |
+| GET | `/notifikasi` | `notifications.index` | `auth` | Daftar notifikasi |
+| GET | `/notifikasi/{id}/buka` | `notifications.open` | `auth` | Tandai dibaca lalu buka tujuan |
+| POST | `/notifikasi/baca-semua` | `notifications.read-all` | `auth` | Tandai semua dibaca |
+| GET | `/dashboard` | `dashboard` | `auth`, `writer` | Statistik & artikel terbaru |
+| — | `/dashboard/articles/...` | `articles.*` | `auth`, `writer` + Policy | CRUD artikel (resource) |
+| GET | `/dashboard/laporan-artikel` | `articles.report` | `auth`, `writer`, `admin` | Soal 2 — INNER JOIN |
+| GET | `/dashboard/review` | `review.index` | `auth`, `writer`, `admin` | Antrean review & semua artikel |
+| PATCH | `/dashboard/articles/{slug}/publish` | `review.publish` | `auth`, `writer`, `admin` + Policy | Terbitkan artikel yang diajukan |
+| PATCH | `/dashboard/articles/{slug}/return` | `review.return` | `auth`, `writer`, `admin` + Policy | Kembalikan ke penulis dengan catatan |
 
 ---
 
 ## 8. Keputusan Desain & Asumsi
 
 - **Autentikasi dibuat manual** (tanpa Breeze/Jetstream) agar setiap alurnya dipahami dan bisa dijelaskan.
-- **Dua peran: admin dan penulis** (kolom `users.role`), karena ini situs resmi klinik: tidak semua orang yang
-  mendaftar boleh langsung menayangkan artikel kesehatan.
+- **Tiga peran: admin, penulis, pembaca** (kolom `users.role`), karena ini situs resmi klinik: tidak semua orang yang
+  mendaftar boleh menulis, apalagi langsung menayangkan artikel kesehatan. Pendaftar baru = **pembaca**
+  (komentar, Baca Nanti, notifikasi); penulis ditunjuk admin.
+  - **Komentar** langsung tampil, ditulis sebagai teks biasa (di-escape `{{ }}`), dibatasi `throttle:10,1`, dan bisa
+    dihapus pemiliknya atau admin (`CommentPolicy`).
+  - **Notifikasi** memakai *database notifications* bawaan Laravel (tabel `notifications`, lonceng di navbar). Siapa
+    menerima apa ditentukan di satu tempat, `App\Support\ArticleNotifier`: admin ← artikel diajukan; penulis ←
+    artikelnya diterbitkan / dikembalikan / dikomentari; pembaca ← artikel baru terbit. Dikirim langsung (tanpa queue)
+    dan hanya saat status **berubah**, sehingga mengedit artikel tidak mengirim ulang notifikasi.
   - Alur: penulis menyimpan **Draft** → **Ajukan ke Admin** (status `2`) → admin **Terbitkan** (status `1`) atau
     **Kembalikan** ke Draft dengan catatan (`articles.review_note`).
   - Penulis mengelola artikel miliknya selama belum tayang; artikel yang sudah Published hanya diubah/dihapus admin.
@@ -364,12 +383,18 @@ app/
 │   │   ├── DashboardController.php        statistik dashboard
 │   │   ├── ArticleController.php          CRUD artikel
 │   │   ├── ArticleReviewController.php    antrean review admin (terbitkan / kembalikan)
+│   │   ├── CommentController.php          komentar
+│   │   ├── BookmarkController.php         Baca Nanti
+│   │   ├── NotificationController.php     notifikasi
 │   │   ├── PublicArticleController.php    halaman publik
 │   │   └── ArticleReportController.php    Soal 2 (INNER JOIN)
 │   ├── Middleware/EnsureUserIsAdmin.php   middleware "admin"
+│   ├── Middleware/EnsureUserCanWrite.php  middleware "writer" (admin & penulis)
 │   └── Requests/ArticleRequest.php        validasi artikel
-├── Models/{User,Article}.php
-└── Policies/ArticlePolicy.php             otorisasi per artikel (pemilik / admin)
+├── Models/{User,Article,Comment}.php
+├── Notifications/                         ArticleNotification + 5 notifikasi turunannya
+├── Policies/{Article,Comment}Policy.php   otorisasi per artikel / komentar
+└── Support/ArticleNotifier.php            penentu penerima notifikasi
 database/{migrations,factories,seeders}/
 resources/views/
 ├── layouts/app.blade.php
@@ -399,9 +424,12 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/ArticleAuthorizationTest.php` | 9 | Pemilik bisa lihat/edit/update/hapus artikel yang belum tayang; user lain **403** (lihat, edit, update, hapus); daftar hanya artikel sendiri; tamu diarahkan ke login; `user_id` tidak bisa disisipkan dari form; publik hanya melihat Published (Draft 404) dan tidak ada tombol kelola |
 | `tests/Feature/ArticleReportTest.php` | 9 | Soal 2: INNER JOIN membuang artikel tanpa penulis, hanya `status = 1`, nama & email dari tabel `users`, urut `created_at` terbaru, 10 per halaman, search judul/nama/email, search tidak membocorkan Draft, kata kunci terbawa di link pagination, tamu ditolak |
 | `tests/Feature/ArticleContentTest.php` | 6 | Rich text: format dipertahankan, HTML berbahaya (`<script>`, `onclick`, `javascript:`) dibuang, link diberi `rel=noopener`, editor kosong ditolak |
-| `tests/Feature/ArticleRoleTest.php` | 11 | Pendaftar selalu penulis walau mengirim `role=admin`; penulis tidak bisa langsung Published; artikel yang diajukan tidak tampil di publik; penulis tidak bisa edit/hapus artikel yang sudah tayang; penulis **403** di halaman admin; admin mengelola artikel siapa pun; terbitkan & kembalikan (catatan wajib); catatan hilang saat diajukan ulang; command `user:role` |
+| `tests/Feature/ArticleRoleTest.php` | 11 | Pendaftar selalu pembaca walau mengirim `role=admin`; penulis tidak bisa langsung Published; artikel yang diajukan tidak tampil di publik; penulis tidak bisa edit/hapus artikel yang sudah tayang; penulis **403** di halaman admin; admin mengelola artikel siapa pun; terbitkan & kembalikan (catatan wajib); catatan hilang saat diajukan ulang; command `user:role` |
 
-Hasil: **46 test, 175 assertion, semua lulus.**
+| `tests/Feature/ReaderFeaturesTest.php` | 8 | Pembaca **403** di area penulis & diarahkan ke beranda setelah login; komentar (wajib login, validasi, di-escape, tidak bisa di artikel Draft, hapus hanya pemilik/admin); Baca Nanti (simpan/batal, artikel yang ditarik hilang dari daftar) |
+| `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
+
+Hasil: **63 test, 225 assertion, semua lulus.**
 
 ---
 

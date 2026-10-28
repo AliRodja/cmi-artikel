@@ -48,8 +48,11 @@ Rubrik (100): INNER JOIN 30 · Filter status 15 · Sorting 10 · Pagination 15 �
   relasi `user()`, scope `published()` & `draft()`, `isPublished()`, slug otomatis unik di `booted()`
   (`generateUniqueSlug()`; slug **tidak** berubah saat judul diedit), accessor `image_url` & `excerpt`.
 - Model `User`: relasi `articles()` (hasMany). Password otomatis di-hash oleh cast `'password' => 'hashed'`.
-- **Authorization (sejak 2026-10-28 ada peran):** `users.role` = `admin` | `penulis` (default penulis, TIDAK di
-  `$fillable`; ubah via `php artisan user:role email admin`). `ArticlePolicy`: view → admin atau pemilik;
+- **Authorization (sejak 2026-10-28 ada peran):** `users.role` = `admin` | `penulis` | `pembaca` (default
+  **pembaca** = hasil Daftar, TIDAK di `$fillable`; ubah via `php artisan user:role email penulis`; `UserFactory`
+  default penulis + state `admin()`/`pembaca()`). `User::canWrite()` = admin|penulis → middleware alias `writer`
+  (`EnsureUserCanWrite`) menjaga `/dashboard` & `articles.*`; pembaca diarahkan ke beranda setelah login/register
+  (`redirectUsersTo` di `bootstrap/app.php`). `ArticlePolicy`: view → admin atau pemilik;
   update/delete → admin, atau pemilik **selama belum Published**; `review` → admin dan artikel berstatus Review.
   Middleware alias `admin` (`EnsureUserIsAdmin`, didaftarkan di `bootstrap/app.php`) menjaga `review.*` dan
   `articles.report`. Di controller pakai `Gate::authorize()` (base Controller Laravel 11+ tidak punya
@@ -95,7 +98,7 @@ resources/css/app.css             (Tailwind v4: @import, @source, @layer compone
                                    .badge .link .drawer-link .drawer-link-active .drawer-heading .th .td .article-content)
 resources/views/
   layouts/app.blade.php           (@vite, @yield content, @stack scripts)
-  partials/{navbar,nav-drawer,search-panel,user-menu,flash,footer}.blade.php
+  partials/{navbar,nav-drawer,search-panel,user-menu,notification-menu,flash,footer}.blade.php
   components/{input,status-badge,auth-card}.blade.php
   auth/{login,register,forgot-password,reset-password}.blade.php
   dashboard.blade.php
@@ -204,10 +207,14 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   membuat halaman melebar di ponsel.
 - [x] Navigasi: navbar grid `[1fr_auto_1fr]` → kiri burger + ikon cari, tengah logo (`<x-logo compact>`: nama situs
   disembunyikan di ponsel), kanan tamu: Masuk/Daftar (Daftar disembunyikan di ponsel; halaman Masuk punya link Daftar) |
-  login: tombol avatar → dropdown akun `partials/user-menu` (Popover API `popover`/`popovertarget`; klik luar & Esc
-  bawaan browser; posisi top/right di-set JS saat `beforetoggle`). Isi: profil, Kelola Pengguna (admin) & Baca Nanti
-  (keduanya **belum dibuat**, tampil nonaktif "Segera" via `.drawer-link-disabled`), Keluar. Drawer kiri hanya
+  login: lonceng + tombol avatar saja (nama/peran hanya di header dropdown) → dropdown akun `partials/user-menu` (Popover API `popover`/`popovertarget`; klik luar & Esc
+  bawaan browser; posisi top/right di-set JS saat `beforetoggle`, digeser bila keluar layar saat `toggle`). Isi:
+  profil, Kelola Pengguna (admin, **belum dibuat**, nonaktif "Segera" via `.drawer-link-disabled`), Baca Nanti,
+  Notifikasi, Keluar. Drawer kiri hanya
   navigasi (tanpa profil/Masuk/Daftar/Keluar).
+  Redesign 2026-10-28: garis aksen `brand-600` di atas, tinggi `h-16`, tombol ikon bulat `.nav-icon-btn` (app.css),
+  burger berlabel "Menu" (≥sm), kolom "Cari artikel…" palsu (≥lg) + pintasan `/`, bayangan saat scroll
+  (`data-scrolled` dari app.js).
   Ikon cari membuka `partials/search-panel` (`<dialog>` dari atas, GET ke `home?search=`, input `autofocus`).
   JS dialog di `app.js` dipakai bersama: `data-dialog-open="<id>"` / `data-dialog-close`, Esc ditangani manual
   (Esc pertama di `type=search` bawaan browser hanya mengosongkan teks). Semua menu di drawer kiri
@@ -216,6 +223,17 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `resources/js/app.js`; animasi geser di app.css (`@starting-style` + `allow-discrete`).
   Catatan uji E2E: klik CDP (`Input.dispatchMouseEvent`) di Chrome headless kadang hilang setelah login lewat
   `form.submit()` — terbukti bukan bug aplikasi (tetap hilang walau menu dimatikan); pakai `element.click()` bila begitu.
+- [x] Peran **pembaca** + komentar + Baca Nanti + notifikasi (2026-10-28): migration ubah default role, tabel
+  `comments` (cascade), `bookmarks` (pivot unik user×article), `notifications` (bawaan Laravel). `CommentController`
+  (artikel harus Published; user_id via `associate`), `CommentPolicy` (pemilik/admin), `BookmarkController` (`toggle()`,
+  daftar hanya Published), `NotificationController` (`open` mencari lewat `$request->user()->notifications()` → 404
+  untuk milik orang lain). `App\Notifications\ArticleNotification` (abstract, channel database, data
+  title/message/url relatif/icon) + `ArticleSubmittedForReview`, `ArticlePublished`, `ArticleReturned`,
+  `NewArticlePublished`, `NewComment`. Penerima diatur `App\Support\ArticleNotifier`, dipanggil di ArticleController
+  (store; update hanya bila `wasChanged('status')`), ArticleReviewController, CommentController. Navbar: lonceng
+  `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
+  `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
+  MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
 - [x] Ikon **Font Awesome Free 7** (npm `@fortawesome/fontawesome-free`, hanya css solid + regular diimpor di
   `resources/js/app.js`). Semua ikon lewat `<x-icon name=".." size="size-N">`; peta nama → class `fa-*` dan
   `size-*` → font-size ada di `components/icon.blade.php` (CSS FA tidak berlayer, menimpa `width` utilitas Tailwind,

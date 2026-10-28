@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureUserCanWrite;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,7 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
+            'writer' => EnsureUserCanWrite::class,
         ]);
+
+        // User yang sudah login lalu membuka /login atau /register: pembaca ke beranda, lainnya ke dashboard.
+        $middleware->redirectUsersTo(fn (Request $request) => $request->user()?->canWrite() ? route('dashboard') : route('home'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

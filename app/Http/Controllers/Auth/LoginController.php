@@ -31,7 +31,8 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        // Pembaca tidak punya dashboard, jadi diarahkan ke beranda.
+        return redirect()->intended($request->user()->canWrite() ? route('dashboard') : route('home'));
     }
 
     public function destroy(Request $request): RedirectResponse

@@ -32,6 +32,7 @@
                         && $routeArticle->user_id !== auth()->id();
                 @endphp
 
+                @if (auth()->user()->canWrite())
                 <div>
                     <p class="drawer-heading">Area Penulis</p>
                     <a href="{{ route('dashboard') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('dashboard')])>
@@ -45,6 +46,7 @@
                         <x-icon name="plus" class="text-gray-400" /> Tulis Artikel
                     </a>
                 </div>
+                @endif
 
                 @if (auth()->user()->isAdmin())
                     <div>

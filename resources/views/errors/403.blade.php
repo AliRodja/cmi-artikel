@@ -9,9 +9,9 @@
         <p class="mt-2 text-sm text-gray-500">Anda tidak memiliki izin untuk membuka halaman ini atau melakukan tindakan tersebut.</p>
 
         <div class="mt-6 flex justify-center gap-2">
-            @auth
+            @if (auth()->user()?->canWrite())
                 <a href="{{ route('articles.index') }}" class="btn btn-primary">Ke Artikel Saya</a>
-            @endauth
+            @endif
             <a href="{{ route('home') }}" class="btn btn-secondary">Ke Beranda</a>
         </div>
     </div>

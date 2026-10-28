@@ -30,6 +30,7 @@ class RegisterController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard')->with('success', 'Registrasi berhasil. Selamat datang, '.$user->name.'!');
+        // Pendaftar baru selalu pembaca (default kolom role), jadi diarahkan ke beranda.
+        return redirect()->route('home')->with('success', 'Registrasi berhasil. Selamat datang, '.$user->name.'!');
     }
 }

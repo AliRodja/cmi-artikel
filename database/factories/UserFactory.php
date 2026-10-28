@@ -19,12 +19,19 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            // Default factory = penulis (pemilik artikel di test & seeder); pembaca/admin lewat state.
+            'role' => User::ROLE_PENULIS,
         ];
     }
 
     public function admin(): static
     {
         return $this->state(['role' => User::ROLE_ADMIN]);
+    }
+
+    public function pembaca(): static
+    {
+        return $this->state(['role' => User::ROLE_PEMBACA]);
     }
 
     public function unverified(): static

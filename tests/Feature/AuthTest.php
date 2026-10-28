@@ -22,7 +22,8 @@ class AuthTest extends TestCase
             'password_confirmation' => 'rahasia123',
         ]);
 
-        $response->assertRedirect(route('dashboard'));
+        // Pendaftar baru adalah pembaca (tidak punya dashboard), jadi diarahkan ke beranda.
+        $response->assertRedirect(route('home'));
         $this->assertAuthenticated();
 
         $user = User::where('email', 'budi@example.com')->first();

@@ -12,9 +12,15 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Angka antrean di menu "Review" navbar, tampil di semua halaman untuk admin.
+        // Data navbar di semua halaman: angka antrean Review (admin) dan lonceng notifikasi (semua yang login).
         View::composer('partials.navbar', function ($view) {
-            $view->with('pendingReviewCount', auth()->user()?->isAdmin() ? Article::inReview()->count() : 0);
+            $user = auth()->user();
+
+            $view->with([
+                'pendingReviewCount' => $user?->isAdmin() ? Article::inReview()->count() : 0,
+                'unreadNotificationCount' => $user ? $user->unreadNotifications()->count() : 0,
+                'latestNotifications' => $user ? $user->notifications()->take(5)->get() : collect(),
+            ]);
         });
     }
 }

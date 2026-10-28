@@ -7,7 +7,10 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\BookmarkController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicArticleController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +36,21 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
+    // Fitur semua peran (termasuk pembaca): komentar, Baca Nanti, notifikasi.
+    Route::post('/artikel/{article}/komentar', [CommentController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('comments.store');
+    Route::delete('/komentar/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+
+    Route::get('/baca-nanti', [BookmarkController::class, 'index'])->name('bookmarks.index');
+    Route::post('/artikel/{article}/simpan', [BookmarkController::class, 'toggle'])->name('bookmarks.toggle');
+
+    Route::get('/notifikasi', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifikasi/{id}/buka', [NotificationController::class, 'open'])->name('notifications.open');
+    Route::post('/notifikasi/baca-semua', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+});
+
+Route::middleware(['auth', 'writer'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::prefix('dashboard')->group(function () {

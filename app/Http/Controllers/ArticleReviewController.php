@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Support\ArticleNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -36,11 +37,12 @@ class ArticleReviewController extends Controller
         return view('review.index', compact('articles', 'search', 'status', 'statusCounts'));
     }
 
-    public function publish(Article $article): RedirectResponse
+    public function publish(Request $request, Article $article): RedirectResponse
     {
         Gate::authorize('review', $article);
 
         $article->update(['status' => Article::STATUS_PUBLISHED, 'review_note' => null]);
+        ArticleNotifier::published($article, $request->user());
 
         return redirect()->route('review.index')
             ->with('success', 'Artikel "'.$article->title.'" sudah diterbitkan.');
@@ -56,6 +58,7 @@ class ArticleReviewController extends Controller
         );
 
         $article->update(['status' => Article::STATUS_DRAFT, 'review_note' => $validated['review_note']]);
+        ArticleNotifier::returned($article);
 
         return redirect()->route('review.index')
             ->with('success', 'Artikel "'.$article->title.'" dikembalikan ke penulis.');

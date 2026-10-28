@@ -52,10 +52,100 @@
             <a href="{{ route('home') }}" class="link inline-flex items-center gap-1.5 text-sm">
                 <x-icon name="arrow-left" size="size-4" /> Kembali ke Berita &amp; Artikel
             </a>
-            <button type="button" id="copy-link" class="btn btn-secondary btn-sm" data-url="{{ url()->current() }}">
-                <x-icon name="link" size="size-3" /> <span id="copy-link-label">Salin tautan</span>
-            </button>
+            <div class="flex items-center gap-2">
+                @auth
+                    <form action="{{ route('bookmarks.toggle', $article) }}" method="POST">
+                        @csrf
+                        <button type="submit" @class([
+                            'btn btn-sm',
+                            'btn-primary' => $isBookmarked,
+                            'btn-secondary' => ! $isBookmarked,
+                        ])>
+                            <x-icon :name="$isBookmarked ? 'bookmark-solid' : 'bookmark'" size="size-3" />
+                            {{ $isBookmarked ? 'Tersimpan' : 'Simpan' }}
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="btn btn-secondary btn-sm">
+                        <x-icon name="bookmark" size="size-3" /> Simpan
+                    </a>
+                @endauth
+                <button type="button" id="copy-link" class="btn btn-secondary btn-sm" data-url="{{ url()->current() }}">
+                    <x-icon name="link" size="size-3" /> <span id="copy-link-label">Salin tautan</span>
+                </button>
+            </div>
         </div>
+
+        {{-- Komentar --}}
+        <section id="komentar" class="mt-12 scroll-mt-24">
+            <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900">
+                <x-icon name="comments" class="text-brand-600" /> Komentar
+                <span class="text-base font-medium text-gray-400">({{ $article->comments->count() }})</span>
+            </h2>
+
+            @auth
+                <form action="{{ route('comments.store', $article) }}" method="POST" class="card mt-5 p-4">
+                    @csrf
+                    <div class="flex gap-3">
+                        <x-avatar :name="auth()->user()->name" />
+                        <div class="min-w-0 flex-1">
+                            <label for="body" class="sr-only">Tulis komentar</label>
+                            <textarea id="body" name="body" rows="3" maxlength="2000" required
+                                      placeholder="Tulis komentar atau pertanyaan Anda..."
+                                      @class(['form-input', 'form-input-error' => $errors->has('body')])>{{ old('body') }}</textarea>
+                            @error('body')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            <div class="mt-3 flex justify-end">
+                                <button type="submit" class="btn btn-primary btn-sm">Kirim Komentar</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            @else
+                <div class="card mt-5 px-5 py-4 text-sm text-gray-600">
+                    <a href="{{ route('login') }}" class="link">Masuk</a> atau
+                    <a href="{{ route('register') }}" class="link">daftar</a> untuk ikut berkomentar.
+                </div>
+            @endauth
+
+            @if ($article->comments->isEmpty())
+                <p class="mt-6 text-sm text-gray-500">Belum ada komentar. Jadilah yang pertama berkomentar.</p>
+            @else
+                <ul class="mt-6 space-y-4">
+                    @foreach ($article->comments as $comment)
+                        <li class="flex gap-3">
+                            <x-avatar :name="$comment->user->name" />
+                            <div class="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3">
+                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                    <p class="text-sm font-semibold text-gray-900">{{ $comment->user->name }}</p>
+                                    @if ($comment->user_id === $article->user_id)
+                                        <span class="badge bg-brand-50 text-brand-700">Penulis artikel</span>
+                                    @elseif ($comment->user->isAdmin())
+                                        <span class="badge bg-gray-100 text-gray-600">Admin</span>
+                                    @endif
+                                    <span class="text-xs text-gray-400">· {{ $comment->created_at->diffForHumans() }}</span>
+
+                                    @can('delete', $comment)
+                                        <form action="{{ route('comments.destroy', $comment) }}" method="POST" class="ml-auto"
+                                              onsubmit="return confirm('Hapus komentar ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" title="Hapus komentar" class="cursor-pointer rounded-md p-1 text-gray-400 hover:bg-red-50 hover:text-red-600">
+                                                <x-icon name="trash" size="size-3" />
+                                                <span class="sr-only">Hapus komentar</span>
+                                            </button>
+                                        </form>
+                                    @endcan
+                                </div>
+                                {{-- Teks biasa ({{ }} = di-escape), baris baru dipertahankan dengan whitespace-pre-line. --}}
+                                <p class="mt-1 text-sm whitespace-pre-line text-gray-700">{{ $comment->body }}</p>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </section>
     </div>
 
     @if ($relatedArticles->isNotEmpty())
