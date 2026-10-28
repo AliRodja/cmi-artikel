@@ -234,6 +234,14 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Beranda ala portal berita (pola Kompas.id)** (2026-10-28, permintaan user; hero biru tua tetap). Hanya saat
+  `$isLanding`: baris 1 dua kolom = **Sorotan** (kotak besar artikel terbaru, judul serif) | **Artikel Lainnya** (5
+  berikutnya: jenis, judul serif, waktu relatif, thumbnail kanan); baris 2 = **Berita Utama** (per jenis: label jenis →
+  judul utama serif + ringkasan + 3 judul terkait bergaris, gambar kanan; jenis kosong dilewati) | **Terpopuler**
+  (5, bernomor serif) + `x-consultation-card` (sticky). Lalu `#daftar-artikel` ("Semua Artikel" + pill + grid +
+  pagination). Saat cari/filter: hanya daftar + banner WhatsApp. Controller mengirim `$latestArticles` (6),
+  `$categorySections` (4 per jenis), `$popularArticles` (5). Komponen baru `x-section-title` (garis aksen kiri
+  brand-600) & `x-consultation-card` (dipakai juga di detail). Judul berita di beranda memakai `font-serif` (Lora).
 - [x] **Live search navbar** (2026-10-28): `GET /cari?q=` (`articles.live-search`, `throttle:60,1`) →
   `PublicArticleController@liveSearch` (bukan AJAX → redirect `home?search=`; < 2 huruf → kosong; Published +
   scope baru `Article::search()` yang juga dipakai beranda; `orderByRaw('CASE WHEN title LIKE ? ...')` judul dulu;

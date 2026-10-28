@@ -30,16 +30,37 @@ class PublicArticleController extends Controller
             ->paginate(9)
             ->withQueryString();
 
-        // Halaman awal (tanpa cari/filter, halaman 1) menampilkan Sorotan & Artikel Terpopuler.
+        // Halaman awal (tanpa cari/filter, halaman 1) bertata letak ala portal berita: Sorotan, Berita per Jenis,
+        // Terpopuler. Saat mencari/memfilter, yang tampil hanya daftar hasil.
         $isLanding = $search === '' && $category === null && $articles->onFirstPage();
 
-        $popularArticles = $isLanding
-            ? Article::query()->popular()->take(6)->get(self::POPULAR_COLUMNS)
-            : collect();
+        $latestArticles = collect();
+        $categorySections = collect();
+        $popularArticles = collect();
+
+        if ($isLanding) {
+            // 1 artikel terbaru untuk kotak besar + 5 berikutnya untuk kolom kanan.
+            $latestArticles = Article::query()->published()->with('user:id,name')->latest()->take(6)->get();
+
+            // Berita per jenis: 4 terbaru tiap jenis (1 judul utama + 3 judul terkait). Jenis tanpa artikel dilewati.
+            $categorySections = collect(Article::CATEGORIES)
+                ->map(fn (string $label, string $key) => Article::query()
+                    ->published()
+                    ->ofCategory($key)
+                    ->with('user:id,name')
+                    ->latest()
+                    ->take(4)
+                    ->get())
+                ->filter(fn ($items) => $items->isNotEmpty());
+
+            $popularArticles = Article::query()->popular()->take(5)->get(self::POPULAR_COLUMNS);
+        }
 
         $categoryCounts = Article::publishedCountsByCategory();
 
-        return view('public.index', compact('articles', 'search', 'category', 'isLanding', 'popularArticles', 'categoryCounts'));
+        return view('public.index', compact(
+            'articles', 'search', 'category', 'isLanding', 'latestArticles', 'categorySections', 'popularArticles', 'categoryCounts',
+        ));
     }
 
     /**

@@ -95,14 +95,28 @@ class ArticleViewTest extends TestCase
         Article::factory()->published()->create(['view_count' => 2]);
 
         $popular = $this->get(route('home'))
-            ->assertSee('Artikel Terpopuler')
+            ->assertSee('Terpopuler')
             ->assertSee(e(config('clinic.whatsapp_consultation_url')), false)
             ->viewData('popularArticles');
         $this->assertSame([$this->article->id], $popular->pluck('id')->all());
 
         // Saat mencari / memfilter, fokus ke hasil: Terpopuler tidak ditampilkan.
-        $this->get(route('home', ['jenis' => 'jantung']))->assertDontSee('Artikel Terpopuler');
-        $this->get(route('home', ['search' => 'apa saja']))->assertDontSee('Artikel Terpopuler');
+        $this->get(route('home', ['jenis' => 'jantung']))->assertDontSee('Terpopuler');
+        $this->get(route('home', ['search' => 'apa saja']))->assertDontSee('Terpopuler');
+    }
+
+    public function test_home_has_news_portal_sections_only_on_landing_page(): void
+    {
+        $newest = Article::factory()->published()->create(['title' => 'Kabar Terbaru Ginjal', 'category' => 'ginjal', 'created_at' => now()->addMinute()]);
+
+        $response = $this->get(route('home'))
+            ->assertSeeInOrder(['Sorotan', 'Kabar Terbaru Ginjal', 'Artikel Lainnya', 'Berita Utama', 'Terpopuler', 'Semua Artikel']);
+
+        // Kotak besar = artikel terbaru; Berita Utama hanya berisi jenis yang punya artikel.
+        $this->assertTrue($response->viewData('latestArticles')->first()->is($newest));
+        $this->assertSame(['jantung', 'ginjal'], $response->viewData('categorySections')->keys()->all());
+
+        $this->get(route('home', ['jenis' => 'ginjal']))->assertDontSee('Berita Utama')->assertDontSee('Sorotan');
     }
 
     public function test_related_articles_have_the_same_category(): void
