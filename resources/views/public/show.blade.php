@@ -23,8 +23,14 @@
                         <p class="text-xs">Penulis</p>
                     </div>
                 </div>
-                <span>{{ $article->created_at->translatedFormat('l, d F Y') }}</span>
-                <span>{{ $article->reading_time }} menit baca</span>
+                <span class="inline-flex items-center gap-1.5">
+                    <x-icon name="calendar" size="size-4" class="text-brand-300" />
+                    {{ $article->created_at->translatedFormat('l, d F Y') }}
+                </span>
+                <span class="inline-flex items-center gap-1.5">
+                    <x-icon name="clock" size="size-4" class="text-brand-300" />
+                    {{ $article->reading_time }} menit baca
+                </span>
             </div>
         </div>
     </section>
@@ -43,9 +49,11 @@
         </div>
 
         <div class="mt-8 flex flex-wrap items-center justify-between gap-3">
-            <a href="{{ route('home') }}" class="link text-sm">← Kembali ke Berita &amp; Artikel</a>
+            <a href="{{ route('home') }}" class="link inline-flex items-center gap-1.5 text-sm">
+                <x-icon name="arrow-left" size="size-4" /> Kembali ke Berita &amp; Artikel
+            </a>
             <button type="button" id="copy-link" class="btn btn-secondary btn-sm" data-url="{{ url()->current() }}">
-                Salin tautan
+                <x-icon name="link" size="size-3" /> <span id="copy-link-label">Salin tautan</span>
             </button>
         </div>
     </div>
@@ -66,14 +74,16 @@
 
 @push('scripts')
     <script>
+        // Hanya teks label yang diganti, supaya ikon di dalam tombol tidak ikut terhapus.
         document.getElementById('copy-link').addEventListener('click', async function () {
+            const label = document.getElementById('copy-link-label');
             try {
                 await navigator.clipboard.writeText(this.dataset.url);
-                this.textContent = 'Tautan disalin ✓';
+                label.textContent = 'Tautan disalin ✓';
             } catch {
-                this.textContent = 'Gagal menyalin';
+                label.textContent = 'Gagal menyalin';
             }
-            setTimeout(() => (this.textContent = 'Salin tautan'), 2000);
+            setTimeout(() => (label.textContent = 'Salin tautan'), 2000);
         });
     </script>
 @endpush

@@ -115,8 +115,7 @@ lang/id/{auth,passwords,validation}.php, lang/id.json
 ## Konvensi
 - Blade: selalu `{{ }}` (escape). Jangan pakai `{!! !!}` — **satu-satunya pengecualian**:
   `{!! $article->content_html !!}` (HTML isi artikel yang sudah disanitasi `App\Support\ArticleContent`), dengan class
-  `.article-content`. Jangan pernah `{!! $article->content !!}` atau `{!! !!}` untuk data lain. (Komponen `x-icon` juga
-  memakai `{!! !!}` untuk path SVG Heroicons yang statis di file itu — bukan data user.)
+  `.article-content`. Jangan pernah `{!! $article->content !!}` atau `{!! !!}` untuk data lain.
 - Tailwind: **jangan merangkai nama class dinamis** (mis. `text-{{ $color }}-600`); tulis class lengkap.
 - Pagination memakai view Tailwind bawaan Laravel (jangan aktifkan `Paginator::useBootstrapFive()`).
 - Form upload wajib `enctype="multipart/form-data"`; form PUT/DELETE pakai `@csrf` + `@method`.
@@ -175,8 +174,9 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   via log, daftar fitur vs rubrik, keputusan desain & asumsi.
 ### Tahap 5 — Pengembangan front-end (mulai 2026-10-28, data real diinput user sendiri lewat halaman)
 - Arah desain: **corporate / company profile**. Token di `app.css` `@theme`: palet `brand-50..950` dari warna resmi
-  CMI (navbar `#E3F2FD` = `brand-50`, footer `#066AC9` = `brand-600`) + font Plus Jakarta Sans (`vite.config.js` →
-  `@fonts` di layout). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
+  CMI (navbar `#E3F2FD` = `brand-50`, footer `#066AC9` = `brand-600`) + font dari **Google Fonts API** lewat provider
+  `google()` laravel-vite-plugin (diunduh saat build, disajikan dari server sendiri; `@fonts` di layout): Inter = `font-sans`
+  (UI & judul; sebelumnya Plus Jakarta Sans), Lora = `font-serif` (paragraf `.article-content`, subjudul di dalamnya tetap sans). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
 - [x] Halaman publik: layout (`@yield('hero')`, `partials/footer`), navbar, beranda (hero + featured di halaman 1 tanpa
   search + grid), detail (hero, waktu baca, salin tautan, Artikel Lainnya). Komponen baru `x-avatar` (prop `tone`),
@@ -194,7 +194,7 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
 - [x] Nama situs `APP_NAME="Klinik Utama CMI"` (.env & .env.example); copy hero/footer bertema klinik.
 - [x] Database dibersihkan dari data dummy (akun user `rodjaali@gmail.com` dipertahankan), backup di
   `storage/app/backups/`.
-- [x] Area penulis: komponen `x-page-header` (di `@section('hero')`, slot `meta`/`actions`), `x-icon` (Heroicons,
+- [x] Area penulis: komponen `x-page-header` (di `@section('hero')`, slot `meta`/`actions`), `x-icon` (kini Font Awesome,
   prop `size`), `x-article-thumb`. Dashboard (kartu statistik + progres published + empty state + aksi cepat),
   Artikel Saya (tab status + jumlah dari `$statusCounts` groupBy, aksi ikon), form 2 kolom (`_form` menerima
   `$submitLabel`/`$cancelUrl`; status = kartu radio; dropzone gambar), detail milik sendiri (banner Draft), laporan &
@@ -202,6 +202,11 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
 - Pelajaran CSS: selector toolbar Trix diberi awalan `form` (trix.css dimuat setelah app.css); kolom grid perlu `min-w-0`.
   Pembungkus tabel `overflow-x-auto` wajib `relative`, kalau tidak teks `sr-only` (position:absolute) lolos dan
   membuat halaman melebar di ponsel.
+- [x] Ikon **Font Awesome Free 7** (npm `@fortawesome/fontawesome-free`, hanya css solid + regular diimpor di
+  `resources/js/app.js`). Semua ikon lewat `<x-icon name=".." size="size-N">`; peta nama → class `fa-*` dan
+  `size-*` → font-size ada di `components/icon.blade.php` (CSS FA tidak berlayer, menimpa `width` utilitas Tailwind,
+  jadi ukuran ikon = font-size). Jangan menulis class `fa-*` langsung di view lain. Mengganti teks tombol yang berisi
+  ikon: ubah `<span>` labelnya saja (lihat tombol "Salin tautan").
 - [x] Peran admin/penulis + alur review (2026-10-28): migration `add_role_to_users_table` &
   `add_review_note_to_articles_table` (sudah dijalankan di MySQL, backup `storage/app/backups/artikel_app-sebelum-role-*.sql`;
   akun `rodjaali@gmail.com` = admin). Halaman `review/index` (tab Menunggu Review/Published/Draft/Semua), panel

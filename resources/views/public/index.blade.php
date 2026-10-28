@@ -67,9 +67,10 @@
                             <span class="badge bg-amber-400 text-amber-950">Terbaru</span>
                             <h2 class="mt-3 text-2xl leading-tight font-extrabold text-white sm:text-3xl">{{ $featured->title }}</h2>
                             <p class="mt-3 line-clamp-2 max-w-2xl text-sm text-brand-100">{{ $featured->excerpt }}</p>
-                            <p class="mt-4 text-xs font-medium text-brand-200">
-                                {{ $featured->user?->name ?? 'Anonim' }} · {{ $featured->created_at->translatedFormat('d F Y') }}
-                                · {{ $featured->reading_time }} menit baca
+                            <p class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-brand-200">
+                                <span class="inline-flex items-center gap-1.5"><x-icon name="user" size="size-3" /> {{ $featured->user?->name ?? 'Anonim' }}</span>
+                                <span class="inline-flex items-center gap-1.5"><x-icon name="calendar" size="size-3" /> {{ $featured->created_at->translatedFormat('d F Y') }}</span>
+                                <span class="inline-flex items-center gap-1.5"><x-icon name="clock" size="size-3" /> {{ $featured->reading_time }} menit baca</span>
                             </p>
                         </div>
                     </a>
@@ -79,7 +80,9 @@
                     @foreach ($highlights as $article)
                         <article class="group card flex flex-col justify-between p-6 transition hover:shadow-lg">
                             <div>
-                                <p class="text-xs font-medium text-gray-500">{{ $article->created_at->translatedFormat('d F Y') }}</p>
+                                <p class="inline-flex items-center gap-1 text-xs font-medium text-gray-500">
+                                    <x-icon name="calendar" size="size-3" class="text-gray-400" /> {{ $article->created_at->translatedFormat('d F Y') }}
+                                </p>
                                 <h3 class="mt-2 line-clamp-3 text-lg leading-snug font-bold text-gray-900 group-hover:text-brand-700">
                                     <a href="{{ route('public.articles.show', $article) }}">{{ $article->title }}</a>
                                 </h3>

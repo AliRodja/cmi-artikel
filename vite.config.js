@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import { bunny } from 'laravel-vite-plugin/fonts';
+import { google } from 'laravel-vite-plugin/fonts';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
@@ -8,9 +8,20 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/editor.js'],
             refresh: true,
+            // Diunduh dari Google Fonts API saat build lalu disajikan dari server sendiri
+            // (tanpa request ke Google di browser pengunjung). Preload hanya varian yang
+            // dipakai di atas lipatan; varian lain dimuat saat dibutuhkan.
             fonts: [
-                bunny('Plus Jakarta Sans', {
+                google('Inter', {
                     weights: [400, 500, 600, 700, 800],
+                    styles: ['normal', 'italic'],
+                    preload: [{ weight: 400, style: 'normal' }],
+                }),
+                // Serif untuk isi artikel: lebih nyaman untuk bacaan panjang.
+                google('Lora', {
+                    weights: [400, 600],
+                    styles: ['normal', 'italic'],
+                    preload: [{ weight: 400, style: 'normal' }],
                 }),
             ],
         }),

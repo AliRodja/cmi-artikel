@@ -10,7 +10,8 @@
  * seluruh halaman (bg-brand-*, text-brand-*, dst.) ikut berubah.
  */
 @theme {
-    --font-sans: var(--font-plus-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
+    --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    --font-serif: var(--font-lora), ui-serif, Georgia, serif;
 
     /* Warna identitas CMI: 50 = navbar (#E3F2FD), 600 = footer (#066AC9). */
     --color-brand-50: #e3f2fd;
@@ -58,12 +59,14 @@
      * Tipografi isi artikel (HTML dari Trix). Dipakai di halaman detail DAN di
      * dalam editor, sehingga yang ditulis tampil sama dengan hasil akhirnya.
      * <h1> dari tombol "Heading" Trix ditampilkan seukuran subjudul.
+     * Paragraf memakai serif (Lora) agar nyaman dibaca panjang; subjudul tetap sans
+     * (Inter) supaya senada dengan judul halaman.
      */
-    .article-content { @apply text-[1.0625rem] leading-8 text-gray-700; }
+    .article-content { @apply font-serif text-[1.125rem] leading-8 text-gray-800; }
     .article-content :where(p)          { @apply my-5; }
-    .article-content :where(h1, h2)     { @apply mt-10 mb-4 text-2xl leading-snug font-bold text-gray-900; }
+    .article-content :where(h1, h2)     { @apply mt-10 mb-4 font-sans text-2xl leading-snug font-bold text-gray-900; }
     .article-content > :where(:first-child) { @apply mt-0; }
-    .article-content :where(h3)         { @apply mt-8 mb-3 text-xl font-semibold text-gray-900; }
+    .article-content :where(h3)         { @apply mt-8 mb-3 font-sans text-xl font-semibold text-gray-900; }
     .article-content :where(ul)         { @apply my-5 list-disc pl-6; }
     .article-content :where(ol)         { @apply my-5 list-decimal pl-6; }
     .article-content :where(li)         { @apply my-1.5; }
