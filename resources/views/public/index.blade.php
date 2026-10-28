@@ -4,14 +4,15 @@
 
 @section('hero')
     <section class="relative overflow-hidden bg-brand-950">
-        <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,var(--color-brand-700),transparent_45%)] opacity-70"></div>
+        <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,var(--color-brand-700),transparent_60%)] opacity-70"></div>
 
-        <div class="container-page relative py-16 sm:py-20">
+        {{-- Konten hero di tengah: label, judul, deskripsi, kolom pencarian. --}}
+        <div class="container-page relative py-16 text-center sm:py-20">
             <p class="eyebrow text-brand-300">Pusat Informasi</p>
-            <h1 class="mt-3 max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Berita &amp; Artikel Kesehatan</h1>
-            <p class="mt-4 max-w-xl text-base text-brand-200">Informasi kesehatan, kabar terbaru, dan pengumuman resmi dari {{ config('app.name') }}.</p>
+            <h1 class="mx-auto mt-3 max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Berita &amp; Artikel Kesehatan</h1>
+            <p class="mx-auto mt-4 max-w-xl text-base text-brand-200">Informasi kesehatan, kabar terbaru, dan pengumuman resmi dari {{ config('app.name') }}.</p>
 
-            <form action="{{ route('home') }}" method="GET" class="mt-8 flex max-w-xl gap-2 rounded-xl bg-white p-1.5 shadow-xl">
+            <form action="{{ route('home') }}" method="GET" class="mx-auto mt-8 flex max-w-xl gap-2 rounded-xl bg-white p-1.5 text-left shadow-xl">
                 @if ($category)
                     <input type="hidden" name="jenis" value="{{ $category }}">
                 @endif

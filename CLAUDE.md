@@ -252,7 +252,8 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `x-input` kini punya prop `icon` (ikon kiri, `pl-10`) dan untuk `type="password"` otomatis tombol mata
   (`data-password-toggle`, `aria-pressed`) + peringatan Caps Lock (`#{name}-capslock`, `getModifierState`) — JS di
   app.js, berlaku untuk semua kolom password. Ikon baru: envelope, lock, eye-slash, shield.
-- [x] **Beranda ala portal berita (pola Kompas.id)** (2026-10-28, permintaan user; hero biru tua tetap). Hanya saat
+- [x] **Beranda ala portal berita (pola Kompas.id)** (2026-10-28, permintaan user; hero biru tua tetap, kontennya
+  rata tengah — label, judul, deskripsi, form cari `mx-auto` — dengan cahaya radial di tengah atas). Hanya saat
   `$isLanding`: baris 1 dua kolom = **Sorotan** (kotak besar artikel terbaru, judul serif) | **Artikel Lainnya** (5
   berikutnya: jenis, judul serif, waktu relatif, thumbnail kanan); baris 2 = **Berita Utama** (per jenis: label jenis →
   judul utama serif + ringkasan + 3 judul terkait bergaris, gambar kanan; jenis kosong dilewati) | **Terpopuler**
