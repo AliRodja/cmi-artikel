@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', $article->title)
-@section('description', Str::limit($article->excerpt, 155))
+@section('title', $article->meta_title)
+@section('description', $article->meta_description)
 @section('og_type', 'article')
 @if ($article->image_url)
     @section('og_image', $article->image_url)

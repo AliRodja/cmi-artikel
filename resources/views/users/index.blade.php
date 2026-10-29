@@ -85,6 +85,9 @@
                                                 @endif
                                             </p>
                                             <p class="truncate text-xs text-gray-500">{{ $user->email }}</p>
+                                            @if ($user->profession)
+                                                <p class="truncate text-xs font-medium text-brand-700">{{ $user->profession }}</p>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
@@ -92,11 +95,10 @@
                                 <td class="td text-center text-gray-700">{{ $user->articles_count }}</td>
                                 <td class="td whitespace-nowrap text-gray-500">{{ $user->created_at->translatedFormat('d M Y') }}</td>
                                 <td class="td">
-                                    <div class="flex justify-end gap-1">
-                                        <a href="{{ route('users.edit', $user) }}" title="Edit"
-                                           class="rounded-md p-2 text-gray-500 hover:bg-brand-50 hover:text-brand-700">
-                                            <x-icon name="pencil-square" size="size-4" />
-                                            <span class="sr-only">Edit {{ $user->name }}</span>
+                                    <div class="flex justify-end gap-2 whitespace-nowrap">
+                                        <a href="{{ route('users.edit', $user) }}" class="btn btn-secondary btn-sm">
+                                            <x-icon name="pencil-square" size="size-3" /> Edit
+                                            <span class="sr-only">{{ $user->name }}</span>
                                         </a>
                                         @can('delete', $user)
                                             {{-- Pesan konfirmasi lewat data-* agar nama berisi tanda kutip tidak merusak JavaScript. --}}
@@ -105,9 +107,9 @@
                                                   onsubmit="return confirm(this.dataset.confirm)">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" title="Hapus" class="cursor-pointer rounded-md p-2 text-gray-500 hover:bg-red-50 hover:text-red-600">
-                                                    <x-icon name="trash" size="size-4" />
-                                                    <span class="sr-only">Hapus {{ $user->name }}</span>
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <x-icon name="trash" size="size-3" /> Hapus
+                                                    <span class="sr-only">{{ $user->name }}</span>
                                                 </button>
                                             </form>
                                         @endcan

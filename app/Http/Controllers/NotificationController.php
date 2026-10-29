@@ -10,9 +10,18 @@ class NotificationController extends Controller
 {
     public function index(Request $request): View
     {
-        $notifications = $request->user()->notifications()->paginate(15);
+        $user = $request->user();
+        // ?filter=belum-dibaca → hanya yang belum dibaca.
+        $onlyUnread = $request->query('filter') === 'belum-dibaca';
 
-        return view('notifications.index', compact('notifications'));
+        $notifications = ($onlyUnread ? $user->unreadNotifications() : $user->notifications())
+            ->paginate(15)
+            ->withQueryString();
+
+        $totalCount = $user->notifications()->count();
+        $unreadCount = $user->unreadNotifications()->count();
+
+        return view('notifications.index', compact('notifications', 'onlyUnread', 'totalCount', 'unreadCount'));
     }
 
     /**

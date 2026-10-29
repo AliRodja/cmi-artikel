@@ -1,18 +1,16 @@
 @extends('layouts.app')
 
 @section('title', 'Akses Ditolak')
+@section('robots', 'noindex, follow')
 
 @section('content')
-    <div class="mx-auto max-w-md py-12 text-center">
-        <p class="text-6xl font-bold text-brand-700">403</p>
-        <h1 class="mt-4 text-2xl font-bold text-gray-900">Akses Ditolak</h1>
-        <p class="mt-2 text-sm text-gray-500">Anda tidak memiliki izin untuk membuka halaman ini atau melakukan tindakan tersebut.</p>
-
-        <div class="mt-6 flex justify-center gap-2">
-            @if (auth()->user()?->canWrite())
-                <a href="{{ route('articles.index') }}" class="btn btn-primary">Ke Artikel Saya</a>
-            @endif
-            <a href="{{ route('home') }}" class="btn btn-secondary">Ke Beranda</a>
-        </div>
-    </div>
+    <x-error-page code="403" icon="lock" title="Akses ditolak"
+                  message="Anda tidak memiliki izin untuk membuka halaman ini atau melakukan tindakan tersebut. Bila menurut Anda ini keliru, hubungi admin.">
+        @if (auth()->user()?->canWrite())
+            <a href="{{ route('articles.index') }}" class="btn btn-primary px-5 py-2.5"><x-icon name="document-text" size="size-4" /> Ke Artikel Saya</a>
+        @endif
+        <a href="{{ route('home') }}" @class(['btn px-5 py-2.5', 'btn-secondary' => auth()->user()?->canWrite(), 'btn-primary' => ! auth()->user()?->canWrite()])>
+            <x-icon name="newspaper" size="size-4" /> Ke Beranda
+        </a>
+    </x-error-page>
 @endsection

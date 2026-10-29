@@ -22,19 +22,44 @@
 @endsection
 
 @section('content')
+    @php
+        $summary = [
+            ['label' => 'Published seluruhnya', 'value' => $publishedTotal, 'hint' => 'status = 1', 'tone' => 'bg-brand-50 text-brand-700', 'icon' => 'document-text'],
+            ['label' => 'Tampil di laporan', 'value' => $publishedTotal - $withoutAuthor, 'hint' => 'punya penulis (INNER JOIN)', 'tone' => 'bg-green-50 text-green-700', 'icon' => 'check-circle'],
+            ['label' => 'Tersaring INNER JOIN', 'value' => $withoutAuthor, 'hint' => 'tanpa penulis (user_id NULL)', 'tone' => 'bg-amber-50 text-amber-700', 'icon' => 'exclamation-triangle'],
+        ];
+    @endphp
+
+    <div class="mb-6 grid gap-4 sm:grid-cols-3">
+        @foreach ($summary as $item)
+            <div class="card flex items-center gap-4 p-5">
+                <span class="flex size-12 shrink-0 items-center justify-center rounded-xl {{ $item['tone'] }}">
+                    <x-icon :name="$item['icon']" size="size-5" />
+                </span>
+                <div>
+                    <p class="text-sm font-medium text-gray-600">{{ $item['label'] }}</p>
+                    <p class="text-2xl font-extrabold text-gray-900">{{ $item['value'] }}</p>
+                    <p class="text-xs text-gray-500">{{ $item['hint'] }}</p>
+                </div>
+            </div>
+        @endforeach
+    </div>
 
     <p class="mb-3 text-sm text-gray-600">
-        Total {{ $articles->total() }} artikel
         @if ($search !== '')
-            untuk "<span class="font-medium">{{ $search }}</span>"
+            {{ $articles->total() }} artikel untuk "<span class="font-semibold text-gray-900">{{ $search }}</span>"
+            · <a href="{{ route('articles.report') }}" class="link">Hapus pencarian</a>
+        @else
+            Menampilkan {{ $articles->total() }} artikel Published yang punya penulis, terbaru di atas, 10 per halaman.
         @endif
     </p>
 
     <div class="card overflow-hidden">
         @if ($articles->isEmpty())
-            <p class="px-4 py-12 text-center text-sm text-gray-500">Tidak ada artikel yang cocok.</p>
+            <p class="px-4 py-12 text-center text-gray-600">Tidak ada artikel yang cocok.</p>
         @else
-            <div class="overflow-x-auto">
+            {{-- relative: teks sr-only di dalam tabel tidak membuat halaman melebar di ponsel. --}}
+            <div class="relative overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -56,7 +81,7 @@
                                 <td class="td">{{ $article->author_name }}</td>
                                 <td class="td text-gray-600">{{ $article->author_email }}</td>
                                 <td class="td"><x-status-badge :status="$article->status" /></td>
-                                <td class="td whitespace-nowrap text-gray-500">{{ \Illuminate\Support\Carbon::parse($article->created_at)->format('d M Y H:i') }}</td>
+                                <td class="td whitespace-nowrap text-gray-600">{{ \Illuminate\Support\Carbon::parse($article->created_at)->translatedFormat('d M Y, H:i') }}</td>
                             </tr>
                         @endforeach
                     </tbody>

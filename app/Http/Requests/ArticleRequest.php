@@ -33,6 +33,10 @@ class ArticleRequest extends FormRequest
             ],
             'category' => ['required', Rule::in(array_keys(Article::CATEGORIES))],
             'sources' => ['nullable', 'string', 'max:5000'],
+            // Optimasi SEO (opsional). Batas mengikuti panjang yang ditampilkan Google.
+            'focus_keyword' => ['nullable', 'string', 'max:100'],
+            'seo_title' => ['nullable', 'string', 'max:70'],
+            'seo_description' => ['nullable', 'string', 'max:160'],
             // Peninjau medis hanya ditentukan admin; penulis yang menyisipkan field ini lewat DevTools ditolak.
             'medical_reviewer_id' => $this->user()->isAdmin()
                 ? ['nullable', 'integer', Rule::exists('users', 'id')->whereIn('role', [User::ROLE_ADMIN, User::ROLE_PENULIS])]
@@ -51,6 +55,9 @@ class ArticleRequest extends FormRequest
             'content' => 'isi artikel',
             'category' => 'jenis artikel',
             'sources' => 'sumber rujukan',
+            'focus_keyword' => 'kata kunci utama',
+            'seo_title' => 'judul SEO',
+            'seo_description' => 'deskripsi SEO',
             'medical_reviewer_id' => 'peninjau medis',
             'image' => 'gambar',
             'status' => 'status',

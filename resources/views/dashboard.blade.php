@@ -15,11 +15,12 @@
 
 @section('content')
     @php
+        // Kartu statistik bisa diklik → langsung ke Artikel Saya dengan filter status yang sesuai.
         $stats = [
-            ['label' => 'Jumlah Artikel', 'value' => $totalCount, 'icon' => 'document-text', 'tone' => 'bg-brand-50 text-brand-700'],
-            ['label' => 'Published', 'value' => $publishedCount, 'icon' => 'check-circle', 'tone' => 'bg-green-50 text-green-700'],
-            ['label' => 'Menunggu Review', 'value' => $reviewCount, 'icon' => 'clock', 'tone' => 'bg-violet-50 text-violet-700'],
-            ['label' => 'Draft', 'value' => $draftCount, 'icon' => 'pencil-square', 'tone' => 'bg-amber-50 text-amber-700'],
+            ['label' => 'Jumlah Artikel', 'value' => $totalCount, 'icon' => 'document-text', 'tone' => 'bg-brand-50 text-brand-700', 'status' => null],
+            ['label' => 'Published', 'value' => $publishedCount, 'icon' => 'check-circle', 'tone' => 'bg-green-50 text-green-700', 'status' => \App\Models\Article::STATUS_PUBLISHED],
+            ['label' => 'Menunggu Review', 'value' => $reviewCount, 'icon' => 'clock', 'tone' => 'bg-violet-50 text-violet-700', 'status' => \App\Models\Article::STATUS_REVIEW],
+            ['label' => 'Draft', 'value' => $draftCount, 'icon' => 'pencil-square', 'tone' => 'bg-amber-50 text-amber-700', 'status' => \App\Models\Article::STATUS_DRAFT],
         ];
         $publishedPercent = $totalCount > 0 ? round($publishedCount / $totalCount * 100) : 0;
     @endphp
@@ -42,26 +43,39 @@
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ($stats as $stat)
-            <div class="card flex items-center gap-4 p-5">
+            <a href="{{ route('articles.index', array_filter(['status' => $stat['status']], fn ($value) => $value !== null)) }}"
+               class="group card flex items-center gap-4 p-5 transition hover:-translate-y-0.5 hover:shadow-md">
                 <span class="flex size-12 items-center justify-center rounded-xl {{ $stat['tone'] }}">
                     <x-icon :name="$stat['icon']" size="size-6" />
                 </span>
-                <div>
-                    <p class="text-sm font-medium text-gray-500">{{ $stat['label'] }}</p>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-600">{{ $stat['label'] }}</p>
                     <p class="text-3xl font-extrabold tracking-tight text-gray-900">{{ $stat['value'] }}</p>
                 </div>
-            </div>
+                <x-icon name="chevron-right" size="size-3" class="text-gray-400 transition group-hover:text-brand-600" />
+            </a>
         @endforeach
     </div>
 
     @if ($totalCount > 0)
-        <div class="card mt-4 p-5">
-            <div class="flex items-center justify-between text-sm">
-                <span class="font-medium text-gray-700">Artikel yang sudah dipublikasikan</span>
-                <span class="font-semibold text-gray-900">{{ $publishedPercent }}%</span>
+        <div class="card mt-4 grid divide-y divide-gray-100 sm:grid-cols-[2fr_1fr] sm:divide-x sm:divide-y-0">
+            <div class="p-5">
+                <div class="flex items-center justify-between text-sm">
+                    <span class="font-medium text-gray-700">Artikel yang sudah dipublikasikan</span>
+                    <span class="font-semibold text-gray-900">{{ $publishedPercent }}%</span>
+                </div>
+                <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-gray-100">
+                    <div class="h-full rounded-full bg-green-500" style="width: {{ $publishedPercent }}%"></div>
+                </div>
             </div>
-            <div class="mt-3 h-2 overflow-hidden rounded-full bg-gray-100">
-                <div class="h-full rounded-full bg-green-500" style="width: {{ $publishedPercent }}%"></div>
+            <div class="flex items-center gap-3 p-5">
+                <span class="flex size-10 items-center justify-center rounded-full bg-brand-50 text-brand-700">
+                    <x-icon name="eye" size="size-4" />
+                </span>
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total dibaca</p>
+                    <p class="text-xl font-extrabold text-gray-900">{{ number_format($totalViews, 0, ',', '.') }} kali</p>
+                </div>
             </div>
         </div>
     @endif
@@ -98,13 +112,15 @@
                                 <a href="{{ route('articles.show', $article) }}" class="block truncate font-semibold text-gray-900 hover:text-brand-700">
                                     {{ $article->title }}
                                 </a>
-                                <p class="mt-0.5 flex items-center gap-2 text-xs text-gray-500">
+                                <p class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
                                     <x-status-badge :status="$article->status" />
-                                    Diperbarui {{ $article->updated_at->diffForHumans() }}
+                                    <span>Diperbarui <x-date :value="$article->updated_at" /></span>
                                 </p>
                             </div>
                             @can('update', $article)
-                                <a href="{{ route('articles.edit', $article) }}" class="btn btn-secondary btn-sm">Edit</a>
+                                <a href="{{ route('articles.edit', $article) }}" class="btn btn-secondary btn-sm">
+                                    <x-icon name="pencil-square" size="size-3" /> Edit
+                                </a>
                             @endcan
                         </li>
                     @endforeach
@@ -113,6 +129,27 @@
         </section>
 
         <aside class="space-y-6">
+            @if ($topArticles->isNotEmpty())
+                <section class="card p-5">
+                    <h2 class="font-bold text-gray-900">Paling banyak dibaca</h2>
+                    <ol class="mt-3 space-y-3">
+                        @foreach ($topArticles as $article)
+                            <li>
+                                <a href="{{ route('articles.show', $article) }}" class="group flex items-start gap-3">
+                                    <span class="w-5 shrink-0 text-lg leading-6 font-extrabold text-brand-400">{{ $loop->iteration }}</span>
+                                    <span class="min-w-0">
+                                        <span class="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-brand-700">{{ $article->title }}</span>
+                                        <span class="mt-0.5 inline-flex items-center gap-1 text-xs text-gray-500">
+                                            <x-icon name="eye" size="size-3" /> {{ number_format($article->view_count, 0, ',', '.') }} kali dibaca
+                                        </span>
+                                    </span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ol>
+                </section>
+            @endif
+
             <section class="card p-5">
                 <h2 class="font-bold text-gray-900">Aksi Cepat</h2>
                 <nav class="mt-3 -mx-2 space-y-1 text-sm">
@@ -142,6 +179,8 @@
                     <li>Gunakan judul yang jelas dan spesifik.</li>
                     <li>Pakai subjudul agar artikel mudah dipindai.</li>
                     <li>Tambahkan gambar utama agar menarik di beranda.</li>
+                    <li>Cantumkan sumber rujukan agar pembaca lebih percaya.</li>
+                    <li>Minta dokter meninjau isi artikel sebelum diterbitkan.</li>
                 </ul>
             </section>
         </aside>

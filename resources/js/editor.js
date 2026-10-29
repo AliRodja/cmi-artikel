@@ -2,6 +2,8 @@
 import 'trix';
 import 'trix/dist/trix.css';
 
+import './seo-panel';
+
 // Gambar artikel dikelola lewat field "Gambar" terpisah, jadi lampiran file di editor dimatikan.
 document.addEventListener('trix-file-accept', (event) => event.preventDefault());
 

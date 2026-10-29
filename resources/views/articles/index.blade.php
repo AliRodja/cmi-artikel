@@ -85,11 +85,12 @@
                                         <x-article-thumb :article="$article" class="h-11 w-16" />
                                         <div class="min-w-0">
                                             <a href="{{ route('articles.show', $article) }}" class="line-clamp-1 font-semibold text-gray-900 hover:text-brand-700">{{ $article->title }}</a>
-                                            @if ($article->review_note)
-                                                <p class="line-clamp-1 text-xs font-medium text-amber-700">Ada catatan dari admin</p>
-                                            @else
-                                                <p class="line-clamp-1 text-xs text-gray-500">{{ $article->excerpt }}</p>
-                                            @endif
+                                            <p class="mt-0.5 flex flex-wrap items-center gap-2 text-xs">
+                                                <x-category-badge :article="$article" />
+                                                @if ($article->review_note)
+                                                    <span class="font-medium text-amber-700">Ada catatan dari admin</span>
+                                                @endif
+                                            </p>
                                         </div>
                                     </div>
                                 </td>
@@ -97,19 +98,16 @@
                                 <td class="td text-center text-gray-700">{{ number_format($article->view_count, 0, ',', '.') }}</td>
                                 <td class="td whitespace-nowrap text-gray-500">{{ $article->created_at->translatedFormat('d M Y') }}</td>
                                 <td class="td">
-                                    <div class="flex justify-end gap-1">
+                                    <div class="flex justify-end gap-2 whitespace-nowrap">
+                                        {{-- Tombol berlabel (bukan ikon saja) agar jelas fungsinya. --}}
                                         @if ($article->isPublished())
-                                            <a href="{{ route('public.articles.show', $article) }}" target="_blank" title="Lihat di situs publik"
-                                               class="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900">
-                                                <x-icon name="arrow-top-right-on-square" size="size-4" />
-                                                <span class="sr-only">Lihat di situs publik</span>
+                                            <a href="{{ route('public.articles.show', $article) }}" target="_blank" class="btn btn-secondary btn-sm">
+                                                <x-icon name="arrow-top-right-on-square" size="size-3" /> Lihat
                                             </a>
                                         @endif
                                         @can('update', $article)
-                                            <a href="{{ route('articles.edit', $article) }}" title="Edit"
-                                               class="rounded-md p-2 text-gray-500 hover:bg-brand-50 hover:text-brand-700">
-                                                <x-icon name="pencil-square" size="size-4" />
-                                                <span class="sr-only">Edit</span>
+                                            <a href="{{ route('articles.edit', $article) }}" class="btn btn-secondary btn-sm">
+                                                <x-icon name="pencil-square" size="size-3" /> Edit
                                             </a>
                                         @endcan
                                         @can('delete', $article)
@@ -117,9 +115,8 @@
                                                   onsubmit="return confirm('Hapus artikel ini? Tindakan ini tidak bisa dibatalkan.')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" title="Hapus" class="cursor-pointer rounded-md p-2 text-gray-500 hover:bg-red-50 hover:text-red-600">
-                                                    <x-icon name="trash" size="size-4" />
-                                                    <span class="sr-only">Hapus</span>
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <x-icon name="trash" size="size-3" /> Hapus
                                                 </button>
                                             </form>
                                         @endcan

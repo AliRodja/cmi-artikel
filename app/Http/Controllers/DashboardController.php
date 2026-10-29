@@ -21,6 +21,10 @@ class DashboardController extends Controller
             // Antrean seluruh penulis, hanya dihitung untuk admin.
             'pendingReviewCount' => $user->isAdmin() ? Article::inReview()->count() : 0,
             'latestArticles' => $user->articles()->latest()->take(5)->get(),
+            // Jumlah pembaca semua artikel milik user & 3 artikel tayangnya yang paling banyak dibaca.
+            'totalViews' => (int) $user->articles()->sum('view_count'),
+            'topArticles' => $user->articles()->published()->where('view_count', '>', 0)
+                ->orderByDesc('view_count')->take(3)->get(['id', 'title', 'slug', 'image', 'view_count']),
         ]);
     }
 }

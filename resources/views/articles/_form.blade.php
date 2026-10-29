@@ -23,8 +23,9 @@
 @endphp
 
 <div class="grid items-start gap-6 lg:grid-cols-3">
-    {{-- Kolom utama: judul & isi --}}
-    <div class="card min-w-0 p-6 lg:col-span-2">
+    {{-- Kolom utama: judul & isi, lalu Optimasi SEO --}}
+    <div class="min-w-0 space-y-6 lg:col-span-2">
+    <div class="card min-w-0 p-6">
         <div class="mb-5">
             <label for="title" class="form-label">Judul</label>
             <input type="text" id="title" name="title" value="{{ old('title', $article?->title) }}" required maxlength="255"
@@ -72,6 +73,9 @@
                 <p class="form-error">{{ $message }}</p>
             @enderror
         </div>
+    </div>
+
+    @include('articles._seo-panel')
     </div>
 
     {{-- Sidebar: publikasi & gambar --}}

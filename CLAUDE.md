@@ -234,6 +234,26 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Optimasi SEO per artikel** (2026-10-29): migration `add_seo_fields_to_articles_table` (`focus_keyword` 100,
+  `seo_title` 70, `seo_description` 160, nullable; MySQL dimigrasi, backup `artikel_app-sebelum-seo-artikel-*.sql`),
+  fillable + validasi `ArticleRequest`. Accessor `meta_title` (seo_title ?: title) & `meta_description`
+  (seo_description ?: plain text 155) dipakai `public/show` (title/description) & `Seo::article()` (+ `keywords`).
+  Partial `articles/_seo-panel` (di bawah kartu isi di `_form`; kolom kiri kini dibungkus `space-y-6`): pratinjau Google,
+  penghitung karakter, checklist 7 poin; JS `resources/js/seo-panel.js` (diimpor `editor.js`, slugify menyerupai
+  Str::slug, slug tetap saat edit). Tidak memakai `<meta keywords>` (diabaikan Google) — sampaikan ke user bahwa
+  tidak ada jaminan peringkat. Test `ArticleSeoFieldsTest` (4) → 131 test / 523 assertion.
+- [x] **Redesign halaman sisa** (2026-10-29): Baca Nanti → daftar (thumbnail, jenis, judul serif, ringkasan,
+  "Disimpan <x-date pivot>", tombol **Baca** & **Hapus** = form `bookmarks.toggle`), paginate 10. Notifikasi → tab
+  Semua/Belum dibaca (`?filter=belum-dibaca`, controller kirim `onlyUnread/totalCount/unreadCount`), dikelompokkan
+  Hari ini/Kemarin/tanggal; `x-notification-item`: ikon berwarna per jenis, `x-date`, badge "Baru". Error: komponen
+  `x-error-page`; `errors/{403,404,419,429}` pakai layouts.app + `@section('robots','noindex, follow')` (partials/seo kini
+  mendukung override `robots`; 404 artikel Draft tidak lagi "index"); 404 menyarankan 3 artikel terbaru (try/catch);
+  `errors/{500,503}` pakai `layouts/minimal` (tanpa navbar/DB). Dashboard: kartu statistik = link ke Artikel Saya
+  terfilter, kartu "Total dibaca" (`totalViews`), "Paling banyak dibaca" (`topArticles`), tips + sumber/peninjau.
+  Artikel Saya, Review, Kelola Pengguna: tombol aksi berlabel (Lihat/Edit/Hapus/Tinjau), jenis di bawah judul, profesi
+  user. Laporan (query INNER JOIN TIDAK diubah): ringkasan Published seluruhnya / tampil / tersaring INNER JOIN
+  (`publishedTotal`, `withoutAuthor`), tanggal `translatedFormat`, pembungkus tabel `relative`. Test
+  `PagesRedesignTest` (7) → 127 test / 505 assertion.
 - [x] **SEO** (2026-10-28, sebelum deploy): `config/seo.php` (description bawaan, `image` = `images/og-default.png`
   1200×630 dibuat GD dari logo, latar brand-950). `App\Support\Seo`: `isIndexable()` (hanya `home` tanpa ?search &
   `public.articles.show`), `canonicalUrl()` (beranda: hanya ?jenis valid & ?page>1; lainnya `$request->url()`),

@@ -30,7 +30,10 @@ class Article extends Model
         'ginjal' => 'Ginjal',
     ];
 
-    protected $fillable = ['user_id', 'medical_reviewer_id', 'title', 'slug', 'content', 'sources', 'category', 'image', 'status', 'review_note'];
+    protected $fillable = [
+        'user_id', 'medical_reviewer_id', 'title', 'slug', 'content', 'sources', 'category', 'image', 'status', 'review_note',
+        'focus_keyword', 'seo_title', 'seo_description',
+    ];
 
     protected $casts = [
         'status' => 'integer',
@@ -200,6 +203,18 @@ class Article extends Model
     public function getContentHtmlAttribute(): string
     {
         return ArticleContent::toHtml($this->content);
+    }
+
+    /** Judul di hasil Google: Judul SEO bila diisi, selain itu judul artikel. */
+    public function getMetaTitleAttribute(): string
+    {
+        return $this->seo_title ?: $this->title;
+    }
+
+    /** Penjelasan di hasil Google: Deskripsi SEO bila diisi, selain itu ringkasan isi artikel. */
+    public function getMetaDescriptionAttribute(): string
+    {
+        return $this->seo_description ?: Str::limit(ArticleContent::toPlainText($this->content), 155);
     }
 
     public function getExcerptAttribute(): string

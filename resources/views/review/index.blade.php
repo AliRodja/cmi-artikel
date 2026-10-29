@@ -82,7 +82,7 @@
                                         <x-article-thumb :article="$article" class="h-11 w-16" />
                                         <div class="min-w-0">
                                             <a href="{{ route('articles.show', $article) }}" class="line-clamp-1 font-semibold text-gray-900 hover:text-brand-700">{{ $article->title }}</a>
-                                            <p class="line-clamp-1 text-xs text-gray-500">{{ $article->excerpt }}</p>
+                                            <p class="mt-0.5"><x-category-badge :article="$article" /></p>
                                         </div>
                                     </div>
                                 </td>
@@ -95,23 +95,21 @@
                                     @endif
                                 </td>
                                 <td class="td"><x-status-badge :status="$article->status" /></td>
-                                <td class="td whitespace-nowrap text-gray-500">{{ $article->updated_at->diffForHumans() }}</td>
+                                <td class="td whitespace-nowrap text-gray-600"><x-date :value="$article->updated_at" /></td>
                                 <td class="td">
-                                    <div class="flex justify-end gap-1">
+                                    <div class="flex justify-end gap-2 whitespace-nowrap">
                                         @if ($article->isInReview())
-                                            <a href="{{ route('articles.show', $article) }}" class="btn btn-primary btn-sm">Tinjau</a>
+                                            <a href="{{ route('articles.show', $article) }}" class="btn btn-primary btn-sm">
+                                                <x-icon name="check-circle" size="size-3" /> Tinjau
+                                            </a>
                                         @else
                                             @if ($article->isPublished())
-                                                <a href="{{ route('public.articles.show', $article) }}" target="_blank" title="Lihat di situs publik"
-                                                   class="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900">
-                                                    <x-icon name="arrow-top-right-on-square" size="size-4" />
-                                                    <span class="sr-only">Lihat di situs publik</span>
+                                                <a href="{{ route('public.articles.show', $article) }}" target="_blank" class="btn btn-secondary btn-sm">
+                                                    <x-icon name="arrow-top-right-on-square" size="size-3" /> Lihat
                                                 </a>
                                             @endif
-                                            <a href="{{ route('articles.edit', $article) }}" title="Edit"
-                                               class="rounded-md p-2 text-gray-500 hover:bg-brand-50 hover:text-brand-700">
-                                                <x-icon name="pencil-square" size="size-4" />
-                                                <span class="sr-only">Edit</span>
+                                            <a href="{{ route('articles.edit', $article) }}" class="btn btn-secondary btn-sm">
+                                                <x-icon name="pencil-square" size="size-3" /> Edit
                                             </a>
                                         @endif
                                     </div>

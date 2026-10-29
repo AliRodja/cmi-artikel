@@ -16,7 +16,7 @@ class BookmarkController extends Controller
             ->published() // artikel yang kemudian ditarik admin tidak ikut tampil
             ->with('user:id,name')
             ->orderByPivot('created_at', 'desc')
-            ->paginate(9);
+            ->paginate(10);
 
         return view('bookmarks.index', compact('articles'));
     }

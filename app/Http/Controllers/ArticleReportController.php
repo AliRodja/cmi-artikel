@@ -36,6 +36,10 @@ class ArticleReportController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('articles.report', compact('articles', 'search'));
+        // Ringkasan untuk membuktikan efek INNER JOIN: artikel Published tanpa penulis (user_id NULL) tidak ikut tampil.
+        $publishedTotal = Article::published()->count();
+        $withoutAuthor = Article::published()->whereNull('user_id')->count();
+
+        return view('articles.report', compact('articles', 'search', 'publishedTotal', 'withoutAuthor'));
     }
 }

@@ -2,13 +2,14 @@
 
 {{--
     Tag SEO di <head> (dipasang di layouts/app). Halaman mengisi lewat section:
-    - title (wajib), description (ringkasan 120–160 karakter), og_type (website|article), og_image (URL lengkap)
+    - title (wajib), description (ringkasan 120–160 karakter), og_type (website|article), og_image (URL lengkap),
+      robots (opsional, mis. halaman error: 'noindex, follow')
     - JSON-LD lewat @push('structured-data')
     Robots & canonical ditentukan otomatis oleh App\Support\Seo. Nilai @section('x', $nilai) sudah di-escape Blade.
 --}}
 <title>@yield('title', 'Beranda') · {{ config('app.name') }}</title>
 <meta name="description" content="@yield('description', config('seo.description'))">
-<meta name="robots" content="{{ Seo::isIndexable(request()) ? 'index, follow, max-image-preview:large' : 'noindex, follow' }}">
+<meta name="robots" content="@hasSection('robots')@yield('robots')@else{{ Seo::isIndexable(request()) ? 'index, follow, max-image-preview:large' : 'noindex, follow' }}@endif">
 <link rel="canonical" href="{{ Seo::canonicalUrl(request()) }}">
 <meta name="theme-color" content="#066ac9">
 
