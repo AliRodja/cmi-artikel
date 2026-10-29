@@ -15,7 +15,7 @@ class CredibilityTest extends TestCase
     private function payload(array $overrides = []): array
     {
         return array_merge([
-            'title' => 'Mengenal Hipertensi', 'content' => 'Isi.', 'category' => 'jantung', 'status' => Article::STATUS_DRAFT,
+            'title' => 'Mengenal Hipertensi', 'content' => 'Isi.', 'status' => Article::STATUS_DRAFT,
         ], $overrides);
     }
 

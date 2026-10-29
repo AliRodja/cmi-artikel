@@ -10,9 +10,7 @@
 @push('seo-meta')
     <meta property="article:published_time" content="{{ $article->created_at->toAtomString() }}">
     <meta property="article:modified_time" content="{{ $article->updated_at->toAtomString() }}">
-    @if ($article->category_label)
-        <meta property="article:section" content="{{ $article->category_label }}">
-    @endif
+    <meta property="article:section" content="Kesehatan Jantung">
 @endpush
 
 @push('structured-data')
@@ -31,16 +29,11 @@
             <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-xs font-medium text-brand-300">
                 <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
                 <x-icon name="chevron-right" size="size-3" class="text-brand-500" />
-                <a href="{{ route('home') }}" class="hover:text-white">Berita &amp; Artikel</a>
-                @if ($article->category_label)
-                    <x-icon name="chevron-right" size="size-3" class="text-brand-500" />
-                    <a href="{{ route('home', ['jenis' => $article->category]) }}" class="hover:text-white">{{ $article->category_label }}</a>
-                @endif
+                <a href="{{ route('home') }}#daftar-artikel" class="hover:text-white">Artikel Kesehatan Jantung</a>
             </nav>
 
             <div class="mt-6 max-w-4xl">
-                <x-category-badge :article="$article" />
-                <h1 class="mt-3 text-3xl leading-[1.15] font-extrabold tracking-tight text-white sm:text-4xl lg:text-[2.75rem]">
+                <h1 class="text-3xl leading-[1.15] font-extrabold tracking-tight text-white sm:text-4xl lg:text-[2.75rem]">
                     {{ $article->title }}
                 </h1>
 
@@ -194,7 +187,7 @@
             </section>
         </div>
 
-        {{-- Kolom 3: artikel lainnya, jenis artikel, ajakan konsultasi (menempel saat scroll). --}}
+        {{-- Kolom 3: artikel lainnya, ajakan konsultasi (menempel saat scroll). --}}
         <aside class="min-w-0 space-y-6">
             @if ($latestArticles->isNotEmpty())
                 <section class="card p-5">
@@ -205,7 +198,6 @@
                                 <a href="{{ route('public.articles.show', $related) }}" class="group flex gap-3 py-3">
                                     <x-article-thumb :article="$related" class="size-16" />
                                     <div class="min-w-0">
-                                        <x-category-badge :article="$related" class="mb-1" />
                                         <p class="line-clamp-2 text-sm leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $related->title }}</p>
                                         <p class="mt-1 text-xs text-gray-500">{{ $related->created_at->translatedFormat('d M Y') }}</p>
                                     </div>
@@ -216,38 +208,17 @@
                 </section>
             @endif
 
-            <section class="card p-5">
-                <h2 class="font-bold text-gray-900">Jenis Artikel</h2>
-                <ul class="mt-3 space-y-1">
-                    @foreach (\App\Models\Article::CATEGORIES as $value => $label)
-                        <li>
-                            <a href="{{ route('home', ['jenis' => $value]) }}" @class([
-                                'flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-brand-50 hover:text-brand-800',
-                                'bg-brand-50 text-brand-800' => $article->category === $value,
-                                'text-gray-700' => $article->category !== $value,
-                            ])>
-                                <span class="flex items-center gap-2">
-                                    <x-icon name="tag" size="size-3" class="text-brand-500" /> {{ $label }}
-                                </span>
-                                <span class="rounded-full bg-gray-100 px-2 text-xs text-gray-600">{{ $categoryCounts->get($value, 0) }}</span>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </section>
-
-            <x-consultation-card class="lg:sticky lg:top-24"
-                :title="$article->category_label ? 'Alami gejala '.Str::lower($article->category_label).'?' : 'Punya keluhan kesehatan?'" />
+            <x-consultation-card class="lg:sticky lg:top-24" />
         </aside>
     </div>
 
-    {{-- Artikel terkait: jenis yang sama dengan artikel yang sedang dibuka. --}}
+    {{-- Artikel terkait: membahas kata kunci utama yang sama, dilengkapi artikel lain (PublicArticleController::relatedArticles). --}}
     @if ($relatedArticles->isNotEmpty())
         <section class="mt-16">
             <div class="mb-6 flex flex-wrap items-end justify-between gap-2 border-b border-gray-200 pb-3">
                 <h2 class="text-xl font-bold text-gray-900">Artikel Terkait</h2>
-                <a href="{{ route('home', ['jenis' => $article->category]) }}" class="link inline-flex items-center gap-1.5 text-sm">
-                    Semua artikel {{ $article->category_label }} <x-icon name="chevron-right" size="size-3" />
+                <a href="{{ route('home') }}#daftar-artikel" class="link inline-flex items-center gap-1.5 text-sm">
+                    Semua artikel <x-icon name="chevron-right" size="size-3" />
                 </a>
             </div>
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

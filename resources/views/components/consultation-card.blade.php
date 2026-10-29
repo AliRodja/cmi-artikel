@@ -1,4 +1,4 @@
-@props(['title' => 'Punya keluhan kesehatan?'])
+@props(['title' => 'Alami gejala jantung?'])
 
 {{-- Ajakan konsultasi: membuka chat WhatsApp customer service (URL di config/clinic.php). Beranda & detail artikel. --}}
 <section {{ $attributes->class('overflow-hidden rounded-xl bg-gradient-to-br from-brand-600 to-brand-900 p-5 text-white shadow-md') }}>

@@ -14,8 +14,7 @@ class ArticleSeoFieldsTest extends TestCase
     private function payload(array $overrides = []): array
     {
         return array_merge([
-            'title' => 'Mengenal Diabetes', 'content' => 'Diabetes adalah penyakit kronis.', 'category' => 'diabetes',
-            'status' => Article::STATUS_DRAFT,
+            'title' => 'Mengenal Diabetes', 'content' => 'Diabetes adalah penyakit kronis.', 'status' => Article::STATUS_DRAFT,
         ], $overrides);
     }
 

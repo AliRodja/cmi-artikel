@@ -7,7 +7,7 @@
     @php
         // Saran bacaan agar pengunjung tidak "buntu". Dibungkus try: halaman error tidak boleh ikut gagal.
         try {
-            $suggestions = \App\Models\Article::published()->latest()->take(3)->get(['id', 'title', 'slug', 'category', 'image', 'created_at']);
+            $suggestions = \App\Models\Article::published()->latest()->take(3)->get(['id', 'title', 'slug', 'image', 'created_at']);
         } catch (\Throwable) {
             $suggestions = collect();
         }
@@ -28,8 +28,7 @@
                                 <a href="{{ route('public.articles.show', $article) }}" class="group flex items-center gap-4 py-3">
                                     <x-article-thumb :article="$article" class="size-16" />
                                     <span class="min-w-0">
-                                        <x-category-badge :article="$article" />
-                                        <span class="mt-1 block font-serif font-semibold text-gray-900 group-hover:text-brand-700">{{ $article->title }}</span>
+                                        <span class="block font-serif font-semibold text-gray-900 group-hover:text-brand-700">{{ $article->title }}</span>
                                     </span>
                                 </a>
                             </li>

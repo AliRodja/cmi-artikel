@@ -99,15 +99,14 @@ class PagesRedesignTest extends TestCase
         $response->assertSee('Tanpa penulis')->assertDontSee('INNER JOIN');
     }
 
-    public function test_report_shows_range_category_highlight_and_print_button(): void
+    public function test_report_shows_range_highlight_and_print_button(): void
     {
         $author = User::factory()->create(['name' => 'Rina Gizi']);
-        Article::factory(12)->for($author)->published()->create(['category' => 'ginjal']);
+        Article::factory(12)->for($author)->published()->create();
 
         $this->actingAs(User::factory()->admin()->create())
             ->get(route('articles.report', ['search' => 'Rina']))
             ->assertSee('Menampilkan <strong class="text-gray-900">1–10</strong>', false)
-            ->assertSee('Ginjal')
             ->assertSee('<mark class="rounded-sm bg-amber-100 px-0.5 text-inherit">Rina</mark>', false)
             ->assertSee('aria-sort="descending"', false)
             ->assertSee('window.print()', false);
@@ -118,7 +117,6 @@ class PagesRedesignTest extends TestCase
         $penulis = User::factory()->create(['name' => 'Rina', 'profession' => 'Ahli Gizi']);
         $article = Article::factory()->for($penulis)->inReview()->create([
             'title' => 'Mengenal Gejala Diabetes',
-            'category' => 'diabetes',
             'content' => str_repeat('kata ', 320),
             'image' => null,
             'sources' => 'Kemenkes RI',
@@ -132,8 +130,8 @@ class PagesRedesignTest extends TestCase
             ->assertSee('Tinjau artikel ini')
             ->assertSee('menunggu keputusan Anda', false)
             ->assertSeeInOrder(['Informasi artikel', 'Rina', 'Ahli Gizi', '320 kata'])
-            // 5 dari 7: belum ada gambar & belum ditinjau tenaga medis.
-            ->assertSee('5/7')
+            // 4 dari 6: belum ada gambar & belum ditinjau tenaga medis.
+            ->assertSee('4/6')
             ->assertSee('Belum ada gambar utama.')
             ->assertSee('Tampilan di Google')
             ->assertSee('gejala diabetes')
@@ -156,7 +154,7 @@ class PagesRedesignTest extends TestCase
     {
         $this->actingAs(User::factory()->create())
             ->get(route('articles.create'))
-            ->assertSeeInOrder(['Judul &amp; jenis artikel', 'Isi artikel', 'Sumber rujukan', 'Optimasi SEO (opsional)'], false)
+            ->assertSeeInOrder(['Judul artikel', 'Isi artikel', 'Sumber rujukan', 'Optimasi SEO (opsional)'], false)
             ->assertSee('data-word-count', false)
             ->assertSee('Kelengkapan artikel')
             ->assertSee('Isi minimal 300 kata');

@@ -20,7 +20,7 @@
             <div>
                 <p class="drawer-heading">Situs</p>
                 <a href="{{ route('home') }}" @class(['drawer-link', 'drawer-link-active' => request()->routeIs('home', 'public.*')])>
-                    <x-icon name="newspaper" class="text-gray-500" /> Berita &amp; Artikel
+                    <x-icon name="newspaper" class="text-gray-500" /> Artikel Jantung
                 </a>
             </div>
 

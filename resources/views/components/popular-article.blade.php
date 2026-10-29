@@ -6,7 +6,6 @@
     <span class="w-7 shrink-0 text-center text-3xl font-extrabold text-brand-400 tabular-nums transition group-hover:text-brand-600">{{ $rank }}</span>
     <x-article-thumb :article="$article" class="size-16" />
     <div class="min-w-0">
-        <x-category-badge :article="$article" class="mb-1" />
         <p class="line-clamp-2 text-sm leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $article->title }}</p>
         <p class="mt-1 inline-flex items-center gap-1 text-xs text-gray-500">
             <x-icon name="eye" size="size-3" /> {{ number_format($article->view_count, 0, ',', '.') }} kali dilihat

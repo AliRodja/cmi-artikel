@@ -6,61 +6,38 @@ use App\Models\Article;
 use App\Support\ArticleViewCounter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class PublicArticleController extends Controller
 {
     /** Kolom yang cukup untuk daftar Artikel Terpopuler (tanpa isi artikel yang panjang). */
-    private const POPULAR_COLUMNS = ['id', 'title', 'slug', 'category', 'image', 'view_count', 'created_at'];
+    private const POPULAR_COLUMNS = ['id', 'title', 'slug', 'image', 'view_count', 'created_at'];
 
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search'));
-        // ?jenis=jantung → hanya artikel jenis itu; nilai yang tidak dikenal diabaikan.
-        $category = array_key_exists((string) $request->query('jenis'), Article::CATEGORIES)
-            ? (string) $request->query('jenis')
-            : null;
 
+        // 10 per halaman: pas untuk grid 2 kolom di samping kolom Terpopuler.
         $articles = Article::query()
             ->published()
             ->with('user:id,name')
-            ->when($category, fn ($query) => $query->ofCategory($category))
             ->when($search !== '', fn ($query) => $query->search($search))
             ->latest()
-            ->paginate(9)
+            ->paginate(10)
             ->withQueryString();
 
-        // Halaman awal (tanpa cari/filter, halaman 1) bertata letak ala portal berita: Sorotan, Berita per Jenis,
-        // Terpopuler. Saat mencari/memfilter, yang tampil hanya daftar hasil.
-        $isLanding = $search === '' && $category === null && $articles->onFirstPage();
+        // Halaman awal (tanpa pencarian, halaman 1) diawali Sorotan ala portal berita.
+        $isLanding = $search === '' && $articles->onFirstPage();
 
-        $latestArticles = collect();
-        $categorySections = collect();
-        $popularArticles = collect();
+        // 1 artikel terbaru untuk kotak besar + 5 berikutnya untuk kolom kanan.
+        $latestArticles = $isLanding
+            ? Article::query()->published()->with('user:id,name')->latest()->take(6)->get()
+            : collect();
 
-        if ($isLanding) {
-            // 1 artikel terbaru untuk kotak besar + 5 berikutnya untuk kolom kanan.
-            $latestArticles = Article::query()->published()->with('user:id,name')->latest()->take(6)->get();
+        $popularArticles = Article::query()->popular()->take(5)->get(self::POPULAR_COLUMNS);
 
-            // Berita per jenis: 4 terbaru tiap jenis (1 judul utama + 3 judul terkait). Jenis tanpa artikel dilewati.
-            $categorySections = collect(Article::CATEGORIES)
-                ->map(fn (string $label, string $key) => Article::query()
-                    ->published()
-                    ->ofCategory($key)
-                    ->with('user:id,name')
-                    ->latest()
-                    ->take(4)
-                    ->get())
-                ->filter(fn ($items) => $items->isNotEmpty());
-
-            $popularArticles = Article::query()->popular()->take(5)->get(self::POPULAR_COLUMNS);
-        }
-
-        $categoryCounts = Article::publishedCountsByCategory();
-
-        return view('public.index', compact(
-            'articles', 'search', 'category', 'isLanding', 'latestArticles', 'categorySections', 'popularArticles', 'categoryCounts',
-        ));
+        return view('public.index', compact('articles', 'search', 'isLanding', 'latestArticles', 'popularArticles'));
     }
 
     /**
@@ -89,7 +66,7 @@ class PublicArticleController extends Controller
                 ->orderByRaw('CASE WHEN title LIKE ? THEN 0 ELSE 1 END', ["%{$term}%"])
                 ->latest()
                 ->take(6)
-                ->get(['id', 'title', 'slug', 'category', 'image', 'created_at']);
+                ->get(['id', 'title', 'slug', 'image', 'created_at']);
         }
 
         return view('public._live-search-results', compact('term', 'results', 'total'));
@@ -110,25 +87,16 @@ class PublicArticleController extends Controller
 
         $isBookmarked = (bool) $request->user()?->hasBookmarked($article);
 
-        // Sidebar kanan: daftar artikel terbaru lainnya + jumlah artikel per jenis.
+        // Sidebar kanan: daftar artikel terbaru lainnya.
         $latestArticles = Article::query()
             ->published()
             ->whereKeyNot($article->getKey())
             ->latest()
             ->take(5)
-            ->get(['id', 'title', 'slug', 'category', 'image', 'created_at']);
+            ->get(['id', 'title', 'slug', 'image', 'created_at']);
 
-        // Di bawah artikel: artikel lain dengan jenis yang sama...
-        $relatedArticles = $article->category
-            ? Article::query()
-                ->published()
-                ->ofCategory($article->category)
-                ->whereKeyNot($article->getKey())
-                ->with('user:id,name')
-                ->latest()
-                ->take(3)
-                ->get()
-            : collect();
+        // Di bawah artikel: artikel terkait...
+        $relatedArticles = $this->relatedArticles($article, $latestArticles->modelKeys());
 
         // ...dan artikel yang paling sering dilihat, setelah melewati batas minimal kunjungan.
         $popularArticles = Article::query()
@@ -137,10 +105,31 @@ class PublicArticleController extends Controller
             ->take(6)
             ->get(self::POPULAR_COLUMNS);
 
-        $categoryCounts = Article::publishedCountsByCategory();
-
         return view('public.show', compact(
-            'article', 'latestArticles', 'relatedArticles', 'popularArticles', 'categoryCounts', 'isBookmarked',
+            'article', 'latestArticles', 'relatedArticles', 'popularArticles', 'isBookmarked',
         ));
+    }
+
+    /**
+     * Maksimal 3 artikel terkait: yang membahas kata kunci utama (SEO) artikel ini lebih dulu, sisanya diisi
+     * artikel lain secara acak. Artikel yang sudah tampil di sidebar ($exclude) tidak diulang.
+     */
+    private function relatedArticles(Article $article, array $exclude): Collection
+    {
+        $others = fn () => Article::query()->published()->whereKeyNot($article->getKey())->with('user:id,name');
+
+        $related = filled($article->focus_keyword)
+            ? $others()->search($article->focus_keyword)->latest()->take(3)->get()
+            : collect();
+
+        if ($related->count() < 3) {
+            $related = $related->concat($others()
+                ->whereKeyNot([...$exclude, ...$related->pluck('id')])
+                ->inRandomOrder()
+                ->take(3 - $related->count())
+                ->get());
+        }
+
+        return $related;
     }
 }

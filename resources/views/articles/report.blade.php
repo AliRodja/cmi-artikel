@@ -119,9 +119,6 @@
                                        class="font-semibold text-gray-900 hover:text-brand-700 hover:underline">
                                         <x-highlight :text="$article->title" :term="$search" />
                                     </a>
-                                    @if ($article->category)
-                                        <div class="mt-1.5"><x-category-badge :category="$article->category" /></div>
-                                    @endif
                                 </td>
                                 <td class="td">
                                     <div class="flex min-w-40 items-center gap-2.5 print:min-w-0">
@@ -160,7 +157,6 @@
                             </a>
                             <x-status-badge :status="$article->status" />
                         </div>
-                        <x-category-badge :category="$article->category" />
                         <div class="flex items-center gap-2.5">
                             <x-avatar :name="$article->author_name" />
                             <div class="min-w-0 text-sm">

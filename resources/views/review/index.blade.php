@@ -82,7 +82,6 @@
                                         <x-article-thumb :article="$article" class="h-11 w-16" />
                                         <div class="min-w-0">
                                             <a href="{{ route('articles.show', $article) }}" class="line-clamp-1 font-semibold text-gray-900 hover:text-brand-700">{{ $article->title }}</a>
-                                            <p class="mt-0.5"><x-category-badge :article="$article" /></p>
                                         </div>
                                     </div>
                                 </td>

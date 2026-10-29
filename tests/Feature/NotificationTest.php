@@ -34,7 +34,7 @@ class NotificationTest extends TestCase
 
     private function payload(int $status): array
     {
-        return ['title' => 'Cegah Stunting Sejak Dini', 'content' => 'Isi artikel.', 'category' => 'ginjal', 'status' => $status];
+        return ['title' => 'Cegah Stunting Sejak Dini', 'content' => 'Isi artikel.', 'status' => $status];
     }
 
     public function test_admin_is_notified_when_penulis_submits_article(): void

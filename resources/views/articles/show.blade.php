@@ -10,7 +10,6 @@
     // ditambah peninjau medis yang dipilih admin. Membantu admin memutuskan sebelum menerbitkan.
     $checks = [
         ['label' => 'Judul jelas (min. 10 huruf)', 'pass' => mb_strlen($article->title) >= 10],
-        ['label' => 'Jenis artikel dipilih', 'pass' => (bool) $article->category_label],
         ['label' => 'Isi minimal 300 kata', 'pass' => $article->word_count >= 300],
         ['label' => 'Gambar utama', 'pass' => (bool) $article->image],
         ['label' => 'Sumber rujukan', 'pass' => $article->source_list !== []],
@@ -27,7 +26,6 @@
         <x-slot:meta>
             <p class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-gray-600">
                 <x-status-badge :status="$article->status" />
-                <x-category-badge :article="$article" />
                 <span class="inline-flex items-center gap-1.5">
                     <x-icon name="clock" size="size-4" class="text-gray-500" />
                     Diperbarui <x-date :value="$article->updated_at" format="d F Y, H:i" />
@@ -301,8 +299,7 @@
                 @endif
 
                 <div class="px-6 py-8 sm:px-10">
-                    <x-category-badge :article="$article" />
-                    <h2 class="mt-3 text-2xl leading-tight font-extrabold tracking-tight text-gray-900 sm:text-3xl">{{ $article->title }}</h2>
+                    <h2 class="text-2xl leading-tight font-extrabold tracking-tight text-gray-900 sm:text-3xl">{{ $article->title }}</h2>
                     <p class="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-gray-100 pb-6 text-sm text-gray-600">
                         <span class="font-semibold text-gray-800">{{ $article->user?->name ?? 'Tanpa penulis' }}</span>
                         <span aria-hidden="true">·</span>

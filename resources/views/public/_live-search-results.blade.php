@@ -22,7 +22,6 @@
                             <x-highlight :text="$article->title" :term="$term" />
                         </p>
                         <p class="mt-1 flex items-center gap-2 text-xs text-gray-500">
-                            <x-category-badge :article="$article" />
                             {{ $article->created_at->translatedFormat('d M Y') }}
                         </p>
                     </div>

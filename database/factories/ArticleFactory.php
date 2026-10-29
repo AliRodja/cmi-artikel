@@ -18,7 +18,6 @@ class ArticleFactory extends Factory
             'title' => $title,
             'slug' => Str::slug($title).'-'.Str::lower(Str::random(5)),
             'content' => fake()->paragraphs(6, true),
-            'category' => fake()->randomElement(array_keys(Article::CATEGORIES)),
             'image' => null,
             'status' => fake()->randomElement([Article::STATUS_DRAFT, Article::STATUS_PUBLISHED]),
             'created_at' => fake()->dateTimeBetween('-3 months'),

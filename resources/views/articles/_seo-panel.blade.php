@@ -32,7 +32,7 @@
         <div class="relative">
             <x-icon name="tag" size="size-4" class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-gray-500" />
             <input type="text" id="focus_keyword" name="focus_keyword" maxlength="100"
-                   value="{{ old('focus_keyword', $article?->focus_keyword) }}" placeholder="mis. gejala diabetes"
+                   value="{{ old('focus_keyword', $article?->focus_keyword) }}" placeholder="mis. gejala serangan jantung"
                    @class(['form-input pl-10', 'form-input-error' => $errors->has('focus_keyword')])>
         </div>
         <p class="mt-1 text-xs text-gray-500">Frasa yang kemungkinan diketik pembaca di Google untuk menemukan artikel ini.</p>

@@ -31,7 +31,6 @@ class ArticleAuthorizationTest extends TestCase
         return array_merge([
             'title' => 'Judul Baru',
             'content' => 'Isi artikel baru.',
-            'category' => 'jantung',
             'status' => Article::STATUS_DRAFT,
         ], $overrides);
     }

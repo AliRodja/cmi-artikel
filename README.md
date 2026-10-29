@@ -214,7 +214,7 @@ Link reset berlaku 60 menit dan hanya bisa dipakai satu kali.
 | 6 | Upload & Pengelolaan Gambar | 10 | Disimpan di disk `public` folder `articles/` (nama file acak); preview sebelum upload; file lama **dihapus dari disk** saat gambar diganti, saat checkbox "Hapus gambar" dicentang, dan saat artikel dihapus | Tulis artikel dengan gambar → edit → ganti/hapus gambar |
 | 7 | Validation Form | 5 | Form Request `ArticleRequest` (dipakai `store` & `update`): judul wajib maks 255, isi wajib, gambar `jpg/jpeg/png/webp` maks 2 MB, status hanya 0/1; pesan error Bahasa Indonesia, input lama dipertahankan (`old()`) | Kirim form kosong |
 | 8 | Authorization / Middleware | 10 | Middleware `auth` (area dashboard), `guest` (halaman login/daftar), `throttle`, dan middleware buatan sendiri `admin` (`EnsureUserIsAdmin`, halaman Review & Laporan); `ArticlePolicy` + `Gate::authorize()` → penulis hanya mengelola artikel **miliknya** yang belum tayang, admin mengelola semua (lainnya **403**); penulis tidak bisa memilih status Published (divalidasi di server); `user_id` dan `role` tidak pernah diambil dari input form | Buka `/dashboard` tanpa login → diarahkan ke login. Login sebagai penulis lalu buka `/dashboard/review` atau edit artikel user lain → 403 |
-| 9 | Halaman Publik Artikel | 5 | `PublicArticleController` — beranda bergaya portal berita (Sorotan + Artikel Lainnya, Berita Utama per jenis + Terpopuler, kartu konsultasi WhatsApp), daftar artikel **Published** (search, filter jenis + jumlahnya, 9 per halaman, eager loading penulis); detail artikel 3 kolom (bagikan WhatsApp/X/Facebook · isi · artikel lainnya, jenis artikel, tombol konsultasi WhatsApp); artikel Draft → **404**; tidak ada tombol tambah/edit/hapus | Buka `/` tanpa login |
+| 9 | Halaman Publik Artikel | 5 | `PublicArticleController` — situs khusus **artikel kesehatan jantung**; beranda bergaya portal berita (Sorotan + Artikel Lainnya, lalu daftar artikel + Terpopuler & kartu konsultasi WhatsApp), daftar artikel **Published** (search, 10 per halaman, eager loading penulis); detail artikel 3 kolom (bagikan WhatsApp/X/Facebook · isi · artikel lainnya & tombol konsultasi WhatsApp); artikel Draft → **404**; tidak ada tombol tambah/edit/hapus | Buka `/` tanpa login |
 | 10 | Database & Migration | 5 | Migration `articles` dengan foreign key, unique slug, index (`status`, `created_at`); factory & seeder | `php artisan migrate:fresh --seed` |
 | 11 | Blade & UI | 5 | Layout `layouts/app`, partial (`navbar`, `flash`), Blade component (`x-input`, `x-status-badge`, `x-auth-card`), form bersama `articles/_form`, Tailwind CSS v4, responsif, halaman 403 custom | — |
 | 12 | Kerapihan Struktur & Code Quality | 5 | Validasi di Form Request, otorisasi di Policy, query scope (`published()`, `draft()`), konstanta status, accessor (`image_url`, `excerpt`), controller tipis | — |
@@ -299,7 +299,7 @@ name                                       user_id     FK → users.id, NULLABLE
 email         UNIQUE                       title
 password      (bcrypt)                     slug        UNIQUE  (dipakai di URL)
 remember_token                             content     LONGTEXT
-timestamps                                 category    NULLABLE, INDEX: diabetes | jantung | kanker | ginjal
+timestamps
                                            image       NULLABLE (path, mis. articles/abc.jpg)
                                            status      TINYINT  0 = Draft, 1 = Published, 2 = Review
 password_reset_tokens                      view_count  UNSIGNED INT, INDEX (jumlah pembaca unik)
@@ -327,9 +327,9 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
 
 | Method | URL | Nama | Middleware | Keterangan |
 |---|---|---|---|---|
-| GET | `/` | `home` | — | Daftar artikel Published (`?search=`, `?jenis=jantung`) |
+| GET | `/` | `home` | — | Daftar artikel Published (`?search=`) |
 | GET | `/artikel/{slug}` | `public.articles.show` | — | Detail artikel Published |
-| GET | `/sitemap.xml` | `sitemap` | — | Sitemap otomatis (beranda, halaman jenis, artikel Published) |
+| GET | `/sitemap.xml` | `sitemap` | — | Sitemap otomatis (beranda, artikel Published) |
 | GET | `/robots.txt` | `robots` | — | Dinamis: production → larang area pribadi + lokasi sitemap; selain itu `Disallow: /` |
 | GET | `/cari?q=` | `articles.live-search` | `throttle:60,1` | Live search panel navbar (potongan HTML untuk `fetch()`) |
 | GET/POST | `/register` | `register` | `guest` | Daftar akun |
@@ -386,11 +386,12 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
   - Menghapus akun **tidak menghapus artikelnya**: artikel tetap ada tanpa penulis (FK `nullOnDelete`), sehingga juga
     tidak muncul di Laporan INNER JOIN. Komentar & Baca Nanti ikut terhapus (`cascadeOnDelete`); notifikasi
     (relasi polymorphic, tanpa FK) dihapus manual dalam satu `DB::transaction`.
-- **Jenis artikel** (`articles.category`): Diabetes, Jantung, Kanker, Ginjal (`Article::CATEGORIES`), wajib dipilih di
-  form (`Rule::in`). Kolomnya nullable agar artikel lama tetap valid; halamannya tetap tampil tanpa badge jenis.
+- **Situs khusus artikel jantung.** Dulu ada jenis artikel (diabetes/jantung/kanker/ginjal); atas permintaan CMI situs
+  dikhususkan untuk kesehatan jantung, jadi fiturnya dihapus. Migration `drop_category_from_articles_table` lebih dulu
+  menjadikan artikel non-jantung **Draft** (tidak tampil, tapi tidak hilang), baru menghapus kolom `category`.
   - Halaman detail artikel memakai 3 kolom: **Simpan & Bagikan** (link WhatsApp/X/Facebook dibuat dengan
     `http_build_query()` agar judul & URL ter-encode, + salin tautan), **isi artikel, penulis & komentar**, dan
-    **sidebar** (Artikel Lainnya, Jenis Artikel beserta jumlahnya, kartu "Alami gejala …? Konsultasi segera" yang ikut
+    **sidebar** (Artikel Lainnya, kartu "Alami gejala jantung? Konsultasi segera" yang ikut
     menempel saat scroll). Ada bar progres membaca yang dibuat murni dengan CSS (`animation-timeline: scroll()`).
   - Tombol konsultasi membuka WhatsApp customer service CMI. URL-nya ada di `config/clinic.php` (satu tempat, tidak
     ditulis mati di view).
@@ -402,8 +403,9 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
   - `view_count` ditambah dengan `UPDATE … SET view_count = view_count + 1` lewat query builder: aman bila dua
     pengunjung datang bersamaan, dan `updated_at` artikel tidak ikut berubah.
   - **Artikel Terpopuler** = scope `Article::popular()`: Published dengan `view_count` ≥
-    `config('clinic.popular_min_views')` (default 5), diurutkan terbanyak. Tampil di halaman detail dan di beranda
-    (hanya halaman awal tanpa cari/filter, agar hasil pencarian tetap jadi fokus). **Artikel Terkait** = artikel Published dengan jenis yang sama.
+    `config('clinic.popular_min_views')` (default 5), diurutkan terbanyak. Tampil di halaman detail dan di kolom samping beranda.
+    **Artikel Terkait** = artikel Published yang membahas **kata kunci utama (SEO)** yang sama, dilengkapi artikel lain
+    secara acak yang belum tampil di sidebar.
   - Penulis/admin melihat total, 7 hari terakhir, dan 5 kunjungan terbaru di halaman detail artikelnya.
 - **Live search di navbar:** saat mengetik (minimal 2 huruf, jeda 250 ms), `resources/js/live-search.js` memanggil
   `GET /cari?q=` (`PublicArticleController@liveSearch`). Server mengembalikan **potongan HTML yang dirender Blade**,
@@ -423,7 +425,7 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
 - **SEO** (`App\Support\Seo`, `partials/seo`, `SeoController`):
   - Setiap halaman punya `<title>`, meta description, canonical, serta Open Graph & Twitter Card. Artikel memakai
     ringkasan & gambarnya; tanpa gambar memakai `public/images/og-default.png` (1200×630).
-  - **Hanya beranda (termasuk filter jenis) dan detail artikel yang diindeks**; hasil pencarian, login/daftar,
+  - **Hanya beranda dan detail artikel yang diindeks**; hasil pencarian, login/daftar,
     dashboard, akun, dll. diberi `noindex`. Canonical membuang parameter yang tidak mengubah isi (`?utm_*`, `?search=`).
   - **JSON-LD schema.org**: beranda → `MedicalClinic` + `WebSite` (kotak pencarian); artikel → `MedicalWebPage`
     (`reviewedBy` = peninjau medis), `Article` (penulis + profesi, tanggal terbit/diperbarui), `BreadcrumbList`.
@@ -525,14 +527,14 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/AuthTest.php` | 15 | Register (+ validasi, password ter-hash), login benar/salah, throttle login (429), logout, kirim link reset, reset password + token tidak bisa dipakai ulang, token palsu ditolak, middleware `auth` & `guest` |
 | `tests/Feature/ArticleAuthorizationTest.php` | 9 | Pemilik bisa lihat/edit/update/hapus artikel yang belum tayang; user lain **403** (lihat, edit, update, hapus); daftar hanya artikel sendiri; tamu diarahkan ke login; `user_id` tidak bisa disisipkan dari form; publik hanya melihat Published (Draft 404) dan tidak ada tombol kelola |
 | `tests/Feature/ArticleReportTest.php` | 9 | Soal 2: INNER JOIN membuang artikel tanpa penulis, hanya `status = 1`, nama & email dari tabel `users`, urut `created_at` terbaru, 10 per halaman, search judul/nama/email, search tidak membocorkan Draft, kata kunci terbawa di link pagination, tamu ditolak |
-| `tests/Feature/ArticleCategoryTest.php` | 4 | Jenis artikel wajib & hanya 4 pilihan; filter `?jenis=` di beranda (nilai asing diabaikan); halaman detail berisi link bagikan ter-encode, jumlah per jenis (hanya Published), judul "Alami gejala jantung?" & URL WhatsApp CS persis; artikel lama tanpa jenis tetap tampil |
-| `tests/Feature/ArticleViewTest.php` | 8 | Tamu dihitung sekali per sesi (sesi disimpan ter-hash), user login sekali, penulis sendiri tidak dihitung; `updated_at` tidak berubah & Draft tidak dihitung; Terpopuler butuh minimal kunjungan, urut terbanyak, tanpa Draft & artikel yang sedang dibuka; Terkait = jenis sama; beranda menampilkan Sorotan/Berita Utama/Terpopuler hanya di halaman awal (tidak saat cari/filter), kotak besar = artikel terbaru, Berita Utama hanya jenis yang punya artikel; statistik & riwayat di area penulis |
+| `tests/Feature/HeartOnlySiteTest.php` | 4 | Kolom & pilihan jenis artikel sudah tidak ada (field `category` paksaan diabaikan); beranda berjudul "Artikel Kesehatan Jantung" tanpa filter jenis; halaman detail berisi link bagikan ter-encode, "Alami gejala jantung?" & URL WhatsApp CS persis; migration menjadikan artikel non-jantung Draft lalu menghapus kolomnya |
+| `tests/Feature/ArticleViewTest.php` | 8 | Tamu dihitung sekali per sesi (sesi disimpan ter-hash), user login sekali, penulis sendiri tidak dihitung; `updated_at` tidak berubah & Draft tidak dihitung; Terpopuler butuh minimal kunjungan, urut terbanyak, tanpa Draft & artikel yang sedang dibuka; Terkait = kata kunci utama sama lebih dulu, pelengkap tidak mengulang sidebar; beranda menampilkan Sorotan hanya di halaman awal (tidak saat mencari), kotak besar = artikel terbaru; statistik & riwayat di area penulis |
 | `tests/Feature/LiveSearchTest.php` | 6 | Panel live search ada di navbar; hasil hanya Published, kata kunci ditandai, judul yang cocok di urutan pertama; maksimal 6 + tautan "Lihat semua"; judul tetap di-escape walau ditandai; kata < 2 huruf / tidak ditemukan; endpoint yang dibuka langsung diarahkan ke halaman hasil |
 | `tests/Feature/ProfileTest.php` | 5 | Semua peran bisa membuka Kelola Akun (tamu → login); menu avatar → Kelola Akun untuk semua, Kelola Pengguna hanya muncul untuk admin; ubah nama/email (email unik), `role` yang disisipkan diabaikan; ganti password wajib password saat ini yang benar; password baru harus berbeda & terkonfirmasi |
 | `tests/Feature/PopupMessageTest.php` | 6 | Pop-up berhasil saat keluar & menyimpan artikel; keluar dengan token CSRF kedaluwarsa → kembali + pop-up gagal (bukan 419), tetap login; tamu menekan Simpan → Masuk + pop-up gagal, setelah login kembali ke artikel; form tidak valid → pop-up gagal umum; tanpa pesan → tidak ada pop-up |
-| `tests/Feature/PagesRedesignTest.php` | 11 | Halaman 404 berbahasa Indonesia, `noindex`, dengan saran artikel (termasuk 404 artikel Draft); 429 saat terlalu banyak percobaan login; halaman 500 tanpa navbar/database; Baca Nanti punya tombol Hapus & tanggal disimpan; filter notifikasi belum dibaca; ringkasan Laporan menunjukkan artikel tanpa penulis yang tersaring INNER JOIN (tanpa istilah teknis di halaman); Laporan menampilkan rentang data, jenis, sorotan kata kunci, dan tombol Cetak; detail artikel di dashboard punya pratinjau, informasi, kelengkapan 7 poin, dan tampilan di Google; "menit baca" tidak ditampilkan di halaman mana pun; dashboard menampilkan total dibaca & kartu statistik bisa diklik; form tulis artikel berlangkah 1–4 dengan penghitung kata & kelengkapan |
+| `tests/Feature/PagesRedesignTest.php` | 11 | Halaman 404 berbahasa Indonesia, `noindex`, dengan saran artikel (termasuk 404 artikel Draft); 429 saat terlalu banyak percobaan login; halaman 500 tanpa navbar/database; Baca Nanti punya tombol Hapus & tanggal disimpan; filter notifikasi belum dibaca; ringkasan Laporan menunjukkan artikel tanpa penulis yang tersaring INNER JOIN (tanpa istilah teknis di halaman); Laporan menampilkan rentang data, sorotan kata kunci, dan tombol Cetak; detail artikel di dashboard punya pratinjau, informasi, kelengkapan 6 poin, dan tampilan di Google; "menit baca" tidak ditampilkan di halaman mana pun; dashboard menampilkan total dibaca & kartu statistik bisa diklik; form tulis artikel berlangkah 1–4 dengan penghitung kata & kelengkapan |
 | `tests/Feature/ArticleSeoFieldsTest.php` | 4 | Form menampilkan panel Optimasi SEO; kata kunci/judul/deskripsi SEO tersimpan; batas panjang (70/160/100); halaman publik memakai Judul & Deskripsi SEO (`<title>`, meta description, og:title, JSON-LD `keywords`) sementara judul artikel di halaman tetap; kosong = memakai judul & isi |
-| `tests/Feature/SeoTest.php` | 7 | Meta description, robots, canonical (tanpa `?utm_*`), Open Graph artikel & gambar bawaan; JSON-LD artikel (penulis + profesi, peninjau medis, breadcrumb) dan judul berisi `</script>` tidak bisa keluar dari tag; canonical beranda menyimpan `?jenis=`; halaman cari/login/dashboard/akun `noindex`; sitemap hanya artikel Published & jenis yang berisi; robots.txt tertutup selain production |
+| `tests/Feature/SeoTest.php` | 7 | Meta description, robots, canonical (tanpa `?utm_*`), Open Graph artikel & gambar bawaan; JSON-LD artikel (penulis + profesi, peninjau medis, breadcrumb) dan judul berisi `</script>` tidak bisa keluar dari tag; canonical beranda menyimpan `?page=`; JSON-LD `specialty` kardiovaskular; halaman cari/login/dashboard/akun `noindex`; sitemap hanya beranda & artikel Published; robots.txt tertutup selain production |
 | `tests/Feature/CredibilityTest.php` | 6 | Profesi penulis, "Ditinjau secara medis oleh", sumber rujukan (link hanya http/https, teks di-escape); hanya admin yang boleh menentukan peninjau (penulis ditolak), peninjau harus penulis/admin dan bisa dipilih saat Terbitkan; profesi diisi lewat Kelola Akun; footer hanya menampilkan info klinik yang terisi; tombol ikon punya teks |
 | `tests/Feature/ReadabilityTest.php` | 3 | Tanggal relatif hanya < 24 jam, selebihnya tanggal pasti + `datetime`/`title`; pop-up gagal tanpa bar waktu, pop-up berhasil 8 detik; tombol WhatsApp memakai hijau berkontras tinggi |
 | `tests/Feature/ArticleContentTest.php` | 6 | Rich text: format dipertahankan, HTML berbahaya (`<script>`, `onclick`, `javascript:`) dibuang, link diberi `rel=noopener`, editor kosong ditolak |

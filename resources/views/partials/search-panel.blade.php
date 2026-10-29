@@ -27,16 +27,11 @@
                 </button>
             </form>
 
-            {{-- Sebelum mengetik: pintasan jenis artikel. --}}
-            <div data-live-search-idle class="mt-5">
-                <p class="text-xs font-semibold tracking-wider text-gray-500 uppercase">Telusuri jenis artikel</p>
-                <div class="mt-2 flex flex-wrap gap-2">
-                    @foreach (\App\Models\Article::CATEGORIES as $value => $label)
-                        <a href="{{ route('home', ['jenis' => $value]) }}#daftar-artikel"
-                           class="rounded-full border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:border-brand-300 hover:text-brand-700">{{ $label }}</a>
-                    @endforeach
-                </div>
-            </div>
+            {{-- Sebelum mengetik: petunjuk singkat (disembunyikan resources/js/live-search.js saat hasil tampil). --}}
+            <p data-live-search-idle class="mt-5 flex items-center gap-2 text-sm text-gray-600">
+                <x-icon name="info" size="size-4" class="text-brand-600" />
+                Cari artikel kesehatan jantung berdasarkan judul atau isinya, mis. nyeri dada atau tekanan darah.
+            </p>
 
             <div data-live-search-results aria-live="polite" class="mt-4 max-h-[60vh] overflow-y-auto transition-opacity aria-busy:opacity-60" hidden></div>
 

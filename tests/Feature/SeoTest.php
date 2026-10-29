@@ -54,7 +54,6 @@ class SeoTest extends TestCase
         $doctor = User::factory()->create(['name' => 'dr. Andi', 'profession' => 'Dokter Spesialis Jantung']);
         $article = Article::factory()->for($author)->published()->create([
             'title' => 'Judul </script><script>alert(1)</script>',
-            'category' => 'jantung',
             'medical_reviewer_id' => $doctor->id,
         ]);
 
@@ -67,14 +66,15 @@ class SeoTest extends TestCase
         $this->assertSame('Judul </script><script>alert(1)</script>', $graph['Article']['headline']);
         $this->assertSame(['@type' => 'Person', 'name' => 'Rina', 'jobTitle' => 'Ahli Gizi'], $graph['Article']['author']);
         $this->assertSame('dr. Andi', $graph['MedicalWebPage']['reviewedBy']['name']);
-        $this->assertSame(['Beranda', 'Jantung', $article->title], array_column($graph['BreadcrumbList']['itemListElement'], 'name'));
+        $this->assertSame(['Beranda', $article->title], array_column($graph['BreadcrumbList']['itemListElement'], 'name'));
+        $this->assertSame('https://schema.org/Cardiovascular', $graph['MedicalWebPage']['specialty']);
     }
 
-    public function test_home_canonical_keeps_category_and_page_but_drops_tracking(): void
+    public function test_home_canonical_keeps_page_but_drops_tracking(): void
     {
-        $this->get(route('home', ['jenis' => 'ginjal', 'utm_source' => 'x']))
-            ->assertSee('<link rel="canonical" href="'.route('home', ['jenis' => 'ginjal']).'">', false)
-            ->assertSee('<title>Artikel Kesehatan Ginjal · '.config('app.name').'</title>', false);
+        $this->get(route('home', ['page' => 2, 'utm_source' => 'x']))
+            ->assertSee('<link rel="canonical" href="'.route('home', ['page' => 2]).'">', false)
+            ->assertSee('<title>Artikel Kesehatan Jantung – Halaman 2 · '.config('app.name').'</title>', false);
 
         $this->get(route('home'))
             ->assertSee('"@type":"MedicalClinic"', false)
@@ -91,9 +91,9 @@ class SeoTest extends TestCase
         $this->get(route('profile.edit'))->assertSee($noindex, false);
     }
 
-    public function test_sitemap_lists_only_published_articles_and_categories(): void
+    public function test_sitemap_lists_home_and_published_articles(): void
     {
-        $published = Article::factory()->published()->create(['category' => 'kanker', 'title' => 'Tom & Jerry']);
+        $published = Article::factory()->published()->create(['title' => 'Tom & Jerry']);
         $draft = Article::factory()->draft()->create();
 
         $response = $this->get('/sitemap.xml')->assertOk()->assertHeader('Content-Type', 'application/xml; charset=UTF-8');
@@ -104,9 +104,8 @@ class SeoTest extends TestCase
         }
 
         $this->assertContains(route('home'), $locations);
-        $this->assertContains(route('home', ['jenis' => 'kanker']), $locations);
-        $this->assertNotContains(route('home', ['jenis' => 'ginjal']), $locations, 'Jenis tanpa artikel tidak dicantumkan.');
         $this->assertContains(route('public.articles.show', $published), $locations);
+        $this->assertCount(2, $locations, 'Hanya beranda + artikel Published (tidak ada lagi halaman per jenis).');
         $this->assertNotContains(route('public.articles.show', $draft), $locations);
     }
 

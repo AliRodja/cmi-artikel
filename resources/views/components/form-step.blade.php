@@ -1,6 +1,6 @@
 @props(['number', 'title', 'subtitle' => null])
 
-{{-- Judul langkah bernomor di form tulis/edit artikel (① Judul & Jenis, ② Isi, ...). --}}
+{{-- Judul langkah bernomor di form tulis/edit artikel (① Judul, ② Isi, ...). --}}
 <div {{ $attributes->class('mb-5 flex items-start gap-3') }}>
     <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">{{ $number }}</span>
     <div>

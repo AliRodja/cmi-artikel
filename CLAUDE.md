@@ -242,6 +242,20 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   kelengkapan, pratinjau gambar (pindahan skrip inline), peringatan `beforeunload` bila ada perubahan belum disimpan
   (mati saat submit; Chrome hanya memunculkannya setelah interaksi pengguna sungguhan). Toolbar Trix sticky
   `top-[67px]` (tinggi navbar). Test di `PagesRedesignTest` → 132 test.
+- [x] **Situs khusus artikel JANTUNG — fitur jenis/kategori DIHAPUS** (2026-10-29, revisi soal dari CMI). Migration
+  `drop_category_from_articles_table`: artikel `category` ≠ jantung → status Draft (query builder), lalu drop index +
+  kolom (MySQL dimigrasi; backup `artikel_app-sebelum-hapus-kategori-*.sql`; artikel real "Risiko Operasi Kanker…" kini
+  Draft atas pilihan user). Dihapus: `Article::CATEGORIES`/`category_label`/`scopeOfCategory`/
+  `publishedCountsByCategory`, aturan `category`, komponen `x-category-badge`, filter `?jenis=` (beranda, canonical,
+  sitemap, search-panel), sidebar "Jenis Artikel", "Berita Utama per jenis". Beranda: Sorotan + Artikel Lainnya (hanya
+  landing), lalu grid `lg:grid-cols-3` = daftar artikel 2 kolom (paginate **10**) | Terpopuler (selalu) +
+  `x-consultation-card` (judul bawaan kini "Alami gejala jantung?"); banner WA hasil cari dihapus. Artikel Terkait =
+  `PublicArticleController::relatedArticles()`: cocok `focus_keyword` (scope `search`) dulu, sisanya `inRandomOrder` di
+  luar sidebar. SEO: judul beranda "Artikel Kesehatan Jantung", `config/seo.php` description jantung, breadcrumb
+  Beranda › judul, JSON-LD `specialty` = `https://schema.org/Cardiovascular`, `articleSection` "Kesehatan Jantung".
+  Teks: hero, footer, menu "Artikel Jantung", placeholder contoh jantung. Form: langkah ① "Judul artikel", kelengkapan
+  5 poin (form) / 6 poin (detail admin). Test `ArticleCategoryTest` → `HeartOnlySiteTest` (4, termasuk uji migration
+  down/up). Entri lama di bawah yang menyebut jenis/kategori sudah tidak berlaku.
 - [x] **Redesign detail artikel area login** (`articles/show`, 2026-10-29): banner status di atas grid; grid
   `lg:grid-cols-[minmax(0,1fr)_21rem]` — aside ditulis lebih dulu di DOM (ponsel: panel Tinjau sebelum isi panjang),
   pratinjau `lg:order-first`. Aside: panel **Tinjau** (Terbitkan + peninjau medis / "atau" / Kembalikan + catatan),

@@ -18,7 +18,7 @@ class ArticleViewTest extends TestCase
     {
         parent::setUp();
 
-        $this->article = Article::factory()->published()->create(['category' => 'jantung']);
+        $this->article = Article::factory()->published()->create();
     }
 
     private function visitAsGuest(string $sessionId): void
@@ -88,7 +88,7 @@ class ArticleViewTest extends TestCase
         $this->assertSame(['Populer Pertama', 'Populer Kedua'], $popular->pluck('title')->all());
     }
 
-    public function test_home_shows_popular_articles_only_on_landing_page(): void
+    public function test_home_shows_popular_articles_with_minimum_views(): void
     {
         config(['clinic.popular_min_views' => 5]);
         $this->article->forceFill(['view_count' => 30])->save();
@@ -99,35 +99,41 @@ class ArticleViewTest extends TestCase
             ->assertSee(e(config('clinic.whatsapp_consultation_url')), false)
             ->viewData('popularArticles');
         $this->assertSame([$this->article->id], $popular->pluck('id')->all());
-
-        // Saat mencari / memfilter, fokus ke hasil: Terpopuler tidak ditampilkan.
-        $this->get(route('home', ['jenis' => 'jantung']))->assertDontSee('Terpopuler');
-        $this->get(route('home', ['search' => 'apa saja']))->assertDontSee('Terpopuler');
     }
 
     public function test_home_has_news_portal_sections_only_on_landing_page(): void
     {
-        $newest = Article::factory()->published()->create(['title' => 'Kabar Terbaru Ginjal', 'category' => 'ginjal', 'created_at' => now()->addMinute()]);
+        $newest = Article::factory()->published()->create(['title' => 'Kabar Terbaru Jantung', 'created_at' => now()->addMinute()]);
 
         $response = $this->get(route('home'))
-            ->assertSeeInOrder(['Sorotan', 'Kabar Terbaru Ginjal', 'Artikel Lainnya', 'Berita Utama', 'Terpopuler', 'Semua Artikel']);
+            ->assertSeeInOrder(['Sorotan', 'Kabar Terbaru Jantung', 'Artikel Lainnya', 'Semua Artikel', 'Terpopuler']);
 
-        // Kotak besar = artikel terbaru; Berita Utama hanya berisi jenis yang punya artikel.
+        // Kotak besar = artikel terbaru.
         $this->assertTrue($response->viewData('latestArticles')->first()->is($newest));
-        $this->assertSame(['jantung', 'ginjal'], $response->viewData('categorySections')->keys()->all());
 
-        $this->get(route('home', ['jenis' => 'ginjal']))->assertDontSee('Berita Utama')->assertDontSee('Sorotan');
+        // Saat mencari, langsung ke hasil (tanpa Sorotan).
+        $this->get(route('home', ['search' => 'jantung']))->assertDontSee('Sorotan')->assertSee('Hasil Pencarian');
     }
 
-    public function test_related_articles_have_the_same_category(): void
+    public function test_related_articles_match_focus_keyword_first(): void
     {
-        Article::factory()->published()->create(['title' => 'Jantung Lain', 'category' => 'jantung']);
-        Article::factory()->published()->create(['title' => 'Soal Ginjal', 'category' => 'ginjal']);
-        Article::factory()->draft()->create(['title' => 'Jantung Draft', 'category' => 'jantung']);
+        $this->article->update(['focus_keyword' => 'nyeri dada']);
+        Article::factory()->published()->create(['title' => 'Mengenali Nyeri Dada', 'created_at' => now()->subYear()]);
+        Article::factory()->draft()->create(['title' => 'Nyeri Dada (Draft)']);
+        Article::factory(8)->published()->create();
 
-        $related = $this->get(route('public.articles.show', $this->article))->viewData('relatedArticles');
+        $response = $this->get(route('public.articles.show', $this->article));
+        $related = $response->viewData('relatedArticles');
 
-        $this->assertSame(['Jantung Lain'], $related->pluck('title')->all());
+        // Yang membahas kata kunci yang sama tampil pertama; Draft dan artikel itu sendiri tidak ikut.
+        $this->assertCount(3, $related);
+        $this->assertSame('Mengenali Nyeri Dada', $related->first()->title);
+        $this->assertNotContains($this->article->id, $related->pluck('id'));
+        $this->assertNotContains('Nyeri Dada (Draft)', $related->pluck('title'));
+
+        // Pelengkapnya tidak mengulang artikel yang sudah ada di sidebar "Artikel Lainnya".
+        $sidebarIds = $response->viewData('latestArticles')->modelKeys();
+        $this->assertEmpty(array_intersect($sidebarIds, $related->slice(1)->pluck('id')->all()));
     }
 
     public function test_writer_sees_visit_statistics_and_history(): void

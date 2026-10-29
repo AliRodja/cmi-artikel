@@ -18,7 +18,7 @@ class Seo
     public const JSON_FLAGS = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP;
 
     /**
-     * Hanya halaman publik yang bernilai untuk pencarian: beranda (termasuk filter jenis) dan detail artikel.
+     * Hanya halaman publik yang bernilai untuk pencarian: beranda dan detail artikel.
      * Hasil pencarian, halaman login/daftar, dashboard, akun, dll. diberi noindex.
      */
     public static function isIndexable(Request $request): bool
@@ -29,7 +29,7 @@ class Seo
 
     /**
      * URL "resmi" halaman ini, tanpa parameter yang tidak mengubah isi (mis. ?utm_source=, ?search=), agar Google
-     * tidak menganggap satu halaman sebagai banyak halaman kembar. Di beranda hanya ?jenis= dan ?page= (>1) dipakai.
+     * tidak menganggap satu halaman sebagai banyak halaman kembar. Di beranda hanya ?page= (>1) yang dipakai.
      */
     public static function canonicalUrl(Request $request): string
     {
@@ -37,13 +37,9 @@ class Seo
             return $request->url();
         }
 
-        $category = (string) $request->query('jenis');
         $page = (int) $request->query('page');
 
-        return route('home', array_filter([
-            'jenis' => array_key_exists($category, Article::CATEGORIES) ? $category : null,
-            'page' => $page > 1 ? $page : null,
-        ]));
+        return route('home', array_filter(['page' => $page > 1 ? $page : null]));
     }
 
     /** Identitas klinik (schema.org MedicalClinic) + situs dengan kotak pencarian, untuk beranda. */
@@ -101,11 +97,7 @@ class Seo
             'jobTitle' => $user->profession,
         ]) : null;
 
-        $breadcrumbs = [['Beranda', route('home')]];
-        if ($article->category_label) {
-            $breadcrumbs[] = [$article->category_label, route('home', ['jenis' => $article->category])];
-        }
-        $breadcrumbs[] = [$article->title, $url];
+        $breadcrumbs = [['Beranda', route('home')], [$article->title, $url]];
 
         return [
             '@context' => 'https://schema.org',
@@ -116,7 +108,8 @@ class Seo
                     'url' => $url,
                     'name' => $article->title,
                     'inLanguage' => 'id-ID',
-                    'about' => $article->category_label ? ['@type' => 'MedicalCondition', 'name' => $article->category_label] : null,
+                    // Seluruh situs membahas kesehatan jantung (spesialisasi kardiovaskular).
+                    'specialty' => 'https://schema.org/Cardiovascular',
                     'reviewedBy' => $person($article->medicalReviewer),
                     'lastReviewed' => $article->medicalReviewer ? $article->updated_at->toDateString() : null,
                     'mainEntity' => ['@id' => $url.'#article'],
@@ -130,7 +123,7 @@ class Seo
                     'image' => $article->image_url ?? asset(config('seo.image')),
                     'datePublished' => $article->created_at->toAtomString(),
                     'dateModified' => $article->updated_at->toAtomString(),
-                    'articleSection' => $article->category_label,
+                    'articleSection' => 'Kesehatan Jantung',
                     'author' => $person($article->user) ?? ['@type' => 'Organization', 'name' => config('app.name')],
                     'publisher' => [
                         '@type' => 'Organization',

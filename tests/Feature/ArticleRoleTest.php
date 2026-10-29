@@ -28,7 +28,6 @@ class ArticleRoleTest extends TestCase
         return array_merge([
             'title' => 'Pencegahan Demam Berdarah',
             'content' => 'Isi artikel kesehatan.',
-            'category' => 'diabetes',
             'status' => $status,
         ], $overrides);
     }

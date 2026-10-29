@@ -10,7 +10,7 @@ use XMLWriter;
 class SeoController extends Controller
 {
     /**
-     * Daftar halaman publik yang perlu diindeks: beranda, halaman tiap jenis, dan semua artikel Published.
+     * Daftar halaman publik yang perlu diindeks: beranda dan semua artikel Published.
      * Dibuat otomatis dari database, jadi artikel baru langsung masuk tanpa diatur manual.
      * XMLWriter meng-escape karakter khusus (&, <, >) sehingga XML selalu valid.
      */
@@ -38,13 +38,6 @@ class SeoController extends Controller
         };
 
         $addUrl(route('home'), Article::published()->latest('updated_at')->value('updated_at'));
-
-        foreach (array_keys(Article::CATEGORIES) as $category) {
-            $lastModified = Article::published()->ofCategory($category)->latest('updated_at')->value('updated_at');
-            if ($lastModified) {
-                $addUrl(route('home', ['jenis' => $category]), $lastModified);
-            }
-        }
 
         // lazy(): dibaca bertahap per 1000 baris, aman walau artikelnya ribuan.
         Article::published()->select(['id', 'slug', 'image', 'updated_at'])->orderBy('id')->lazy()

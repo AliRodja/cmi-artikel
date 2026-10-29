@@ -8,7 +8,7 @@
         <div>
             <x-logo tone="dark" />
             <p class="mt-4 max-w-sm text-sm leading-relaxed text-white/90">
-                Informasi kesehatan, kabar terbaru, dan pengumuman resmi untuk pasien dan masyarakat.
+                Artikel kesehatan jantung untuk pasien dan masyarakat: gejala, pencegahan, dan perawatan.
             </p>
             @if ($clinic['accreditation'])
                 <p class="mt-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-sm">
@@ -55,7 +55,7 @@
         <div class="lg:justify-self-end">
             <p class="eyebrow text-white/90">Navigasi</p>
             <ul class="mt-4 space-y-3 text-sm text-white">
-                <li><a href="{{ route('home') }}" class="hover:underline">Berita &amp; Artikel</a></li>
+                <li><a href="{{ route('home') }}" class="hover:underline">Artikel Jantung</a></li>
                 @auth
                     @if (auth()->user()->canWrite())
                         <li><a href="{{ route('dashboard') }}" class="hover:underline">Dashboard</a></li>

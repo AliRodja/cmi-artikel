@@ -31,7 +31,6 @@ class ArticleRequest extends FormRequest
                     }
                 },
             ],
-            'category' => ['required', Rule::in(array_keys(Article::CATEGORIES))],
             'sources' => ['nullable', 'string', 'max:5000'],
             // Optimasi SEO (opsional). Batas mengikuti panjang yang ditampilkan Google.
             'focus_keyword' => ['nullable', 'string', 'max:100'],
@@ -53,7 +52,6 @@ class ArticleRequest extends FormRequest
         return [
             'title' => 'judul',
             'content' => 'isi artikel',
-            'category' => 'jenis artikel',
             'sources' => 'sumber rujukan',
             'focus_keyword' => 'kata kunci utama',
             'seo_title' => 'judul SEO',

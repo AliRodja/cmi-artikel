@@ -26,7 +26,6 @@
     // Kelengkapan artikel (diperbarui langsung oleh resources/js/article-form.js).
     $completeness = [
         'title' => 'Judul jelas (minimal 10 karakter)',
-        'category' => 'Jenis artikel dipilih',
         'content' => 'Isi minimal 300 kata',
         'image' => 'Gambar utama',
         'sources' => 'Sumber rujukan',
@@ -38,33 +37,17 @@
     {{-- Kolom utama: langkah 1–4 --}}
     <div class="min-w-0 space-y-6 lg:col-span-2">
         <section class="card p-6">
-            <x-form-step number="1" title="Judul & jenis artikel" subtitle="Judul yang jelas membantu pembaca dan Google memahami isi artikel." />
+            <x-form-step number="1" title="Judul artikel" subtitle="Judul yang jelas membantu pembaca dan Google memahami isi artikel." />
 
-            <div class="mb-5">
+            <div>
                 <label for="title" class="form-label">Judul</label>
                 <input type="text" id="title" name="title" value="{{ old('title', $article?->title) }}" required maxlength="255"
-                       placeholder="mis. Gejala Diabetes Tipe 2 yang Perlu Diwaspadai"
+                       placeholder="mis. Gejala Serangan Jantung yang Sering Diabaikan"
                        @class(['form-input py-3 text-lg font-semibold', 'form-input-error' => $errors->has('title')])>
                 @error('title')
                     <p class="form-error">{{ $message }}</p>
                 @enderror
             </div>
-
-            <fieldset>
-                <legend class="form-label">Jenis Artikel</legend>
-                <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    @foreach (Article::CATEGORIES as $value => $label)
-                        <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-3 text-sm font-medium text-gray-700 transition has-checked:border-brand-500 has-checked:bg-brand-50/60 has-checked:text-brand-800">
-                            <input type="radio" name="category" value="{{ $value }}" required
-                                   @checked(old('category', $article?->category) === $value) class="accent-brand-600">
-                            {{ $label }}
-                        </label>
-                    @endforeach
-                </div>
-                @error('category')
-                    <p class="form-error">{{ $message }}</p>
-                @enderror
-            </fieldset>
         </section>
 
         <section class="card p-6">
@@ -156,7 +139,7 @@
                     </li>
                 @endforeach
             </ul>
-            <p class="mt-3 text-xs text-gray-500">Hanya judul, jenis, dan isi yang wajib. Sisanya membuat artikel lebih lengkap dan tepercaya.</p>
+            <p class="mt-3 text-xs text-gray-500">Hanya judul dan isi yang wajib. Sisanya membuat artikel lebih lengkap dan tepercaya.</p>
         </section>
 
         <section class="card p-5">

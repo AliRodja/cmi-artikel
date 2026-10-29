@@ -30,7 +30,6 @@ if (root) {
 
         const results = [
             setItem('title', field('title').value.trim().length >= 10),
-            setItem('category', !!form.querySelector('input[name="category"]:checked')),
             setItem('content', words >= 300),
             setItem('image', hasImage),
             setItem('sources', field('sources').value.trim() !== ''),

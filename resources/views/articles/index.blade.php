@@ -85,12 +85,9 @@
                                         <x-article-thumb :article="$article" class="h-11 w-16" />
                                         <div class="min-w-0">
                                             <a href="{{ route('articles.show', $article) }}" class="line-clamp-1 font-semibold text-gray-900 hover:text-brand-700">{{ $article->title }}</a>
-                                            <p class="mt-0.5 flex flex-wrap items-center gap-2 text-xs">
-                                                <x-category-badge :article="$article" />
-                                                @if ($article->review_note)
-                                                    <span class="font-medium text-amber-700">Ada catatan dari admin</span>
-                                                @endif
-                                            </p>
+                                            @if ($article->review_note)
+                                                <p class="mt-0.5 text-xs font-medium text-amber-700">Ada catatan dari admin</p>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>

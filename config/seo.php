@@ -7,8 +7,8 @@
 
 return [
     // Deskripsi bawaan untuk halaman yang tidak mengisi @section('description'). Idealnya 120–160 karakter.
-    'description' => 'Informasi kesehatan, kabar terbaru, dan pengumuman resmi dari Klinik Utama CMI seputar diabetes, '
-        .'jantung, kanker, dan ginjal.',
+    'description' => 'Artikel kesehatan jantung dari Klinik Utama CMI: kenali gejala, faktor risiko, pencegahan, '
+        .'dan perawatan penyakit jantung.',
 
     // Gambar pratinjau saat link dibagikan (WhatsApp, Facebook, X) bila artikel tidak punya gambar. 1200×630 px.
     'image' => 'images/og-default.png',
