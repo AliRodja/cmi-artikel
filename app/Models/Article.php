@@ -222,8 +222,8 @@ class Article extends Model
         return Str::limit(ArticleContent::toPlainText($this->content), 140);
     }
 
-    public function getReadingTimeAttribute(): int
+    public function getWordCountAttribute(): int
     {
-        return max(1, (int) ceil(str_word_count(ArticleContent::toPlainText($this->content)) / 200));
+        return str_word_count(ArticleContent::toPlainText($this->content));
     }
 }

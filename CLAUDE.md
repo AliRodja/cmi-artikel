@@ -183,14 +183,14 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
 - [x] Halaman publik: layout (`@yield('hero')`, `partials/footer`), navbar, beranda (hero + featured di halaman 1 tanpa
   search + grid), detail (hero, waktu baca, salin tautan, Artikel Lainnya). Komponen baru `x-avatar` (prop `tone`),
-  `x-article-card`. Accessor `reading_time`. Pagination Bahasa Indonesia (`lang/id/pagination.php`, `id.json`).
+  `x-article-card`. (Accessor `reading_time` dihapus 2026-10-29 — user tidak mau "menit baca" di mana pun.) Pagination Bahasa Indonesia (`lang/id/pagination.php`, `id.json`).
 - [x] Rich text editor **Trix** (npm `trix`, entry Vite terpisah `resources/js/editor.js`, hanya dimuat di `_form`;
   lampiran file dimatikan). `<trix-editor class="article-editor article-content">` + `<input type="hidden" name="content">`.
   CSS editor sengaja di luar `@layer` (trix.css tidak berlayer); jangan beri class `.trix-content`.
 - [x] Sanitasi: `symfony/html-sanitizer` lewat `App\Support\ArticleContent` (whitelist tag Trix: div p br strong em del
   h1 blockquote pre ul ol li a[href]; link http/https/mailto, dipaksa `target=_blank rel=noopener noreferrer`).
   Dua lapis: mutator `setContentAttribute` (saat simpan) + accessor `content_html` (saat tampil). Teks polos lama →
-  `<p>`. `excerpt`/`reading_time` memakai `ArticleContent::toPlainText()`. `ArticleRequest`: `bail` + closure menolak
+  `<p>`. `excerpt`/`word_count` memakai `ArticleContent::toPlainText()`. `ArticleRequest`: `bail` + closure menolak
   editor kosong (`<div><br></div>`). Test: `ArticleContentTest` (6) → total 35 test / 130 assertion, terbukti gagal
   bila sanitizer dimatikan.
 - [x] Favicon dari tanda salib logo: `public/favicon.ico` (16/32/48) + `public/apple-touch-icon.png`.
@@ -235,13 +235,21 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
 - [x] **Redesign form tulis/edit artikel** (2026-10-29): `_form` = langkah bernomor (komponen `x-form-step`): ①
-  Judul & jenis, ② Isi (penghitung kata `[data-word-count]` + menit baca), ③ Sumber rujukan, ④ Optimasi SEO
+  Judul & jenis, ② Isi (penghitung kata `[data-word-count]`), ③ Sumber rujukan, ④ Optimasi SEO
   (`_seo-panel` kini memakai `x-form-step number=4`). Sidebar sticky & bisa di-scroll sendiri
   (`lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto`): Publikasi, **Kelengkapan artikel** (6 poin + bilah progres; wajib
   hanya judul/jenis/isi), Gambar Utama. JS `resources/js/article-form.js` (diimpor `editor.js`): penghitung kata,
   kelengkapan, pratinjau gambar (pindahan skrip inline), peringatan `beforeunload` bila ada perubahan belum disimpan
   (mati saat submit; Chrome hanya memunculkannya setelah interaksi pengguna sungguhan). Toolbar Trix sticky
   `top-[67px]` (tinggi navbar). Test di `PagesRedesignTest` → 132 test.
+- [x] **Redesign detail artikel area login** (`articles/show`, 2026-10-29): banner status di atas grid; grid
+  `lg:grid-cols-[minmax(0,1fr)_21rem]` — aside ditulis lebih dulu di DOM (ponsel: panel Tinjau sebelum isi panjang),
+  pratinjau `lg:order-first`. Aside: panel **Tinjau** (Terbitkan + peninjau medis / "atau" / Kembalikan + catatan),
+  Informasi artikel (penulis+profesi, peninjau medis, dibuat/diperbarui, jumlah kata; waktu baca sengaja tidak ditampilkan atas permintaan user), **Kelengkapan** 7
+  poin dihitung server (aturan = form tulis + peninjau medis), Statistik Kunjungan (total/7 hari/komentar + 5 terbaru),
+  Tampilan di Google (`meta_title`/`meta_description` + kata kunci). Pratinjau = kartu seperti halaman publik; blok
+  peninjau medis + sumber dipisah ke partial `public/_credibility` (dipakai publik & pratinjau). Accessor baru
+  `Article::word_count`. Controller `show` eager load `user`, `loadCount('comments')`.
 - [x] **Redesign Laporan Artikel** (2026-10-29; query INNER JOIN TIDAK diubah, hanya `articles.category` ditambah ke
   select): ringkasan 3 angka dalam satu kartu (Artikel terbit / Tampil di laporan / Tanpa penulis — **tanpa istilah
   teknis**: pengguna halaman ini nakes & editor konten, bukan developer; penjelasan INNER JOIN untuk penilai cukup di
@@ -364,8 +372,7 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   Query bersama dipindah ke model: scope `popular()` & `Article::publishedCountsByCategory()`. User tidak suka hiasan
   yang "kelihatan seperti AI" (pola garis, glow berlebihan) — jaga desain tetap polos & korporat.
 - [x] **Redesign detail artikel publik** (2026-10-28): hero **biru tua sama dengan beranda** (user minta tetap biru tua,
-  bukan terang; `bg-brand-950` + radial gradient, tanpa pola garis (user: "kelihatan seperti AI"), breadcrumb chevron, baris penulis + tanggal/menit
-  baca/dilihat); latar konten sama dengan beranda (`bg-gray-50` dari layout); bar progres membaca `.reading-progress` (murni CSS
+  bukan terang; `bg-brand-950` + radial gradient, tanpa pola garis (user: "kelihatan seperti AI"), breadcrumb chevron, baris penulis + tanggal/dilihat); latar konten sama dengan beranda (`bg-gray-50` dari layout); bar progres membaca `.reading-progress` (murni CSS
   `animation-timeline: scroll(root)`, disembunyikan via `@supports not`); grid `lg:grid-cols-[3rem_minmax(0,1fr)_18rem]`
   tanpa `items-start` (agar kolom kanan setinggi baris → kartu CTA `lg:sticky`); rel kiri = tombol Simpan
   (`public/_bookmark-button`, dipakai juga di kotak penulis) + `x-share-buttons` (ikon berwarna merek di tombol putih

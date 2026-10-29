@@ -23,9 +23,7 @@ if (root) {
 
     const update = () => {
         const words = countWords(plainText(field('content').value));
-        // Sama dengan Article::reading_time di server: 200 kata per menit, minimal 1 menit.
-        root.querySelector('[data-word-count]').textContent =
-            `${words.toLocaleString('id-ID')} kata · ±${Math.max(1, Math.ceil(words / 200))} menit baca`;
+        root.querySelector('[data-word-count]').textContent = `${words.toLocaleString('id-ID')} kata`;
 
         const hasImage = imageInput.files.length > 0
             || (imageInput.dataset.hasImage === '1' && !field('remove_image')?.checked);

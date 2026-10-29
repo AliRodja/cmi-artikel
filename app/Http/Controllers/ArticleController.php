@@ -70,7 +70,7 @@ class ArticleController extends Controller
         $weeklyViews = $article->views()->where('viewed_at', '>=', now()->subDays(7))->count();
         $recentViews = $article->views()->with('user:id,name')->latest('viewed_at')->take(5)->get();
 
-        $article->load('medicalReviewer:id,name,profession');
+        $article->load(['user:id,name,profession', 'medicalReviewer:id,name,profession'])->loadCount('comments');
         $reviewers = $this->reviewersFor($request->user());
 
         return view('articles.show', compact('article', 'weeklyViews', 'recentViews', 'reviewers'));

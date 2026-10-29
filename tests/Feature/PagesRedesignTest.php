@@ -113,6 +113,45 @@ class PagesRedesignTest extends TestCase
             ->assertSee('window.print()', false);
     }
 
+    public function test_dashboard_article_detail_has_preview_info_completeness_and_google_preview(): void
+    {
+        $penulis = User::factory()->create(['name' => 'Rina', 'profession' => 'Ahli Gizi']);
+        $article = Article::factory()->for($penulis)->inReview()->create([
+            'title' => 'Mengenal Gejala Diabetes',
+            'category' => 'diabetes',
+            'content' => str_repeat('kata ', 320),
+            'image' => null,
+            'sources' => 'Kemenkes RI',
+            'focus_keyword' => 'gejala diabetes',
+            'medical_reviewer_id' => null,
+        ]);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->get(route('articles.show', $article))
+            ->assertOk()
+            ->assertSee('Tinjau artikel ini')
+            ->assertSee('menunggu keputusan Anda', false)
+            ->assertSeeInOrder(['Informasi artikel', 'Rina', 'Ahli Gizi', '320 kata'])
+            // 5 dari 7: belum ada gambar & belum ditinjau tenaga medis.
+            ->assertSee('5/7')
+            ->assertSee('Belum ada gambar utama.')
+            ->assertSee('Tampilan di Google')
+            ->assertSee('gejala diabetes')
+            ->assertSee('Pratinjau artikel');
+    }
+
+    public function test_reading_time_is_not_shown_anywhere(): void
+    {
+        $pembaca = User::factory()->pembaca()->create();
+        $article = Article::factory()->published()->create(['content' => str_repeat('kata ', 600)]);
+        $pembaca->bookmarks()->attach($article);
+
+        $this->get(route('home'))->assertDontSee('menit baca');
+        $this->get(route('public.articles.show', $article))->assertDontSee('menit baca');
+        $this->actingAs($pembaca)->get(route('bookmarks.index'))->assertDontSee('menit baca');
+        $this->actingAs(User::factory()->admin()->create())->get(route('articles.show', $article))->assertDontSee('menit baca');
+    }
+
     public function test_write_form_has_numbered_steps_word_count_and_completeness(): void
     {
         $this->actingAs(User::factory()->create())

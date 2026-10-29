@@ -42,7 +42,6 @@
                         <p class="mt-1 line-clamp-2 text-sm text-gray-600">{{ $article->excerpt }}</p>
                         <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
                             <span class="inline-flex items-center gap-1.5"><x-icon name="bookmark-solid" size="size-3" class="text-brand-600" /> Disimpan <x-date :value="$article->pivot->created_at" /></span>
-                            <span class="inline-flex items-center gap-1.5"><x-icon name="clock" size="size-3" /> {{ $article->reading_time }} menit baca</span>
                         </p>
                     </div>
                     <div class="flex shrink-0 gap-2 sm:flex-col">

@@ -16,7 +16,6 @@
         <x-category-badge :article="$article" class="mb-2 self-start" />
         <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-gray-500">
             <span class="inline-flex items-center gap-1"><x-icon name="calendar" size="size-3" class="text-gray-500" /> {{ $article->created_at->translatedFormat('d F Y') }}</span>
-            <span class="inline-flex items-center gap-1"><x-icon name="clock" size="size-3" class="text-gray-500" /> {{ $article->reading_time }} menit baca</span>
         </p>
         <h3 class="mt-2 line-clamp-2 text-lg leading-snug font-bold text-gray-900 group-hover:text-brand-700">
             <a href="{{ route('public.articles.show', $article) }}">{{ $article->title }}</a>
