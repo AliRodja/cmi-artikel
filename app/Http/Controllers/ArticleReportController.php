@@ -19,6 +19,7 @@ class ArticleReportController extends Controller
                 'articles.id',
                 'articles.title',
                 'articles.slug',
+                'articles.category',
                 'articles.status',
                 'articles.created_at',
                 'users.name as author_name',

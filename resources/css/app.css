@@ -246,3 +246,11 @@ html:has(dialog.nav-drawer[open], dialog.search-panel[open]) { overflow: hidden;
 @media (prefers-reduced-motion: reduce) {
     .toast { transition: none; }
 }
+
+/* Cetak (mis. Laporan Artikel): hanya isi halaman, tanpa navbar, footer, dan pop-up. */
+@media print {
+    [data-navbar], body > footer, .toast { display: none !important; }
+    body { background: white; }
+    /* Tabel harus muat selebar kertas A4: rapatkan sel dan kecilkan huruf. */
+    .th, .td { padding: 0.375rem 0.5rem; font-size: 0.75rem; }
+}

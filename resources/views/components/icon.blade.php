@@ -55,6 +55,8 @@
         'rotate' => 'fa-solid fa-rotate-right',
         'map-pin' => 'fa-solid fa-location-dot',
         'chart-line' => 'fa-solid fa-chart-line',
+        'printer' => 'fa-solid fa-print',
+        'arrow-down' => 'fa-solid fa-arrow-down',
         // Logo merek (gaya brands).
         'whatsapp' => 'fa-brands fa-whatsapp',
         'x-twitter' => 'fa-brands fa-x-twitter',

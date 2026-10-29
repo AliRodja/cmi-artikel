@@ -95,7 +95,22 @@ class PagesRedesignTest extends TestCase
         $this->assertSame(5, $response->viewData('publishedTotal'));
         $this->assertSame(2, $response->viewData('withoutAuthor'));
         $this->assertSame(3, $response->viewData('articles')->total());
-        $response->assertSee('Tersaring INNER JOIN');
+        // Halaman dipakai nakes & editor konten: tanpa istilah teknis database.
+        $response->assertSee('Tanpa penulis')->assertDontSee('INNER JOIN');
+    }
+
+    public function test_report_shows_range_category_highlight_and_print_button(): void
+    {
+        $author = User::factory()->create(['name' => 'Rina Gizi']);
+        Article::factory(12)->for($author)->published()->create(['category' => 'ginjal']);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->get(route('articles.report', ['search' => 'Rina']))
+            ->assertSee('Menampilkan <strong class="text-gray-900">1–10</strong>', false)
+            ->assertSee('Ginjal')
+            ->assertSee('<mark class="rounded-sm bg-amber-100 px-0.5 text-inherit">Rina</mark>', false)
+            ->assertSee('aria-sort="descending"', false)
+            ->assertSee('window.print()', false);
     }
 
     public function test_write_form_has_numbered_steps_word_count_and_completeness(): void

@@ -242,6 +242,15 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   kelengkapan, pratinjau gambar (pindahan skrip inline), peringatan `beforeunload` bila ada perubahan belum disimpan
   (mati saat submit; Chrome hanya memunculkannya setelah interaksi pengguna sungguhan). Toolbar Trix sticky
   `top-[67px]` (tinggi navbar). Test di `PagesRedesignTest` → 132 test.
+- [x] **Redesign Laporan Artikel** (2026-10-29; query INNER JOIN TIDAK diubah, hanya `articles.category` ditambah ke
+  select): ringkasan 3 angka dalam satu kartu (Artikel terbit / Tampil di laporan / Tanpa penulis — **tanpa istilah
+  teknis**: pengguna halaman ini nakes & editor konten, bukan developer; penjelasan INNER JOIN untuk penilai cukup di
+  README), bilah cari di atas tabel + "Menampilkan 1–10 dari N", kata kunci disorot `x-highlight`, jenis (komponen
+  `x-category-badge` kini juga menerima prop `category` karena baris `DB::table` bukan model), avatar penulis, email
+  `mailto:`, tanggal + jam zona (`format('T')` → WIB), `aria-sort` di kolom tanggal. Ponsel: kartu per artikel (tabel
+  `hidden md:block`). Tombol **Cetak** (`window.print()`): `@media print` di app.css menyembunyikan navbar/footer/toast
+  & merapatkan `.th/.td`; elemen interaktif `print:hidden`, tabel `print:block`, header cetak berisi waktu cetak.
+  Test di `PagesRedesignTest` → 133 test.
 - [x] **Optimasi SEO per artikel** (2026-10-29): migration `add_seo_fields_to_articles_table` (`focus_keyword` 100,
   `seo_title` 70, `seo_description` 160, nullable; MySQL dimigrasi, backup `artikel_app-sebelum-seo-artikel-*.sql`),
   fillable + validasi `ArticleRequest`. Accessor `meta_title` (seo_title ?: title) & `meta_description`
