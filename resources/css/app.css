@@ -108,6 +108,8 @@
 form trix-toolbar .trix-button-row         { @apply mb-2 flex-wrap gap-y-2 overflow-visible; }
 form trix-toolbar .trix-button-group       { @apply mb-0 rounded-lg border-gray-300; }
 form trix-toolbar .trix-button.trix-active { @apply bg-brand-100; }
+/* Toolbar ikut menempel di bawah navbar (tinggi 67px) saat menulis artikel panjang. */
+form trix-toolbar { @apply sticky top-[67px] z-10 -mx-1 bg-white px-1 pt-2; }
 
 trix-editor.article-editor {
     @apply block min-h-80 rounded-lg border border-gray-300 bg-white px-4 py-3 shadow-sm;

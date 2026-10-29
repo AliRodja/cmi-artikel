@@ -234,6 +234,14 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
   `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
   MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] **Redesign form tulis/edit artikel** (2026-10-29): `_form` = langkah bernomor (komponen `x-form-step`): ①
+  Judul & jenis, ② Isi (penghitung kata `[data-word-count]` + menit baca), ③ Sumber rujukan, ④ Optimasi SEO
+  (`_seo-panel` kini memakai `x-form-step number=4`). Sidebar sticky & bisa di-scroll sendiri
+  (`lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto`): Publikasi, **Kelengkapan artikel** (6 poin + bilah progres; wajib
+  hanya judul/jenis/isi), Gambar Utama. JS `resources/js/article-form.js` (diimpor `editor.js`): penghitung kata,
+  kelengkapan, pratinjau gambar (pindahan skrip inline), peringatan `beforeunload` bila ada perubahan belum disimpan
+  (mati saat submit; Chrome hanya memunculkannya setelah interaksi pengguna sungguhan). Toolbar Trix sticky
+  `top-[67px]` (tinggi navbar). Test di `PagesRedesignTest` → 132 test.
 - [x] **Optimasi SEO per artikel** (2026-10-29): migration `add_seo_fields_to_articles_table` (`focus_keyword` 100,
   `seo_title` 70, `seo_description` 160, nullable; MySQL dimigrasi, backup `artikel_app-sebelum-seo-artikel-*.sql`),
   fillable + validasi `ArticleRequest`. Accessor `meta_title` (seo_title ?: title) & `meta_description`

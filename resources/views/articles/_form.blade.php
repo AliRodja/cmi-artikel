@@ -22,38 +22,55 @@
     }
 @endphp
 
-<div class="grid items-start gap-6 lg:grid-cols-3">
-    {{-- Kolom utama: judul & isi, lalu Optimasi SEO --}}
+@php
+    // Kelengkapan artikel (diperbarui langsung oleh resources/js/article-form.js).
+    $completeness = [
+        'title' => 'Judul jelas (minimal 10 karakter)',
+        'category' => 'Jenis artikel dipilih',
+        'content' => 'Isi minimal 300 kata',
+        'image' => 'Gambar utama',
+        'sources' => 'Sumber rujukan',
+        'keyword' => 'Kata kunci SEO',
+    ];
+@endphp
+
+<div class="grid items-start gap-6 lg:grid-cols-3" data-article-form>
+    {{-- Kolom utama: langkah 1–4 --}}
     <div class="min-w-0 space-y-6 lg:col-span-2">
-    <div class="card min-w-0 p-6">
-        <div class="mb-5">
-            <label for="title" class="form-label">Judul</label>
-            <input type="text" id="title" name="title" value="{{ old('title', $article?->title) }}" required maxlength="255"
-                   placeholder="Tulis judul artikel..."
-                   @class(['form-input py-3 text-lg font-semibold', 'form-input-error' => $errors->has('title')])>
-            @error('title')
-                <p class="form-error">{{ $message }}</p>
-            @enderror
-        </div>
+        <section class="card p-6">
+            <x-form-step number="1" title="Judul & jenis artikel" subtitle="Judul yang jelas membantu pembaca dan Google memahami isi artikel." />
 
-        <fieldset class="mb-5">
-            <legend class="form-label">Jenis Artikel</legend>
-            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                @foreach (Article::CATEGORIES as $value => $label)
-                    <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-700 transition has-checked:border-brand-500 has-checked:bg-brand-50/60 has-checked:text-brand-800">
-                        <input type="radio" name="category" value="{{ $value }}" required
-                               @checked(old('category', $article?->category) === $value) class="accent-brand-600">
-                        {{ $label }}
-                    </label>
-                @endforeach
+            <div class="mb-5">
+                <label for="title" class="form-label">Judul</label>
+                <input type="text" id="title" name="title" value="{{ old('title', $article?->title) }}" required maxlength="255"
+                       placeholder="mis. Gejala Diabetes Tipe 2 yang Perlu Diwaspadai"
+                       @class(['form-input py-3 text-lg font-semibold', 'form-input-error' => $errors->has('title')])>
+                @error('title')
+                    <p class="form-error">{{ $message }}</p>
+                @enderror
             </div>
-            @error('category')
-                <p class="form-error">{{ $message }}</p>
-            @enderror
-        </fieldset>
 
-        <div>
-            <label for="content-editor" class="form-label">Isi Artikel</label>
+            <fieldset>
+                <legend class="form-label">Jenis Artikel</legend>
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    @foreach (Article::CATEGORIES as $value => $label)
+                        <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-3 text-sm font-medium text-gray-700 transition has-checked:border-brand-500 has-checked:bg-brand-50/60 has-checked:text-brand-800">
+                            <input type="radio" name="category" value="{{ $value }}" required
+                                   @checked(old('category', $article?->category) === $value) class="accent-brand-600">
+                            {{ $label }}
+                        </label>
+                    @endforeach
+                </div>
+                @error('category')
+                    <p class="form-error">{{ $message }}</p>
+                @enderror
+            </fieldset>
+        </section>
+
+        <section class="card p-6">
+            <x-form-step number="2" title="Isi artikel" subtitle="Gunakan subjudul dan daftar agar mudah dibaca. Toolbar ikut menempel saat Anda menulis." />
+
+            <label for="content-editor" class="sr-only">Isi Artikel</label>
             {{-- Trix menulis HTML ke input tersembunyi ini; nilainya yang dikirim ke server. --}}
             <input type="hidden" id="content" name="content" value="{{ old('content', $article?->content_html) }}">
             <trix-editor id="content-editor" input="content" placeholder="Mulai menulis isi artikel..."
@@ -61,10 +78,16 @@
             @error('content')
                 <p class="form-error">{{ $message }}</p>
             @enderror
-        </div>
+            <p class="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm text-gray-600">
+                <span data-word-count>0 kata</span>
+                <span class="text-gray-500">Artikel kesehatan yang lengkap biasanya minimal 300 kata.</span>
+            </p>
+        </section>
 
-        <div class="mt-5">
-            <label for="sources" class="form-label">Sumber rujukan <span class="font-normal text-gray-500">(opsional)</span></label>
+        <section class="card p-6">
+            <x-form-step number="3" title="Sumber rujukan" subtitle="Opsional, tetapi membuat pembaca lebih percaya. Tampil di akhir artikel." />
+
+            <label for="sources" class="sr-only">Sumber rujukan</label>
             <textarea id="sources" name="sources" rows="4" maxlength="5000"
                       placeholder="Satu sumber per baris, mis.&#10;Kementerian Kesehatan RI, Pedoman Hipertensi 2024 https://kemkes.go.id/..."
                       @class(['form-input', 'form-input-error' => $errors->has('sources')])>{{ old('sources', $article?->sources) }}</textarea>
@@ -72,18 +95,17 @@
             @error('sources')
                 <p class="form-error">{{ $message }}</p>
             @enderror
-        </div>
+        </section>
+
+        @include('articles._seo-panel')
     </div>
 
-    @include('articles._seo-panel')
-    </div>
-
-    {{-- Sidebar: publikasi & gambar --}}
-    <aside class="min-w-0 space-y-6 lg:sticky lg:top-24">
+    {{-- Sidebar: ikut menempel saat scroll (bisa di-scroll sendiri bila lebih tinggi dari layar). --}}
+    <aside class="min-w-0 space-y-6 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pb-2">
         <section class="card p-5">
             <h2 class="font-bold text-gray-900">Publikasi</h2>
             @unless ($isAdmin)
-                <p class="mt-1 text-xs text-gray-500">Artikel tayang setelah disetujui admin.</p>
+                <p class="mt-1 text-sm text-gray-600">Artikel tayang setelah disetujui admin.</p>
             @endunless
 
             <fieldset class="mt-4 space-y-2">
@@ -94,7 +116,7 @@
                                class="mt-0.5 accent-brand-600">
                         <span>
                             <span class="block text-sm font-semibold text-gray-900">{{ $option['label'] }}</span>
-                            <span class="block text-xs text-gray-500">{{ $option['hint'] }}</span>
+                            <span class="block text-xs text-gray-600">{{ $option['hint'] }}</span>
                         </span>
                     </label>
                 @endforeach
@@ -110,20 +132,42 @@
             @endif
 
             <div class="mt-5 flex flex-col gap-2">
-                <button type="submit" class="btn btn-primary w-full">{{ $submitLabel }}</button>
-                <a href="{{ $cancelUrl }}" class="btn btn-secondary w-full">Batal</a>
+                <button type="submit" class="btn btn-primary w-full py-2.5">
+                    <x-icon name="check" size="size-4" /> {{ $submitLabel }}
+                </button>
+                <a href="{{ $cancelUrl }}" class="btn btn-secondary w-full py-2.5">Batal</a>
             </div>
         </section>
 
         <section class="card p-5">
+            <div class="flex items-center justify-between gap-3">
+                <h2 class="font-bold text-gray-900">Kelengkapan artikel</h2>
+                <span class="text-sm font-semibold text-gray-700" data-completeness-score></span>
+            </div>
+            <div class="mt-3 h-2 overflow-hidden rounded-full bg-gray-100">
+                <div class="h-full rounded-full bg-brand-600 transition-all" style="width: 0%" data-completeness-bar></div>
+            </div>
+            <ul class="mt-4 space-y-2 text-sm">
+                @foreach ($completeness as $key => $label)
+                    <li class="flex items-center gap-2" data-completeness="{{ $key }}">
+                        <x-icon name="check-circle" size="size-4" class="text-green-700" data-pass hidden />
+                        <span class="flex size-4 shrink-0 items-center justify-center" data-fail><span class="size-3 rounded-full border-2 border-gray-300"></span></span>
+                        <span class="text-gray-700">{{ $label }}</span>
+                    </li>
+                @endforeach
+            </ul>
+            <p class="mt-3 text-xs text-gray-500">Hanya judul, jenis, dan isi yang wajib. Sisanya membuat artikel lebih lengkap dan tepercaya.</p>
+        </section>
+
+        <section class="card p-5">
             <h2 class="font-bold text-gray-900">Gambar Utama</h2>
-            <p class="mt-1 text-xs text-gray-500">Opsional · JPG, PNG, atau WebP · maks 2 MB</p>
+            <p class="mt-1 text-sm text-gray-600">Opsional · JPG, PNG, atau WebP · maks 2 MB</p>
 
             @if ($article?->image_url)
                 <div id="current-image" class="mt-4">
                     <img src="{{ $article->image_url }}" alt="Gambar saat ini" class="aspect-[16/10] w-full rounded-lg object-cover">
-                    <label class="mt-2 flex items-center gap-2 text-sm text-gray-600">
-                        <input type="checkbox" name="remove_image" value="1" class="rounded border-gray-300 accent-red-600" @checked(old('remove_image'))>
+                    <label class="mt-2 flex items-center gap-2 text-sm text-gray-700">
+                        <input type="checkbox" id="remove_image" name="remove_image" value="1" class="size-4 rounded border-gray-300 accent-red-600" @checked(old('remove_image'))>
                         Hapus gambar ini
                     </label>
                 </div>
@@ -136,6 +180,7 @@
                 'border-gray-300' => ! $errors->has('image'),
             ])>
                 <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp"
+                       data-has-image="{{ $article?->image_url ? '1' : '0' }}"
                        class="absolute inset-0 size-full cursor-pointer opacity-0">
                 <x-icon name="cloud-arrow-up" size="size-8" class="mx-auto text-gray-500" />
                 <p class="mt-2 text-sm font-medium text-gray-700">
@@ -154,20 +199,4 @@
 
 @push('scripts')
     @vite('resources/js/editor.js')
-    <script>
-        document.getElementById('image').addEventListener('change', function (event) {
-            const preview = document.getElementById('image-preview');
-            const fileName = document.getElementById('image-name');
-            const file = event.target.files[0];
-
-            if (file) {
-                preview.src = URL.createObjectURL(file);
-                preview.classList.remove('hidden');
-                fileName.textContent = file.name;
-            } else {
-                preview.classList.add('hidden');
-                fileName.textContent = '';
-            }
-        });
-    </script>
 @endpush

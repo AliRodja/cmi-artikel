@@ -16,17 +16,8 @@
 @endphp
 
 <section class="card p-6" data-seo-panel data-url-base="{{ url('/artikel') }}" data-slug="{{ $article?->slug }}">
-    <div class="flex items-start gap-3">
-        <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
-            <x-icon name="chart-line" size="size-4" />
-        </span>
-        <div>
-            <h2 class="font-bold text-gray-900">Optimasi SEO <span class="font-normal text-gray-500">(opsional)</span></h2>
-            <p class="mt-0.5 text-sm text-gray-600">
-                Atur tampilan artikel di hasil pencarian Google. Kosongkan untuk memakai judul &amp; ringkasan artikel.
-            </p>
-        </div>
-    </div>
+    <x-form-step number="4" title="Optimasi SEO (opsional)" class="mb-0"
+                 subtitle="Atur tampilan artikel di hasil pencarian Google. Kosongkan untuk memakai judul & ringkasan artikel." />
 
     {{-- Pratinjau hasil Google (diperbarui langsung oleh JS). --}}
     <div class="mt-5 rounded-xl border border-gray-200 bg-white p-4" aria-live="polite">

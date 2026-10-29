@@ -98,6 +98,16 @@ class PagesRedesignTest extends TestCase
         $response->assertSee('Tersaring INNER JOIN');
     }
 
+    public function test_write_form_has_numbered_steps_word_count_and_completeness(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('articles.create'))
+            ->assertSeeInOrder(['Judul &amp; jenis artikel', 'Isi artikel', 'Sumber rujukan', 'Optimasi SEO (opsional)'], false)
+            ->assertSee('data-word-count', false)
+            ->assertSee('Kelengkapan artikel')
+            ->assertSee('Isi minimal 300 kata');
+    }
+
     public function test_dashboard_shows_total_views_and_clickable_stats(): void
     {
         $penulis = User::factory()->create();
