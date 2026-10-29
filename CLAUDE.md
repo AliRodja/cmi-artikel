@@ -242,6 +242,10 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   kelengkapan, pratinjau gambar (pindahan skrip inline), peringatan `beforeunload` bila ada perubahan belum disimpan
   (mati saat submit; Chrome hanya memunculkannya setelah interaksi pengguna sungguhan). Toolbar Trix sticky
   `top-[67px]` (tinggi navbar). Test di `PagesRedesignTest` → 132 test.
+- [x] **Media sosial di footer** (2026-10-29): `config('clinic.social')` = daftar label/ikon/url akun resmi CMI
+  (Facebook, Instagram, X, TikTok, YouTube — **disalin dari footer cmihospital.com**, semuanya `cmihospitals`; Twitter
+  tanpa `www.`). Footer kolom 1 "Ikuti Kami": tombol bulat 44px, `target=_blank rel="noopener noreferrer"`, `title` +
+  teks `sr-only`. Ikon brand baru di `x-icon`: instagram, tiktok, youtube. Test di `CredibilityTest` → 136 test.
 - [x] **Situs khusus artikel JANTUNG — fitur jenis/kategori DIHAPUS** (2026-10-29, revisi soal dari CMI). Migration
   `drop_category_from_articles_table`: artikel `category` ≠ jantung → status Draft (query builder), lalu drop index +
   kolom (MySQL dimigrasi; backup `artikel_app-sebelum-hapus-kategori-*.sql`; artikel real "Risiko Operasi Kanker…" kini

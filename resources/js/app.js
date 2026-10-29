@@ -1,5 +1,5 @@
-// Font Awesome Free: gaya solid, regular, dan brands (logo WhatsApp/X/Facebook untuk tombol bagikan).
-// File font brands (±115 KB) hanya diunduh browser di halaman yang benar-benar memakai ikon brand.
+// Font Awesome Free: gaya solid, regular, dan brands (logo WhatsApp/X/Facebook untuk tombol bagikan, serta
+// media sosial CMI di footer). Footer ada di setiap halaman, jadi font brands (±115 KB) diunduh sekali lalu di-cache.
 // Ikon dipanggil lewat komponen <x-icon>, bukan menulis class "fa-..." langsung di view.
 import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/solid.css';

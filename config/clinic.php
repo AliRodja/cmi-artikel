@@ -26,6 +26,15 @@ return [
         'app_absent' => 0,
     ]),
 
+    // Media sosial resmi CMI, disalin dari footer cmihospital.com (dicek 2026-10-29). Urutan = urutan ikon di footer.
+    'social' => [
+        ['label' => 'Facebook', 'icon' => 'facebook', 'url' => 'https://www.facebook.com/cmihospitals'],
+        ['label' => 'Instagram', 'icon' => 'instagram', 'url' => 'https://www.instagram.com/cmihospitals/'],
+        ['label' => 'X', 'icon' => 'x-twitter', 'url' => 'https://twitter.com/cmihospitals/'],
+        ['label' => 'TikTok', 'icon' => 'tiktok', 'url' => 'https://www.tiktok.com/@cmihospitals'],
+        ['label' => 'YouTube', 'icon' => 'youtube', 'url' => 'https://www.youtube.com/c/CMIhospital-com'],
+    ],
+
     'address' => env('CLINIC_ADDRESS'),
     'hours' => env('CLINIC_HOURS'),
     'email' => env('CLINIC_EMAIL'),

@@ -15,6 +15,20 @@
                     <x-icon name="shield" size="size-4" /> {{ $clinic['accreditation'] }}
                 </p>
             @endif
+
+            {{-- Media sosial resmi (config/clinic.php). Tombol 44px agar mudah diketuk. --}}
+            <p class="eyebrow mt-6 text-white/90">Ikuti Kami</p>
+            <ul class="mt-3 flex flex-wrap gap-2">
+                @foreach ($clinic['social'] as $social)
+                    <li>
+                        <a href="{{ $social['url'] }}" target="_blank" rel="noopener noreferrer" title="{{ $social['label'] }}"
+                           class="flex size-11 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/20 transition hover:bg-white hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none">
+                            <x-icon :name="$social['icon']" size="size-5" />
+                            <span class="sr-only">{{ config('app.name') }} di {{ $social['label'] }}</span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
         </div>
 
         <div>

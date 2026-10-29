@@ -96,6 +96,26 @@ class CredibilityTest extends TestCase
             ->assertDontSee('Lihat di peta');
     }
 
+    public function test_footer_links_to_official_cmi_social_media(): void
+    {
+        $response = $this->get(route('home'))->assertSee('Ikuti Kami');
+
+        // URL persis seperti di footer cmihospital.com.
+        foreach ([
+            'https://www.facebook.com/cmihospitals',
+            'https://www.instagram.com/cmihospitals/',
+            'https://twitter.com/cmihospitals/',
+            'https://www.tiktok.com/@cmihospitals',
+            'https://www.youtube.com/c/CMIhospital-com',
+        ] as $url) {
+            $response->assertSee('href="'.$url.'"', false);
+        }
+
+        // Ikon tanpa teks tetap punya nama untuk pembaca layar, dan tab baru tidak bisa mengakses halaman kita.
+        $response->assertSee(config('app.name').' di Instagram')
+            ->assertSee('target="_blank" rel="noopener noreferrer" title="TikTok"', false);
+    }
+
     public function test_icon_buttons_have_visible_text(): void
     {
         $article = Article::factory()->published()->create();

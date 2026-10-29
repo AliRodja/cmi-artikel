@@ -61,6 +61,9 @@
         'whatsapp' => 'fa-brands fa-whatsapp',
         'x-twitter' => 'fa-brands fa-x-twitter',
         'facebook' => 'fa-brands fa-facebook-f',
+        'instagram' => 'fa-brands fa-instagram',
+        'tiktok' => 'fa-brands fa-tiktok',
+        'youtube' => 'fa-brands fa-youtube',
     ];
 
     // Ikon FA adalah huruf (font), jadi ukurannya diatur lewat font-size. CSS Font Awesome
