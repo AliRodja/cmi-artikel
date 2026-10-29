@@ -52,8 +52,10 @@ cp .env.example .env
 copy .env.example .env
 ```
 
-Opsional: isi info klinik untuk footer (`CLINIC_ADDRESS`, `CLINIC_HOURS`, `CLINIC_EMAIL`, `CLINIC_MAPS_URL`,
-`CLINIC_ACCREDITATION`). Yang dikosongkan tidak ditampilkan; nomor WhatsApp CS sudah ada di `config/clinic.php`.
+Info kontak klinik untuk footer (`CLINIC_ADDRESS`, `CLINIC_HOURS`, `CLINIC_PHONE`, `CLINIC_WHATSAPP`, `CLINIC_EMAIL`)
+sudah terisi data resmi CMI di `.env.example`. `CLINIC_MAPS_URL` kosong = link pencarian Google Maps dari alamat;
+`CLINIC_ACCREDITATION` masih kosong. Yang dikosongkan tidak ditampilkan. Nomor WhatsApp tombol Konsultasi
+(0821-2159-0000) terpisah, ada di `config/clinic.php`.
 
 Lalu buat *application key* (dipakai untuk enkripsi session & cookie):
 

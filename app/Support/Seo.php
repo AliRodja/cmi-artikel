@@ -58,6 +58,7 @@ class Seo
                     'logo' => asset('images/logo-cmi.png'),
                     'image' => asset(config('seo.image')),
                     'email' => $clinic['email'],
+                    'telephone' => $clinic['phone_international'],
                     'address' => $clinic['address'] ? ['@type' => 'PostalAddress', 'streetAddress' => $clinic['address']] : null,
                     'contactPoint' => [
                         '@type' => 'ContactPoint',

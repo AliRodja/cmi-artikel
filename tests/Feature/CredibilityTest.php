@@ -86,14 +86,71 @@ class CredibilityTest extends TestCase
 
     public function test_footer_shows_only_filled_clinic_info_and_whatsapp(): void
     {
-        config(['clinic.address' => 'Jl. Contoh No. 1, Bandung', 'clinic.hours' => null]);
+        config([
+            'clinic.address' => 'Jl. Contoh No. 1, Bandung',
+            'clinic.hours' => null,
+            'clinic.maps_url' => null,
+            'clinic.phone' => '(022) 253 1000',
+            'clinic.phone_international' => '+62222531000',
+            'clinic.whatsapp' => '0811 9161 166',
+            'clinic.whatsapp_url' => 'https://wa.me/628119161166',
+        ]);
 
         $this->get(route('home'))
             ->assertSee('Hubungi Kami')
             ->assertSee('Jl. Contoh No. 1, Bandung')
-            ->assertSee('WhatsApp CS:')
-            ->assertSee(config('clinic.whatsapp_display'))
+            ->assertSee('href="tel:+62222531000"', false)
+            ->assertSee('(022) 253 1000')
+            ->assertSee('href="https://wa.me/628119161166"', false)
+            ->assertSee('0811 9161 166')
             ->assertDontSee('Lihat di peta');
+
+        config(['clinic.phone' => null, 'clinic.whatsapp' => null]);
+
+        $this->get(route('home'))
+            ->assertDontSee('Telepon:')
+            ->assertDontSee('WhatsApp:');
+    }
+
+    public function test_clinic_contact_numbers_are_converted_to_international_format(): void
+    {
+        // env() membaca $_SERVER/$_ENV lebih dulu (diisi dari .env), jadi ketiganya ditimpa lalu dikembalikan.
+        $values = [
+            'CLINIC_ADDRESS' => 'Jl. Tubagus Ismail VII, Bandung',
+            'CLINIC_PHONE' => '(022) 253 1000',
+            'CLINIC_WHATSAPP' => '0811 9161 166',
+            'CLINIC_MAPS_URL' => '',
+        ];
+        $original = array_map(fn ($key) => [$_SERVER[$key] ?? null, $_ENV[$key] ?? null, getenv($key)], array_combine(array_keys($values), array_keys($values)));
+
+        foreach ($values as $key => $value) {
+            $_SERVER[$key] = $_ENV[$key] = $value;
+            putenv("{$key}={$value}");
+        }
+
+        try {
+            $clinic = require config_path('clinic.php');
+        } finally {
+            foreach ($original as $key => [$server, $env, $putenv]) {
+                if ($server === null) {
+                    unset($_SERVER[$key]);
+                } else {
+                    $_SERVER[$key] = $server;
+                }
+                if ($env === null) {
+                    unset($_ENV[$key]);
+                } else {
+                    $_ENV[$key] = $env;
+                }
+                putenv($putenv === false ? $key : "{$key}={$putenv}");
+            }
+        }
+
+        $this->assertSame('+62222531000', $clinic['phone_international']);
+        $this->assertSame('https://wa.me/628119161166', $clinic['whatsapp_url']);
+        $this->assertSame('https://www.google.com/maps/search/?api=1&query=Jl.+Tubagus+Ismail+VII%2C+Bandung', $clinic['maps_url']);
+        // Nomor tombol Konsultasi tidak ikut berubah.
+        $this->assertStringContainsString('phone=6282121590000', $clinic['whatsapp_consultation_url']);
     }
 
     public function test_footer_links_to_official_cmi_social_media(): void

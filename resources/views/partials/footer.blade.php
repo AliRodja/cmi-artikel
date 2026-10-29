@@ -51,12 +51,22 @@
                         <span>{{ $clinic['hours'] }}</span>
                     </li>
                 @endif
-                <li class="flex gap-3">
-                    <x-icon name="whatsapp" size="size-4" class="mt-0.5 text-white/90" />
-                    <a href="{{ $clinic['whatsapp_consultation_url'] }}" target="_blank" rel="noopener noreferrer" class="hover:underline">
-                        WhatsApp CS: <span class="font-semibold">{{ $clinic['whatsapp_display'] }}</span>
-                    </a>
-                </li>
+                @if ($clinic['phone'])
+                    <li class="flex gap-3">
+                        <x-icon name="phone" size="size-4" class="mt-0.5 text-white/90" />
+                        <a href="tel:{{ $clinic['phone_international'] }}" class="hover:underline">
+                            Telepon: <span class="font-semibold">{{ $clinic['phone'] }}</span>
+                        </a>
+                    </li>
+                @endif
+                @if ($clinic['whatsapp'])
+                    <li class="flex gap-3">
+                        <x-icon name="whatsapp" size="size-4" class="mt-0.5 text-white/90" />
+                        <a href="{{ $clinic['whatsapp_url'] }}" target="_blank" rel="noopener noreferrer" class="hover:underline">
+                            WhatsApp: <span class="font-semibold">{{ $clinic['whatsapp'] }}</span>
+                        </a>
+                    </li>
+                @endif
                 @if ($clinic['email'])
                     <li class="flex gap-3">
                         <x-icon name="envelope" size="size-4" class="mt-0.5 text-white/90" />

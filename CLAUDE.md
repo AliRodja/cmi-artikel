@@ -70,7 +70,9 @@ Rubrik (100): INNER JOIN 30 · Filter status 15 · Sorting 10 · Pagination 15 �
 - Seeder: akun demo `admin@example.com` / `password` (role admin, 20 artikel), `penulis@example.com` / `password`
   (3 Published, 2 Review, 1 Draft dengan catatan admin), 10 artikel milik user lain, **3 artikel tanpa
   penulis** (`user_id = null`, **sengaja Published**) untuk uji INNER JOIN — kalau Draft, artikel itu sudah tersaring
-  oleh `status = 1` dan tidak membuktikan JOIN. Hasil uji: 19 Published → 16 setelah INNER JOIN.
+  oleh `status = 1` dan tidak membuktikan JOIN. Jumlah Published acak (status factory acak), tapi laporan selalu
+  menampilkan 3 lebih sedikit dari total Published. Juga `pembaca@example.com` / `password` (komentar + Baca Nanti) dan
+  riwayat kunjungan acak 0–40 per artikel Published.
 - Timezone: `config/app.php` membaca `env('APP_TIMEZONE', 'UTC')` (default Laravel menulis mati `'UTC'`),
   `.env` → `APP_TIMEZONE=Asia/Jakarta`.
 - Bahasa: `APP_LOCALE=id`. `lang/id/{auth,passwords,validation}.php` untuk pesan berkunci; `lang/id.json` menerjemahkan
@@ -79,41 +81,66 @@ Rubrik (100): INNER JOIN 30 · Filter status 15 · Sorting 10 · Pagination 15 �
 
 ## Struktur file penting
 ```
-routes/web.php
-app/Models/{User,Article}.php
-app/Policies/ArticlePolicy.php
-app/Http/Requests/ArticleRequest.php
+routes/web.php, routes/console.php   (console: perintah `user:role`)
+bootstrap/app.php                 (alias middleware admin/writer, redirectUsersTo/redirectGuestsTo, render 419)
+app/Models/{User,Article,Comment,ArticleView}.php
+app/Policies/{ArticlePolicy,CommentPolicy,UserPolicy}.php
+app/Http/Middleware/{EnsureUserCanWrite,EnsureUserIsAdmin}.php
+app/Http/Requests/{ArticleRequest,UserRequest}.php
+app/Notifications/ArticleNotification.php (abstract) + ArticleSubmittedForReview, ArticlePublished, ArticleReturned,
+  NewArticlePublished, NewComment
+app/Support/{ArticleContent,ArticleNotifier,ArticleViewCounter,Seo}.php
+app/Providers/AppServiceProvider.php (View Composer: antrean review & notifikasi navbar)
 app/Http/Controllers/
   Auth/{LoginController,RegisterController,ForgotPasswordController,ResetPasswordController}.php
-  DashboardController.php         (invokable)
-  ArticleController.php           (resource, CRUD milik sendiri, search + filter status, paginate 10)
-  PublicArticleController.php     (index published + search, paginate 9, eager load user; show → 404 jika draft)
+  DashboardController.php         (invokable, statistik milik user yang login)
+  ArticleController.php           (resource, CRUD + search + tab status, paginate 10)
+  ArticleReviewController.php     (admin: antrean, publish, sendBack)
+  PublicArticleController.php     (index Published + search, paginate 10; show → 404 jika bukan Published;
+                                   liveSearch; relatedArticles())
   ArticleReportController.php     (Soal 2: DB::table + join + where status=1 + search dibungkus where(closure)
                                    + orderByDesc + paginate(10)->withQueryString())
-database/migrations/*_create_articles_table.php
-database/factories/ArticleFactory.php
+  CommentController, BookmarkController, NotificationController, ProfileController, UserController, SeoController
+config/{clinic,seo}.php           (data klinik & WhatsApp & media sosial; SEO bawaan)
+database/migrations/              (articles + perubahan bertahap: role, review_note, comments, bookmarks,
+                                   notifications, article_views, view_count, profession, peninjau medis & sumber,
+                                   field SEO, drop category)
+database/factories/{User,Article,Comment,ArticleView}Factory.php
 database/seeders/DatabaseSeeder.php
-resources/css/app.css             (Tailwind v4: @import, @source, @layer components: .card .btn .btn-sm .btn-primary
-                                   .btn-secondary .btn-danger .form-label .form-input .form-input-error .form-error
-                                   .badge .link .drawer-link .drawer-link-active .drawer-heading .th .td .article-content)
+resources/css/app.css             (Tailwind v4 @theme token brand + font, @layer components: .card .btn* .form-*
+                                   .badge .link .drawer-* .th .td .article-content .nav-icon-btn .share-btn dll.;
+                                   di luar layer: editor Trix, .toast, drawer, @media print)
+resources/js/app.js               (dialog, drawer, popover, password toggle, salin tautan, toast) + live-search.js;
+             editor.js            (Trix, hanya di _form) + article-form.js + seo-panel.js
 resources/views/
-  layouts/app.blade.php           (@vite, @yield content, @stack scripts)
-  partials/{navbar,nav-drawer,search-panel,user-menu,notification-menu,flash,footer}.blade.php
-  components/{input,status-badge,auth-card}.blade.php
-  auth/{login,register,forgot-password,reset-password}.blade.php
+  layouts/{app,minimal}.blade.php
+  partials/{navbar,nav-drawer,search-panel,user-menu,notification-menu,flash,footer,seo}.blade.php
+  components/  article-card article-thumb auth-card avatar consultation-card date error-page form-step highlight
+               icon input logo notification-item page-header popular-article review-note role-badge section-title
+               share-buttons source-line status-badge
+  auth/{login,register,forgot-password,reset-password,_aside,_password-match}.blade.php
   dashboard.blade.php
-  articles/{index,_form,create,edit,show,report}.blade.php
-  public/{index,show}.blade.php
-  errors/403.blade.php
-lang/id/{auth,passwords,validation}.php, lang/id.json
+  articles/{index,_form,_seo-panel,_reviewer-select,create,edit,show,report}.blade.php
+  public/{index,show,_bookmark-button,_credibility,_live-search-results}.blade.php
+  review/index, users/{index,_form,create,edit}, bookmarks/index, notifications/index, profile/edit
+  errors/{403,404,419,429,500,503}.blade.php
+lang/id/{auth,pagination,passwords,validation}.php, lang/id.json
 ```
 
 ## Routes
-- Publik: `GET /` (`home`), `GET /artikel/{article}` (`public.articles.show`).
-- `guest`: `/register`, `/login`, `/forgot-password` (`password.request`, `password.email`),
+- Publik: `GET /` (`home`), `GET /artikel/{article}` (`public.articles.show`), `GET /cari` (`articles.live-search`,
+  throttle 60/menit), `GET /sitemap.xml` (`sitemap`), `GET /robots.txt` (`robots`).
+- `guest`: `/register`, `/login` (POST throttle 5/menit), `/forgot-password` (`password.request`, `password.email`),
   `/reset-password/{token}` (`password.reset` — nama wajib persis), `POST /reset-password` (`password.update`).
-- `auth`: `POST /logout` (`logout`), `GET /dashboard` (`dashboard`),
-  prefix `dashboard`: `Route::resource('articles', ...)` (`articles.*`), `GET laporan-artikel` (`articles.report`).
+- `auth` (semua peran): `POST /logout`, `POST /artikel/{article}/komentar` (`comments.store`),
+  `DELETE /komentar/{comment}` (`comments.destroy`), `/baca-nanti` (`bookmarks.index`),
+  `POST /artikel/{article}/simpan` (`bookmarks.toggle`), `/notifikasi` (`notifications.index`, `.open`, `.read-all`),
+  `/akun` (`profile.edit`, `profile.update`), `PUT /akun/password` (`profile.password`).
+- `auth` + `writer` (admin/penulis): `GET /dashboard` (`dashboard`), prefix `dashboard`:
+  `Route::resource('articles', ...)` (`articles.*`).
+- `auth` + `writer` + `admin`: `laporan-artikel` (`articles.report`), `review` (`review.index`),
+  `PATCH articles/{article}/publish|return` (`review.publish`, `review.return`), `Route::resource('users')`
+  tanpa show (`users.*`).
 
 ## Konvensi
 - Blade: selalu `{{ }}` (escape). Jangan pakai `{!! !!}` — **satu-satunya pengecualian**:
@@ -141,7 +168,9 @@ php artisan serve           # http://localhost:8000
 - [x] Tahap 1 — Database (migration, model, factory, seeder)
 - [x] Tahap 2 — Route & Controller (+ Form Request, Policy)
 - [x] Tahap 3 — Blade & UI (Tailwind) — **semua 12 checklist lolos** (diuji 2026-10-19 di browser + curl/tinker)
-- [ ] Tahap 4 — Testing & finishing — **sedang berjalan**
+- [ ] Tahap 4 — Testing & finishing — **sedang berjalan** (sisa: `npm run build` sebelum dikumpulkan)
+- Tahap 5 — pengembangan front-end, lihat di bawah. **Kondisi terakhir (2026-10-29): 137 test / 562 assertion lulus.**
+  Angka test di tiap entri di bawah = jumlah saat entri itu dibuat.
 
 Catatan: `ArticleRequest`, `ArticlePolicy`, `ArticleController`, view `articles/*` dan `ArticleReportController`
 sempat belum ada di repo walau ditandai selesai; dibuat ulang 2026-10-19 (commit 510bc6f, 2a16b48, bfd8176).
@@ -176,72 +205,23 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `php artisan storage:link`, `npm install && npm run build`, `php artisan serve`), akun demo, cara uji reset password
   via log, daftar fitur vs rubrik, keputusan desain & asumsi.
 ### Tahap 5 — Pengembangan front-end (mulai 2026-10-28, data real diinput user sendiri lewat halaman)
+Entri pekerjaan diurutkan **dari yang terbaru** (urutan mengikuti riwayat commit); entri baru ditambahkan tepat di
+bawah "Git di-init ulang".
 - Arah desain: **corporate / company profile**. Token di `app.css` `@theme`: palet `brand-50..950` dari warna resmi
   CMI (navbar `#E3F2FD` = `brand-50`, footer `#066AC9` = `brand-600`) + font dari **Google Fonts API** lewat provider
   `google()` laravel-vite-plugin (diunduh saat build, disajikan dari server sendiri; `@fonts` di layout): Inter = `font-sans`
   (UI & judul; sebelumnya Plus Jakarta Sans), Lora = `font-serif` (paragraf `.article-content`, subjudul di dalamnya tetap sans). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
-- [x] Halaman publik: layout (`@yield('hero')`, `partials/footer`), navbar, beranda (hero + featured di halaman 1 tanpa
-  search + grid), detail (hero, waktu baca, salin tautan, Artikel Lainnya). Komponen baru `x-avatar` (prop `tone`),
-  `x-article-card`. (Accessor `reading_time` dihapus 2026-10-29 — user tidak mau "menit baca" di mana pun.) Pagination Bahasa Indonesia (`lang/id/pagination.php`, `id.json`).
-- [x] Rich text editor **Trix** (npm `trix`, entry Vite terpisah `resources/js/editor.js`, hanya dimuat di `_form`;
-  lampiran file dimatikan). `<trix-editor class="article-editor article-content">` + `<input type="hidden" name="content">`.
-  CSS editor sengaja di luar `@layer` (trix.css tidak berlayer); jangan beri class `.trix-content`.
-- [x] Sanitasi: `symfony/html-sanitizer` lewat `App\Support\ArticleContent` (whitelist tag Trix: div p br strong em del
-  h1 blockquote pre ul ol li a[href]; link http/https/mailto, dipaksa `target=_blank rel=noopener noreferrer`).
-  Dua lapis: mutator `setContentAttribute` (saat simpan) + accessor `content_html` (saat tampil). Teks polos lama →
-  `<p>`. `excerpt`/`word_count` memakai `ArticleContent::toPlainText()`. `ArticleRequest`: `bail` + closure menolak
-  editor kosong (`<div><br></div>`). Test: `ArticleContentTest` (6) → total 35 test / 130 assertion, terbukti gagal
-  bila sanitizer dimatikan.
-- [x] Favicon dari tanda salib logo: `public/favicon.ico` (16/32/48) + `public/apple-touch-icon.png`.
-- [x] Nama situs `APP_NAME="Klinik Utama CMI"` (.env & .env.example); copy hero/footer bertema klinik.
-- [x] Database dibersihkan dari data dummy (akun user `rodjaali@gmail.com` dipertahankan), backup di
-  `storage/app/backups/`.
-- [x] Area penulis: komponen `x-page-header` (di `@section('hero')`, slot `meta`/`actions`), `x-icon` (kini Font Awesome,
-  prop `size`), `x-article-thumb`. Dashboard (kartu statistik + progres published + empty state + aksi cepat),
-  Artikel Saya (tab status + jumlah dari `$statusCounts` groupBy, aksi ikon), form 2 kolom (`_form` menerima
-  `$submitLabel`/`$cancelUrl`; status = kartu radio; dropzone gambar), detail milik sendiri (banner Draft), laporan &
-  auth-card memakai header/logo baru. `status-badge` Draft = amber. Hapus query mati `$latestArticles` di LoginController.
-- Pelajaran CSS: selector toolbar Trix diberi awalan `form` (trix.css dimuat setelah app.css); kolom grid perlu `min-w-0`.
-  Pembungkus tabel `overflow-x-auto` wajib `relative`, kalau tidak teks `sr-only` (position:absolute) lolos dan
-  membuat halaman melebar di ponsel.
-- [x] Navigasi: navbar grid `[1fr_auto_1fr]` → kiri burger + ikon cari, tengah logo (`<x-logo compact>`: nama situs
-  disembunyikan di ponsel), kanan tamu: Masuk/Daftar (Daftar disembunyikan di ponsel; halaman Masuk punya link Daftar) |
-  login: lonceng + tombol avatar saja (nama/peran hanya di header dropdown) → dropdown akun `partials/user-menu` (Popover API `popover`/`popovertarget`; klik luar & Esc
-  bawaan browser; posisi top/right di-set JS saat `beforetoggle`, digeser bila keluar layar saat `toggle`). Isi:
-  profil, **Kelola Akun** (`profile.edit`, akun sendiri, semua peran), Baca Nanti,
-  Notifikasi, Keluar. Drawer kiri hanya
-  navigasi (tanpa profil/Masuk/Daftar/Keluar).
-  Redesign 2026-10-28: garis aksen `brand-600` di atas, tinggi `h-16`, tombol ikon bulat `.nav-icon-btn` (app.css),
-  burger berlabel "Menu" (≥sm), ikon cari saja di semua ukuran (kolom "Cari artikel…" palsu dihapus atas permintaan user) + pintasan `/`, bayangan saat scroll
-  (`data-scrolled` dari app.js).
-  Ikon cari membuka `partials/search-panel` (`<dialog>` dari atas, GET ke `home?search=`, input `autofocus`).
-  JS dialog di `app.js` dipakai bersama: `data-dialog-open="<id>"` / `data-dialog-close`, Esc ditangani manual
-  (Esc pertama di `type=search` bawaan browser hanya mengosongkan teks). Semua menu di drawer kiri
-  `partials/nav-drawer` (di-@include dari navbar, jadi mewarisi `$pendingReviewCount` dari View Composer). Drawer =
-  `<dialog>` + `showModal()` (Esc, fokus terkunci, latar inert bawaan browser); JS buka/tutup + klik latar di
-  `resources/js/app.js`; animasi geser di app.css (`@starting-style` + `allow-discrete`).
-  Catatan uji E2E: klik CDP (`Input.dispatchMouseEvent`) di Chrome headless kadang hilang setelah login lewat
-  `form.submit()` — terbukti bukan bug aplikasi (tetap hilang walau menu dimatikan); pakai `element.click()` bila begitu.
-- [x] Peran **pembaca** + komentar + Baca Nanti + notifikasi (2026-10-28): migration ubah default role, tabel
-  `comments` (cascade), `bookmarks` (pivot unik user×article), `notifications` (bawaan Laravel). `CommentController`
-  (artikel harus Published; user_id via `associate`), `CommentPolicy` (pemilik/admin), `BookmarkController` (`toggle()`,
-  daftar hanya Published), `NotificationController` (`open` mencari lewat `$request->user()->notifications()` → 404
-  untuk milik orang lain). `App\Notifications\ArticleNotification` (abstract, channel database, data
-  title/message/url relatif/icon) + `ArticleSubmittedForReview`, `ArticlePublished`, `ArticleReturned`,
-  `NewArticlePublished`, `NewComment`. Penerima diatur `App\Support\ArticleNotifier`, dipanggil di ArticleController
-  (store; update hanya bila `wasChanged('status')`), ArticleReviewController, CommentController. Navbar: lonceng
-  `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
-  `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
-  MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
-- [x] **Redesign form tulis/edit artikel** (2026-10-29): `_form` = langkah bernomor (komponen `x-form-step`): ①
-  Judul & jenis, ② Isi (penghitung kata `[data-word-count]`), ③ Sumber rujukan, ④ Optimasi SEO
-  (`_seo-panel` kini memakai `x-form-step number=4`). Sidebar sticky & bisa di-scroll sendiri
-  (`lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto`): Publikasi, **Kelengkapan artikel** (6 poin + bilah progres; wajib
-  hanya judul/jenis/isi), Gambar Utama. JS `resources/js/article-form.js` (diimpor `editor.js`): penghitung kata,
-  kelengkapan, pratinjau gambar (pindahan skrip inline), peringatan `beforeunload` bila ada perubahan belum disimpan
-  (mati saat submit; Chrome hanya memunculkannya setelah interaksi pengguna sungguhan). Toolbar Trix sticky
-  `top-[67px]` (tinggi navbar). Test di `PagesRedesignTest` → 132 test.
+- [x] **Info kontak resmi CMI di footer** (2026-10-29, data dari user): alamat Jl. Tubagus Ismail VII, Sekeloa,
+  Kecamatan Coblong, Kota Bandung, Jawa Barat 40134 · Buka setiap hari, 24 jam · Telepon (022) 253 1000 · WhatsApp
+  0811 9161 166 · Email info@cmihospital.com. Diisi di `.env` **dan** `.env.example` (`CLINIC_ADDRESS/HOURS/PHONE/
+  WHATSAPP/EMAIL`; `.env` di-gitignore). `config/clinic.php` baru: `phone`, `phone_international` ("(022) 253 1000" →
+  `+62222531000`, untuk `tel:` & JSON-LD `telephone`), `whatsapp`, `whatsapp_url` (`https://wa.me/628119161166`),
+  `maps_url` kosong → link pencarian Google Maps dari alamat. **Pilihan user: nomor 0811 hanya di footer** ("Telepon:",
+  "WhatsApp:"); tombol Konsultasi, kartu "Alami gejala jantung?", halaman error & `contactPoint` JSON-LD tetap
+  0821-2159-0000 (`whatsapp_number`/`whatsapp_display`, dari link konsultasi resmi). Akreditasi belum ada (kosong =
+  disembunyikan). Ikon baru `phone` di `x-icon`. Test di `CredibilityTest` (terbukti gagal bila konversi +62
+  disabotase) → 137 test / 562 assertion. Backup `.env` lama: `storage/app/backups/env-sebelum-info-klinik.bak`.
 - [x] **Media sosial di footer** (2026-10-29): `config('clinic.social')` = daftar label/ikon/url akun resmi CMI
   (Facebook, Instagram, X, TikTok, YouTube — **disalin dari footer cmihospital.com**, semuanya `cmihospitals`; Twitter
   tanpa `www.`). Footer kolom 1 "Ikuti Kami": tombol bulat 44px, `target=_blank rel="noopener noreferrer"`, `title` +
@@ -259,24 +239,30 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   Beranda › judul, JSON-LD `specialty` = `https://schema.org/Cardiovascular`, `articleSection` "Kesehatan Jantung".
   Teks: hero, footer, menu "Artikel Jantung", placeholder contoh jantung. Form: langkah ① "Judul artikel", kelengkapan
   5 poin (form) / 6 poin (detail admin). Test `ArticleCategoryTest` → `HeartOnlySiteTest` (4, termasuk uji migration
-  down/up). Entri lama di bawah yang menyebut jenis/kategori sudah tidak berlaku.
+  down/up). Entri lain di bawah sudah disesuaikan (dirapikan 2026-10-29).
 - [x] **Redesign detail artikel area login** (`articles/show`, 2026-10-29): banner status di atas grid; grid
   `lg:grid-cols-[minmax(0,1fr)_21rem]` — aside ditulis lebih dulu di DOM (ponsel: panel Tinjau sebelum isi panjang),
   pratinjau `lg:order-first`. Aside: panel **Tinjau** (Terbitkan + peninjau medis / "atau" / Kembalikan + catatan),
-  Informasi artikel (penulis+profesi, peninjau medis, dibuat/diperbarui, jumlah kata; waktu baca sengaja tidak ditampilkan atas permintaan user), **Kelengkapan** 7
+  Informasi artikel (penulis+profesi, peninjau medis, dibuat/diperbarui, jumlah kata; waktu baca sengaja tidak ditampilkan atas permintaan user), **Kelengkapan** 6
   poin dihitung server (aturan = form tulis + peninjau medis), Statistik Kunjungan (total/7 hari/komentar + 5 terbaru),
   Tampilan di Google (`meta_title`/`meta_description` + kata kunci). Pratinjau = kartu seperti halaman publik; blok
   peninjau medis + sumber dipisah ke partial `public/_credibility` (dipakai publik & pratinjau). Accessor baru
   `Article::word_count`. Controller `show` eager load `user`, `loadCount('comments')`.
-- [x] **Redesign Laporan Artikel** (2026-10-29; query INNER JOIN TIDAK diubah, hanya `articles.category` ditambah ke
-  select): ringkasan 3 angka dalam satu kartu (Artikel terbit / Tampil di laporan / Tanpa penulis — **tanpa istilah
+- [x] **Redesign Laporan Artikel** (2026-10-29; query INNER JOIN TIDAK diubah): ringkasan 3 angka dalam satu kartu (Artikel terbit / Tampil di laporan / Tanpa penulis — **tanpa istilah
   teknis**: pengguna halaman ini nakes & editor konten, bukan developer; penjelasan INNER JOIN untuk penilai cukup di
-  README), bilah cari di atas tabel + "Menampilkan 1–10 dari N", kata kunci disorot `x-highlight`, jenis (komponen
-  `x-category-badge` kini juga menerima prop `category` karena baris `DB::table` bukan model), avatar penulis, email
+  README), bilah cari di atas tabel + "Menampilkan 1–10 dari N", kata kunci disorot `x-highlight`, avatar penulis, email
   `mailto:`, tanggal + jam zona (`format('T')` → WIB), `aria-sort` di kolom tanggal. Ponsel: kartu per artikel (tabel
   `hidden md:block`). Tombol **Cetak** (`window.print()`): `@media print` di app.css menyembunyikan navbar/footer/toast
   & merapatkan `.th/.td`; elemen interaktif `print:hidden`, tabel `print:block`, header cetak berisi waktu cetak.
   Test di `PagesRedesignTest` → 133 test.
+- [x] **Redesign form tulis/edit artikel** (2026-10-29): `_form` = langkah bernomor (komponen `x-form-step`): ①
+  Judul artikel, ② Isi (penghitung kata `[data-word-count]`), ③ Sumber rujukan, ④ Optimasi SEO
+  (`_seo-panel` kini memakai `x-form-step number=4`). Sidebar sticky & bisa di-scroll sendiri
+  (`lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto`): Publikasi, **Kelengkapan artikel** (5 poin + bilah progres; wajib
+  hanya judul/isi), Gambar Utama. JS `resources/js/article-form.js` (diimpor `editor.js`): penghitung kata,
+  kelengkapan, pratinjau gambar (pindahan skrip inline), peringatan `beforeunload` bila ada perubahan belum disimpan
+  (mati saat submit; Chrome hanya memunculkannya setelah interaksi pengguna sungguhan). Toolbar Trix sticky
+  `top-[67px]` (tinggi navbar). Test di `PagesRedesignTest` → 132 test.
 - [x] **Optimasi SEO per artikel** (2026-10-29): migration `add_seo_fields_to_articles_table` (`focus_keyword` 100,
   `seo_title` 70, `seo_description` 160, nullable; MySQL dimigrasi, backup `artikel_app-sebelum-seo-artikel-*.sql`),
   fillable + validasi `ArticleRequest`. Accessor `meta_title` (seo_title ?: title) & `meta_description`
@@ -285,7 +271,7 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   penghitung karakter, checklist 7 poin; JS `resources/js/seo-panel.js` (diimpor `editor.js`, slugify menyerupai
   Str::slug, slug tetap saat edit). Tidak memakai `<meta keywords>` (diabaikan Google) — sampaikan ke user bahwa
   tidak ada jaminan peringkat. Test `ArticleSeoFieldsTest` (4) → 131 test / 523 assertion.
-- [x] **Redesign halaman sisa** (2026-10-29): Baca Nanti → daftar (thumbnail, jenis, judul serif, ringkasan,
+- [x] **Redesign halaman sisa** (2026-10-29): Baca Nanti → daftar (thumbnail, judul serif, ringkasan,
   "Disimpan <x-date pivot>", tombol **Baca** & **Hapus** = form `bookmarks.toggle`), paginate 10. Notifikasi → tab
   Semua/Belum dibaca (`?filter=belum-dibaca`, controller kirim `onlyUnread/totalCount/unreadCount`), dikelompokkan
   Hari ini/Kemarin/tanggal; `x-notification-item`: ikon berwarna per jenis, `x-date`, badge "Baru". Error: komponen
@@ -293,13 +279,13 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   mendukung override `robots`; 404 artikel Draft tidak lagi "index"); 404 menyarankan 3 artikel terbaru (try/catch);
   `errors/{500,503}` pakai `layouts/minimal` (tanpa navbar/DB). Dashboard: kartu statistik = link ke Artikel Saya
   terfilter, kartu "Total dibaca" (`totalViews`), "Paling banyak dibaca" (`topArticles`), tips + sumber/peninjau.
-  Artikel Saya, Review, Kelola Pengguna: tombol aksi berlabel (Lihat/Edit/Hapus/Tinjau), jenis di bawah judul, profesi
-  user. Laporan (query INNER JOIN TIDAK diubah): ringkasan Published seluruhnya / tampil / tersaring INNER JOIN
-  (`publishedTotal`, `withoutAuthor`), tanggal `translatedFormat`, pembungkus tabel `relative`. Test
+  Artikel Saya, Review, Kelola Pengguna: tombol aksi berlabel (Lihat/Edit/Hapus/Tinjau), profesi user. Laporan:
+  `publishedTotal` & `withoutAuthor` dikirim controller (label UI kini bahasa awam, lihat Redesign Laporan Artikel),
+  tanggal `translatedFormat`, pembungkus tabel `relative`. Test
   `PagesRedesignTest` (7) → 127 test / 505 assertion.
 - [x] **SEO** (2026-10-28, sebelum deploy): `config/seo.php` (description bawaan, `image` = `images/og-default.png`
   1200×630 dibuat GD dari logo, latar brand-950). `App\Support\Seo`: `isIndexable()` (hanya `home` tanpa ?search &
-  `public.articles.show`), `canonicalUrl()` (beranda: hanya ?jenis valid & ?page>1; lainnya `$request->url()`),
+  `public.articles.show`), `canonicalUrl()` (beranda: hanya ?page>1; lainnya `$request->url()`),
   `organization()` (MedicalClinic + WebSite/SearchAction), `article()` (MedicalWebPage reviewedBy/lastReviewed +
   Article author/jobTitle + BreadcrumbList), `JSON_FLAGS` (wajib `JSON_HEX_TAG`). `partials/seo` di layout
   (menggantikan `<title>`): title, description, robots, canonical, theme-color, og:*, twitter:card, `@stack('seo-meta')`,
@@ -316,11 +302,11 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `articles/_reviewer-select` (form admin & panel Terbitkan; `$reviewers` dari `ArticleController::reviewersFor()`).
   Publik: profesi di bawah nama penulis, chip "Ditinjau oleh" di hero, kotak "Ditinjau secara medis oleh … · Terakhir
   diperbarui" + "Sumber rujukan" (`x-source-line`: hanya http/https jadi link, tampil host) di akhir artikel.
-  Footer 3 kolom: "Hubungi Kami" dari `config/clinic.php` (`CLINIC_ADDRESS/HOURS/EMAIL/MAPS_URL/ACCREDITATION` di
-  .env, kosong = disembunyikan) + WhatsApp CS `whatsapp_display` (0821-2159-0000, dari link resmi). **Data alamat,
-  jam, email, akreditasi CMI belum diisi — tunggu dari user; jangan dikarang.** No. 4: `.nav-icon-btn` & `.share-btn`
-  44px, tombol navbar "Cari" berlabel (sm+), `x-share-buttons labels` (dipakai di akhir artikel), pill jenis py-2.5,
-  tombol tutup pop-up 40px. Test `CredibilityTest` (6) → 113 test / 442 assertion.
+  Footer 3 kolom: "Hubungi Kami" dari `config/clinic.php` (`CLINIC_*` di .env,
+  kosong = disembunyikan). Data kontak sudah diisi 2026-10-29 (lihat entri "Info kontak resmi CMI"); **akreditasi
+  belum ada — tunggu dari user, jangan dikarang.** No. 4: `.nav-icon-btn` & `.share-btn`
+  44px, `x-share-buttons labels` (dipakai di akhir artikel), tombol tutup pop-up 40px. (Tombol navbar "Cari" berlabel
+  kemudian diganti ikon saja atas permintaan user.) Test `CredibilityTest` (6) → 113 test / 442 assertion.
 - [x] **Keterbacaan untuk pembaca usia matang** (2026-10-28; target user: 25+, mayoritas orang tua & mapan). Token
   `@theme`: `--text-xs` 14px, `--text-sm` 15px (dulu 12/14) → teks < 14px di beranda 52 → 0. `x-icon` size-3/size-4
   kini nilai tetap `text-[0.75rem]`/`text-[0.875rem]` agar ikon tidak ikut membesar. Semua `text-gray-400` →
@@ -348,22 +334,20 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `x-input` kini punya prop `icon` (ikon kiri, `pl-10`) dan untuk `type="password"` otomatis tombol mata
   (`data-password-toggle`, `aria-pressed`) + peringatan Caps Lock (`#{name}-capslock`, `getModifierState`) — JS di
   app.js, berlaku untuk semua kolom password. Ikon baru: envelope, lock, eye-slash, shield.
-- [x] **Beranda ala portal berita (pola Kompas.id)** (2026-10-28, permintaan user; hero biru tua tetap, kontennya
-  rata tengah — label, judul, deskripsi, form cari `mx-auto` — dengan cahaya radial di tengah atas). Hanya saat
-  `$isLanding`: baris 1 dua kolom = **Sorotan** (kotak besar artikel terbaru, judul serif) | **Artikel Lainnya** (5
-  berikutnya: jenis, judul serif, waktu relatif, thumbnail kanan); baris 2 = **Berita Utama** (per jenis: label jenis →
-  judul utama serif + ringkasan + 3 judul terkait bergaris, gambar kanan; jenis kosong dilewati) | **Terpopuler**
-  (5, bernomor serif) + `x-consultation-card` (sticky). Lalu `#daftar-artikel` ("Semua Artikel" + pill + grid +
-  pagination). Saat cari/filter: hanya daftar + banner WhatsApp. Controller mengirim `$latestArticles` (6),
-  `$categorySections` (4 per jenis), `$popularArticles` (5). Komponen baru `x-section-title` (garis aksen kiri
-  brand-600) & `x-consultation-card` (dipakai juga di detail). Judul berita di beranda memakai `font-serif` (Lora).
+- [x] **Beranda ala portal berita (pola Kompas.id)** (2026-10-28, permintaan user; tata letak sekarang lihat entri
+  "Situs khusus artikel JANTUNG"). Hero biru tua tetap, kontennya rata tengah — label, judul, deskripsi, form cari
+  `mx-auto` — dengan cahaya radial di tengah atas. Hanya saat `$isLanding`: **Sorotan** (kotak besar artikel terbaru,
+  judul serif) | **Artikel Lainnya** (5 berikutnya: judul serif, waktu relatif, thumbnail kanan). Lalu daftar artikel
+  (`#daftar-artikel`) | **Terpopuler** (5, bernomor serif) + `x-consultation-card` (sticky). Komponen `x-section-title`
+  (garis aksen kiri brand-600) & `x-consultation-card` (dipakai juga di detail). Judul berita di beranda memakai
+  `font-serif` (Lora).
 - [x] **Live search navbar** (2026-10-28): `GET /cari?q=` (`articles.live-search`, `throttle:60,1`) →
   `PublicArticleController@liveSearch` (bukan AJAX → redirect `home?search=`; < 2 huruf → kosong; Published +
   scope baru `Article::search()` yang juga dipakai beranda; `orderByRaw('CASE WHEN title LIKE ? ...')` judul dulu;
   6 hasil + total) → view potongan `public/_live-search-results` (role=listbox/option). Komponen `x-highlight`
   (`preg_split` + `PREG_SPLIT_DELIM_CAPTURE`, `<mark>` dengan `{{ }}`; satu directive per baris — `@endif@endforeach`
-  menempel tidak dikompilasi Blade). `partials/search-panel`: input `role=combobox`, `[data-live-search-idle]` (pill
-  jenis), `[data-live-search-results]`. JS `resources/js/live-search.js` (diimpor app.js): debounce 250 ms,
+  menempel tidak dikompilasi Blade). `partials/search-panel`: input `role=combobox`, `[data-live-search-idle]` (teks
+  petunjuk contoh pencarian jantung), `[data-live-search-results]`. JS `resources/js/live-search.js` (diimpor app.js): debounce 250 ms,
   `AbortController`, header `X-Requested-With`, panah/Enter via `aria-activedescendant`. Test `LiveSearchTest` (6) →
   99 test / 376 assertion.
 - [x] **Kelola Akun** (2026-10-28, koreksi user: "Kelola Pengguna" di menu avatar maksudnya akun milik user itu sendiri,
@@ -382,12 +366,10 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   `PreventRequestForgery`; request ber-header `Sec-Fetch-Site: same-origin` lolos tanpa cek token, jadi 419 praktis
   hanya terjadi tanpa header itu (HTTP non-localhost / browser lama) — diuji dengan curl. Test `PopupMessageTest` (6)
   memalsukan token gagal dengan `app()->instance(PreventRequestForgery::class, ...)` → 88 test / 335 assertion.
-- [x] **Redesign beranda** (2026-10-28): hero biru tua tetap (tanpa pola garis). `PublicArticleController@index` kirim
-  `$isLanding` (tanpa cari/filter & halaman 1), `$popularArticles` (hanya saat landing), `$categoryCounts`. Urutan:
-  Sorotan (1 besar + 2 kartu kecil dengan thumbnail & jenis) → Artikel Terpopuler (komponen `x-popular-article`,
-  dipakai juga di detail; ponsel hanya 3 teratas) → `#daftar-artikel` (judul dinamis Terbaru / Artikel {Jenis} /
-  Hasil Pencarian + jumlah, pill filter jenis + jumlah, link pill berakhiran `#daftar-artikel`) → banner WhatsApp.
-  Query bersama dipindah ke model: scope `popular()` & `Article::publishedCountsByCategory()`. User tidak suka hiasan
+- [x] **Redesign beranda** (2026-10-28; tata letaknya kemudian diganti, lihat entri "Beranda ala portal berita" & "Situs khusus artikel
+  JANTUNG"): hero biru tua tetap
+  (tanpa pola garis). `PublicArticleController@index` kirim `$isLanding` (tanpa cari & halaman 1). Komponen
+  `x-popular-article` (dipakai juga di detail) dan scope `Article::popular()` berasal dari sini. User tidak suka hiasan
   yang "kelihatan seperti AI" (pola garis, glow berlebihan) — jaga desain tetap polos & korporat.
 - [x] **Redesign detail artikel publik** (2026-10-28): hero **biru tua sama dengan beranda** (user minta tetap biru tua,
   bukan terang; `bg-brand-950` + radial gradient, tanpa pola garis (user: "kelihatan seperti AI"), breadcrumb chevron, baris penulis + tanggal/dilihat); latar konten sama dengan beranda (`bg-gray-50` dari layout); bar progres membaca `.reading-progress` (murni CSS
@@ -403,22 +385,19 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   UPDATED_AT=null) + kolom `articles.view_count` (tidak di `$fillable`). `App\Support\ArticleViewCounter::record()`
   dipanggil di `PublicArticleController@show`: skip penulis sendiri, skip visitor yang sudah tercatat, lalu dalam
   transaksi insert riwayat + `DB::table('articles')->increment()` (bukan increment model → updated_at tetap).
-  Halaman publik: "N kali dilihat" di hero; di bawah grid 3 kolom ada **Artikel Terkait** (jenis sama, 3 kartu) dan
+  Halaman publik: "N kali dilihat" di hero; di bawah grid 3 kolom ada **Artikel Terkait** (kini
+  `relatedArticles()`: cocok `focus_keyword` dulu, sisanya acak; 3 kartu) dan
   **Artikel Terpopuler** (≥ `config('clinic.popular_min_views')` = 5, urut view_count, 6 item bernomor; empty state
   bila belum ada). Variabel sidebar kini `$latestArticles`. Area penulis: kolom "Dilihat" di Artikel Saya + panel
   Statistik Kunjungan di `articles/show` (total, 7 hari, 5 riwayat terbaru). Seeder membuat 0–40 riwayat acak per
   artikel Published. MySQL dimigrasi (backup `artikel_app-sebelum-kunjungan-*.sql`). Test `ArticleViewTest` (6) →
   81 test / 307 assertion; terbukti gagal saat dedup/cek penulis/hash sesi/increment/batas minimal disabotase.
-- [x] **Jenis artikel + detail 3 kolom** (2026-10-28): migration `add_category_to_articles_table` (`category` string
-  nullable + index; MySQL sudah dimigrasi, backup `storage/app/backups/artikel_app-sebelum-jenis-artikel-*.sql`).
-  `Article::CATEGORIES` (diabetes/jantung/kanker/ginjal), `category_label` (null-safe, PHP 8.5 menolak offset null),
-  scope `ofCategory`. `ArticleRequest`: `category` required + `Rule::in`. Form: radio pill di bawah Judul. Komponen
-  `x-category-badge` (warna per jenis). Beranda: tab filter `?jenis=` (featured mati saat difilter). `public/show`:
-  grid `lg:grid-cols-[4.5rem_minmax(0,1fr)_18rem]` → kolom Bagikan (sticky; WA/X/FB via `http_build_query`, salin
-  tautan ikon-saja — ikon centang disembunyikan pakai atribut `hidden`, bukan class, karena CSS FA tak berlayer),
-  kolom isi + komentar, sidebar (Artikel Lainnya 5, Jenis Artikel + jumlah Published, kartu CTA "Alami gejala …?"
-  → `config('clinic.whatsapp_consultation_url')`). Font Awesome **brands** kini diimpor di `app.js` (ikon `whatsapp`,
-  `x-twitter`, `facebook`). Test `ArticleCategoryTest` (4) → 75 test / 287 assertion.
+- [x] **Detail 3 kolom + bagikan** (2026-10-28; fitur jenis artikel yang dibuat bersamaan sudah dihapus 2026-10-29,
+  kolom `category` di-drop lewat migration). `public/show`: kolom Bagikan (sticky; WA/X/FB via `http_build_query`,
+  salin tautan ikon-saja — ikon centang disembunyikan pakai atribut `hidden`, bukan class, karena CSS FA tak berlayer),
+  kolom isi + komentar, sidebar (Artikel Lainnya, kartu CTA "Alami gejala jantung?" →
+  `config('clinic.whatsapp_consultation_url')`). Font Awesome **brands** diimpor di `app.js` (ikon `whatsapp`,
+  `x-twitter`, `facebook`). Catatan: PHP 8.5 menolak offset array `null` — pakai akses null-safe.
 - [x] **Kelola Pengguna** (2026-10-28, admin): `UserController` resource `users.*` tanpa show (`/dashboard/users`, grup
   middleware `admin`), `UserRequest` (store & update; email unik `ignore`; password wajib saat tambah, kosong = tidak
   diganti saat edit; `role` → `prohibited` bila `cannot('changeRole')`), `UserPolicy` (`changeRole`, `delete`: admin
@@ -428,6 +407,35 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   emerald, pembaca abu). Konfirmasi hapus memakai `data-confirm` + `confirm(this.dataset.confirm)` agar nama bertanda
   kutip aman. Test `UserManagementTest` (8) → 71 test / 267 assertion; terbukti gagal bila policy/notifikasi disabotase.
   Catatan: scope Eloquent (`withRole`) otomatis mengurung where sebelumnya, closure search tetap dipakai agar eksplisit.
+- [x] Peran **pembaca** + komentar + Baca Nanti + notifikasi (2026-10-28): migration ubah default role, tabel
+  `comments` (cascade), `bookmarks` (pivot unik user×article), `notifications` (bawaan Laravel). `CommentController`
+  (artikel harus Published; user_id via `associate`), `CommentPolicy` (pemilik/admin), `BookmarkController` (`toggle()`,
+  daftar hanya Published), `NotificationController` (`open` mencari lewat `$request->user()->notifications()` → 404
+  untuk milik orang lain). `App\Notifications\ArticleNotification` (abstract, channel database, data
+  title/message/url relatif/icon) + `ArticleSubmittedForReview`, `ArticlePublished`, `ArticleReturned`,
+  `NewArticlePublished`, `NewComment`. Penerima diatur `App\Support\ArticleNotifier`, dipanggil di ArticleController
+  (store; update hanya bila `wasChanged('status')`), ArticleReviewController, CommentController. Navbar: lonceng
+  `partials/notification-menu` (dropdown `.dropdown-panel`, data dari View Composer). Test: `ReaderFeaturesTest` (8),
+  `NotificationTest` (9) → 63 test / 225 assertion, terbukti gagal bila middleware/policy/notifier disabotase.
+  MySQL dimigrasi (backup `storage/app/backups/artikel_app-sebelum-pembaca-*.sql`).
+- [x] Navigasi: navbar grid `[1fr_auto_1fr]` → kiri burger + ikon cari, tengah logo (`<x-logo compact>`: nama situs
+  disembunyikan di ponsel), kanan tamu: Masuk/Daftar (Daftar disembunyikan di ponsel; halaman Masuk punya link Daftar) |
+  login: lonceng + tombol avatar saja (nama/peran hanya di header dropdown) → dropdown akun `partials/user-menu` (Popover API `popover`/`popovertarget`; klik luar & Esc
+  bawaan browser; posisi top/right di-set JS saat `beforetoggle`, digeser bila keluar layar saat `toggle`). Isi:
+  profil, **Kelola Akun** (`profile.edit`, akun sendiri, semua peran), Baca Nanti,
+  Notifikasi, Keluar. Drawer kiri hanya
+  navigasi (tanpa profil/Masuk/Daftar/Keluar).
+  Redesign 2026-10-28: garis aksen `brand-600` di atas, tinggi `h-16`, tombol ikon bulat `.nav-icon-btn` (app.css),
+  burger berlabel "Menu" (≥sm), ikon cari saja di semua ukuran (kolom "Cari artikel…" palsu dihapus atas permintaan user) + pintasan `/`, bayangan saat scroll
+  (`data-scrolled` dari app.js).
+  Ikon cari membuka `partials/search-panel` (`<dialog>` dari atas, GET ke `home?search=`, input `autofocus`).
+  JS dialog di `app.js` dipakai bersama: `data-dialog-open="<id>"` / `data-dialog-close`, Esc ditangani manual
+  (Esc pertama di `type=search` bawaan browser hanya mengosongkan teks). Semua menu di drawer kiri
+  `partials/nav-drawer` (di-@include dari navbar, jadi mewarisi `$pendingReviewCount` dari View Composer). Drawer =
+  `<dialog>` + `showModal()` (Esc, fokus terkunci, latar inert bawaan browser); JS buka/tutup + klik latar di
+  `resources/js/app.js`; animasi geser di app.css (`@starting-style` + `allow-discrete`).
+  Catatan uji E2E: klik CDP (`Input.dispatchMouseEvent`) di Chrome headless kadang hilang setelah login lewat
+  `form.submit()` — terbukti bukan bug aplikasi (tetap hilang walau menu dimatikan); pakai `element.click()` bila begitu.
 - [x] Ikon **Font Awesome Free 7** (npm `@fortawesome/fontawesome-free`, hanya css solid + regular diimpor di
   `resources/js/app.js`). Semua ikon lewat `<x-icon name=".." size="size-N">`; peta nama → class `fa-*` dan
   `size-*` → font-size ada di `components/icon.blade.php` (CSS FA tidak berlayer, menimpa `width` utilitas Tailwind,
@@ -438,6 +446,30 @@ Jika dev server Vite tidak mengenali class Tailwind di file/folder Blade baru, `
   akun `rodjaali@gmail.com` = admin). Halaman `review/index` (tab Menunggu Review/Published/Draft/Semua), panel
   Tinjau di `articles/show`, komponen `x-review-note`, `status-badge` violet untuk Review. `ArticleRoleTest` (11) →
   total 46 test / 175 assertion, terbukti gagal bila middleware/policy/validasi status disabotase.
+- [x] Area penulis: komponen `x-page-header` (di `@section('hero')`, slot `meta`/`actions`), `x-icon` (kini Font Awesome,
+  prop `size`), `x-article-thumb`. Dashboard (kartu statistik + progres published + empty state + aksi cepat),
+  Artikel Saya (tab status + jumlah dari `$statusCounts` groupBy, aksi ikon), form 2 kolom (`_form` menerima
+  `$submitLabel`/`$cancelUrl`; status = kartu radio; dropzone gambar), detail milik sendiri (banner Draft), laporan &
+  auth-card memakai header/logo baru. `status-badge` Draft = amber. Hapus query mati `$latestArticles` di LoginController.
+- Pelajaran CSS: selector toolbar Trix diberi awalan `form` (trix.css dimuat setelah app.css); kolom grid perlu `min-w-0`.
+  Pembungkus tabel `overflow-x-auto` wajib `relative`, kalau tidak teks `sr-only` (position:absolute) lolos dan
+  membuat halaman melebar di ponsel.
+- [x] Database dibersihkan dari data dummy (akun user `rodjaali@gmail.com` dipertahankan), backup di
+  `storage/app/backups/`.
+- [x] Nama situs `APP_NAME="Klinik Utama CMI"` (.env & .env.example); copy hero/footer bertema klinik.
+- [x] Favicon dari tanda salib logo: `public/favicon.ico` (16/32/48) + `public/apple-touch-icon.png`.
+- [x] Sanitasi: `symfony/html-sanitizer` lewat `App\Support\ArticleContent` (whitelist tag Trix: div p br strong em del
+  h1 blockquote pre ul ol li a[href]; link http/https/mailto, dipaksa `target=_blank rel=noopener noreferrer`).
+  Dua lapis: mutator `setContentAttribute` (saat simpan) + accessor `content_html` (saat tampil). Teks polos lama →
+  `<p>`. `excerpt`/`word_count` memakai `ArticleContent::toPlainText()`. `ArticleRequest`: `bail` + closure menolak
+  editor kosong (`<div><br></div>`). Test: `ArticleContentTest` (6) → total 35 test / 130 assertion, terbukti gagal
+  bila sanitizer dimatikan.
+- [x] Rich text editor **Trix** (npm `trix`, entry Vite terpisah `resources/js/editor.js`, hanya dimuat di `_form`;
+  lampiran file dimatikan). `<trix-editor class="article-editor article-content">` + `<input type="hidden" name="content">`.
+  CSS editor sengaja di luar `@layer` (trix.css tidak berlayer); jangan beri class `.trix-content`.
+- [x] Halaman publik: layout (`@yield('hero')`, `partials/footer`), navbar, beranda (hero + featured di halaman 1 tanpa
+  search + grid), detail (hero, waktu baca, salin tautan, Artikel Lainnya). Komponen baru `x-avatar` (prop `tone`),
+  `x-article-card`. (Accessor `reading_time` dihapus 2026-10-29 — user tidak mau "menit baca" di mana pun.) Pagination Bahasa Indonesia (`lang/id/pagination.php`, `id.json`).
 
 - Persiapan tanya-jawab: middleware vs policy, alur reset password, INNER JOIN vs LEFT JOIN, jebakan
   `orWhere` tanpa closure, N+1 & eager loading, mass assignment & `$fillable`, CSRF, route model binding dengan slug.
