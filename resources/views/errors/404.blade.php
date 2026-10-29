@@ -28,7 +28,7 @@
                                 <a href="{{ route('public.articles.show', $article) }}" class="group flex items-center gap-4 py-3">
                                     <x-article-thumb :article="$article" class="size-16" />
                                     <span class="min-w-0">
-                                        <span class="block font-serif font-semibold text-gray-900 group-hover:text-brand-700">{{ $article->title }}</span>
+                                        <span class="block font-article font-semibold text-gray-900 group-hover:text-brand-700">{{ $article->title }}</span>
                                     </span>
                                 </a>
                             </li>

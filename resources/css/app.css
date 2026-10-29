@@ -11,7 +11,8 @@
  */
 @theme {
     --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    --font-serif: var(--font-lora), ui-serif, Georgia, serif;
+    /* Huruf artikel → utilitas font-article (isi artikel & judul artikel di daftar). */
+    --font-article: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
 
     /*
      * Pembaca utama berusia matang (40+): huruf terkecil dinaikkan. text-xs 12→14px, text-sm 14→15px.
@@ -73,10 +74,10 @@
      * Tipografi isi artikel (HTML dari Trix). Dipakai di halaman detail DAN di
      * dalam editor, sehingga yang ditulis tampil sama dengan hasil akhirnya.
      * <h1> dari tombol "Heading" Trix ditampilkan seukuran subjudul.
-     * Paragraf memakai serif (Lora) agar nyaman dibaca panjang; subjudul tetap sans
-     * (Inter) supaya senada dengan judul halaman.
+     * Paragraf memakai Roboto (font-article); subjudul memakai Inter (font-sans)
+     * supaya senada dengan judul halaman.
      */
-    .article-content { @apply font-serif text-[1.125rem] leading-8 text-gray-800; }
+    .article-content { @apply font-article text-[1.125rem] leading-8 text-gray-800; }
     .article-content :where(p)          { @apply my-5; }
     .article-content :where(h1, h2)     { @apply mt-10 mb-4 font-sans text-2xl leading-snug font-bold text-gray-900; }
     .article-content > :where(:first-child) { @apply mt-0; }

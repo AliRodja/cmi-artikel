@@ -66,7 +66,7 @@
                         <div class="absolute inset-0 bg-gradient-to-t from-brand-950/95 via-brand-950/40 to-transparent"></div>
                         <div class="absolute inset-x-0 bottom-0 p-6 sm:p-8">
                             <span class="badge bg-amber-400 text-amber-950">Terbaru</span>
-                            <h3 class="mt-3 font-serif text-2xl leading-tight font-semibold text-white sm:text-[2rem]">{{ $featured->title }}</h3>
+                            <h3 class="mt-3 font-article text-2xl leading-tight font-semibold text-white sm:text-[2rem]">{{ $featured->title }}</h3>
                             <p class="mt-3 line-clamp-2 hidden max-w-2xl text-sm text-brand-100 sm:block">{{ $featured->excerpt }}</p>
                             <p class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-brand-200">
                                 <span class="inline-flex items-center gap-1.5"><x-icon name="user" size="size-3" /> {{ $featured->user?->name ?? 'Anonim' }}</span>
@@ -87,7 +87,7 @@
                             <li>
                                 <a href="{{ route('public.articles.show', $article) }}" class="group flex gap-4 py-3.5 first:pt-0">
                                     <div class="min-w-0 flex-1">
-                                        <h3 class="line-clamp-3 font-serif text-[0.95rem] leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $article->title }}</h3>
+                                        <h3 class="line-clamp-3 font-article text-[0.95rem] leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $article->title }}</h3>
                                         <p class="mt-1.5 text-xs text-gray-500"><x-date :value="$article->created_at" /></p>
                                     </div>
                                     <x-article-thumb :article="$article" class="size-20" />
@@ -145,9 +145,9 @@
                         @foreach ($popularArticles as $popular)
                             <li>
                                 <a href="{{ route('public.articles.show', $popular) }}" class="group flex gap-4 py-3.5 first:pt-0">
-                                    <span class="w-6 shrink-0 font-serif text-3xl leading-none font-semibold text-brand-400 tabular-nums group-hover:text-brand-600">{{ $loop->iteration }}</span>
+                                    <span class="w-6 shrink-0 font-article text-3xl leading-none font-semibold text-brand-400 tabular-nums group-hover:text-brand-600">{{ $loop->iteration }}</span>
                                     <div class="min-w-0">
-                                        <h3 class="line-clamp-3 font-serif text-[0.95rem] leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $popular->title }}</h3>
+                                        <h3 class="line-clamp-3 font-article text-[0.95rem] leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $popular->title }}</h3>
                                         <p class="mt-1.5 inline-flex items-center gap-1 text-xs text-gray-500">
                                             <x-icon name="eye" size="size-3" /> {{ number_format($popular->view_count, 0, ',', '.') }} kali dilihat
                                         </p>

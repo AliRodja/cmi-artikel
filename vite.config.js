@@ -17,9 +17,9 @@ export default defineConfig({
                     styles: ['normal', 'italic'],
                     preload: [{ weight: 400, style: 'normal' }],
                 }),
-                // Serif untuk isi artikel: lebih nyaman untuk bacaan panjang.
-                google('Lora', {
-                    weights: [400, 600],
+                // Huruf artikel (isi & judul artikel di daftar): Roboto, sans-serif.
+                google('Roboto', {
+                    weights: [400, 500, 600],
                     styles: ['normal', 'italic'],
                     preload: [{ weight: 400, style: 'normal' }],
                 }),

@@ -35,7 +35,7 @@
                         <x-article-thumb :article="$article" class="aspect-[16/9] w-full rounded-xl sm:aspect-[4/3] sm:w-36" />
                     </a>
                     <div class="min-w-0 flex-1">
-                        <h2 class="font-serif text-lg leading-snug font-semibold text-gray-900">
+                        <h2 class="font-article text-lg leading-snug font-semibold text-gray-900">
                             <a href="{{ route('public.articles.show', $article) }}" class="hover:text-brand-700">{{ $article->title }}</a>
                         </h2>
                         <p class="mt-1 line-clamp-2 text-sm text-gray-600">{{ $article->excerpt }}</p>

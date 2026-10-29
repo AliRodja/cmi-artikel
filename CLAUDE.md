@@ -210,7 +210,8 @@ bawah "Git di-init ulang".
 - Arah desain: **corporate / company profile**. Token di `app.css` `@theme`: palet `brand-50..950` dari warna resmi
   CMI (navbar `#E3F2FD` = `brand-50`, footer `#066AC9` = `brand-600`) + font dari **Google Fonts API** lewat provider
   `google()` laravel-vite-plugin (diunduh saat build, disajikan dari server sendiri; `@fonts` di layout): Inter = `font-sans`
-  (UI & judul; sebelumnya Plus Jakarta Sans), Lora = `font-serif` (paragraf `.article-content`, subjudul di dalamnya tetap sans). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
+  (UI & judul; sebelumnya Plus Jakarta Sans), **Roboto = `font-article`** (huruf artikel: paragraf `.article-content` + judul artikel di beranda, Baca Nanti, 404;
+  subjudul di dalam isi tetap Inter; sejak 2026-10-29 menggantikan Lora/`font-serif` atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
 - [x] **Info kontak resmi CMI di footer** (2026-10-29, data dari user): alamat Jl. Tubagus Ismail VII, Sekeloa,
   Kecamatan Coblong, Kota Bandung, Jawa Barat 40134 · Buka setiap hari, 24 jam · Telepon (022) 253 1000 · WhatsApp
@@ -340,7 +341,7 @@ bawah "Git di-init ulang".
   judul serif) | **Artikel Lainnya** (5 berikutnya: judul serif, waktu relatif, thumbnail kanan). Lalu daftar artikel
   (`#daftar-artikel`) | **Terpopuler** (5, bernomor serif) + `x-consultation-card` (sticky). Komponen `x-section-title`
   (garis aksen kiri brand-600) & `x-consultation-card` (dipakai juga di detail). Judul berita di beranda memakai
-  `font-serif` (Lora).
+  `font-article` (kini Roboto).
 - [x] **Live search navbar** (2026-10-28): `GET /cari?q=` (`articles.live-search`, `throttle:60,1`) →
   `PublicArticleController@liveSearch` (bukan AJAX → redirect `home?search=`; < 2 huruf → kosong; Published +
   scope baru `Article::search()` yang juga dipakai beranda; `orderByRaw('CASE WHEN title LIKE ? ...')` judul dulu;
