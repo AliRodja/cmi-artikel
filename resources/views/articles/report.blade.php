@@ -2,23 +2,23 @@
 
 @use('Illuminate\Support\Carbon')
 
-@section('title', 'Laporan Artikel')
+@section('title', __('Laporan Artikel'))
 
 @section('hero')
-    <x-page-header title="Laporan Artikel"
-                   subtitle="Artikel yang sudah terbit beserta penulisnya, terbaru di atas.">
+    <x-page-header :title="__('Laporan Artikel')"
+                   :subtitle="__('Artikel yang sudah terbit beserta penulisnya, terbaru di atas.')">
         <x-slot:meta>
             {{-- Hanya muncul di kertas: kapan laporan dicetak. --}}
             <p class="hidden text-sm text-gray-600 print:block">
-                {{ config('app.name') }} · dicetak {{ now()->translatedFormat('d F Y, H:i T') }}
+                {{ config('app.name') }} · {{ __('dicetak') }} {{ now()->translatedFormat('d F Y, H:i T') }}
                 @if ($search !== '')
-                    · pencarian "{{ $search }}"
+                    · {{ __('pencarian') }} "{{ $search }}"
                 @endif
             </p>
         </x-slot:meta>
         <x-slot:actions>
             <button type="button" onclick="window.print()" class="btn btn-secondary print:hidden">
-                <x-icon name="printer" size="size-4" /> Cetak
+                <x-icon name="printer" size="size-4" /> {{ __('Cetak') }}
             </button>
         </x-slot:actions>
     </x-page-header>
@@ -28,14 +28,14 @@
     @php
         $shown = $publishedTotal - $withoutAuthor;
         $summary = [
-            ['label' => 'Artikel terbit', 'value' => $publishedTotal, 'hint' => 'Semua artikel berstatus Published', 'tone' => 'bg-brand-50 text-brand-700', 'icon' => 'document-text'],
-            ['label' => 'Tampil di laporan', 'value' => $shown, 'hint' => 'Artikel terbit yang punya penulis', 'tone' => 'bg-green-50 text-green-700', 'icon' => 'check-circle'],
-            ['label' => 'Tanpa penulis', 'value' => $withoutAuthor, 'hint' => 'Akun penulisnya sudah dihapus', 'tone' => 'bg-amber-50 text-amber-700', 'icon' => 'exclamation-triangle'],
+            ['label' => __('Artikel terbit'), 'value' => $publishedTotal, 'hint' => __('Semua artikel berstatus Published'), 'tone' => 'bg-brand-50 text-brand-700', 'icon' => 'document-text'],
+            ['label' => __('Tampil di laporan'), 'value' => $shown, 'hint' => __('Artikel terbit yang punya penulis'), 'tone' => 'bg-green-50 text-green-700', 'icon' => 'check-circle'],
+            ['label' => __('Tanpa penulis'), 'value' => $withoutAuthor, 'hint' => __('Akun penulisnya sudah dihapus'), 'tone' => 'bg-amber-50 text-amber-700', 'icon' => 'exclamation-triangle'],
         ];
     @endphp
 
     {{-- Ringkasan: satu kartu dibagi tiga, angka besar agar mudah dibaca sekilas. --}}
-    <section class="card mb-6 grid divide-y divide-gray-100 sm:grid-cols-3 sm:divide-x sm:divide-y-0" aria-label="Ringkasan laporan">
+    <section class="card mb-6 grid divide-y divide-gray-100 sm:grid-cols-3 sm:divide-x sm:divide-y-0" aria-label="{{ __('Ringkasan laporan') }}">
         @foreach ($summary as $item)
             <div class="flex items-center gap-4 p-5">
                 <span class="flex size-12 shrink-0 items-center justify-center rounded-xl {{ $item['tone'] }}">
@@ -56,23 +56,23 @@
             <form action="{{ route('articles.report') }}" method="GET" role="search" class="flex w-full gap-2 sm:w-auto">
                 <div class="relative w-full sm:w-80">
                     <x-icon name="magnifying-glass" size="size-4" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-500" />
-                    <label for="report-search" class="sr-only">Cari artikel</label>
+                    <label for="report-search" class="sr-only">{{ __('Cari artikel') }}</label>
                     <input type="search" id="report-search" name="search" value="{{ $search }}"
-                           placeholder="Cari judul, penulis, atau email..." class="form-input pl-9">
+                           placeholder="{{ __('Cari judul, penulis, atau email...') }}" class="form-input pl-9">
                 </div>
-                <button type="submit" class="btn btn-primary">Cari</button>
+                <button type="submit" class="btn btn-primary">{{ __('Cari') }}</button>
             </form>
 
             <p class="text-sm text-gray-600" aria-live="polite">
                 @if ($articles->total() > 0)
-                    Menampilkan <strong class="text-gray-900">{{ $articles->firstItem() }}–{{ $articles->lastItem() }}</strong>
-                    dari <strong class="text-gray-900">{{ $articles->total() }}</strong> artikel
+                    {{ __('Menampilkan') }} <strong class="text-gray-900">{{ $articles->firstItem() }}–{{ $articles->lastItem() }}</strong>
+                    {{ __('dari') }} <strong class="text-gray-900">{{ $articles->total() }}</strong> {{ trans_choice('artikel', $articles->total()) }}
                 @else
-                    0 artikel
+                    {{ __('0 artikel') }}
                 @endif
                 @if ($search !== '')
-                    untuk "<span class="font-semibold text-gray-900">{{ $search }}</span>"
-                    · <a href="{{ route('articles.report') }}" class="link">Hapus pencarian</a>
+                    {{ __('untuk') }} "<span class="font-semibold text-gray-900">{{ $search }}</span>"
+                    · <a href="{{ route('articles.report') }}" class="link">{{ __('Hapus pencarian') }}</a>
                 @endif
             </p>
         </div>
@@ -83,12 +83,12 @@
                     <x-icon name="document-text" size="size-6" />
                 </span>
                 @if ($search !== '')
-                    <p class="mt-4 font-semibold text-gray-900">Tidak ada artikel untuk "{{ $search }}"</p>
-                    <p class="mt-1 text-sm text-gray-500">Periksa ejaan, atau cari dengan nama penulis maupun email.</p>
-                    <a href="{{ route('articles.report') }}" class="btn btn-secondary mt-5">Tampilkan semua</a>
+                    <p class="mt-4 font-semibold text-gray-900">{{ __('Tidak ada artikel untuk ":term"', ['term' => $search]) }}</p>
+                    <p class="mt-1 text-sm text-gray-500">{{ __('Periksa ejaan, atau cari dengan nama penulis maupun email.') }}</p>
+                    <a href="{{ route('articles.report') }}" class="btn btn-secondary mt-5">{{ __('Tampilkan semua') }}</a>
                 @else
-                    <p class="mt-4 font-semibold text-gray-900">Belum ada artikel yang terbit</p>
-                    <p class="mt-1 text-sm text-gray-500">Artikel akan muncul di sini setelah diterbitkan dan punya penulis.</p>
+                    <p class="mt-4 font-semibold text-gray-900">{{ __('Belum ada artikel yang terbit') }}</p>
+                    <p class="mt-1 text-sm text-gray-500">{{ __('Artikel akan muncul di sini setelah diterbitkan dan punya penulis.') }}</p>
                 @endif
             </div>
         @else
@@ -97,14 +97,14 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="th w-12">No</th>
-                            <th scope="col" class="th">Judul</th>
-                            <th scope="col" class="th">Penulis</th>
-                            <th scope="col" class="th">Email Penulis</th>
-                            <th scope="col" class="th">Status</th>
+                            <th scope="col" class="th w-12">{{ __('No') }}</th>
+                            <th scope="col" class="th">{{ __('Judul') }}</th>
+                            <th scope="col" class="th">{{ __('Penulis') }}</th>
+                            <th scope="col" class="th">{{ __('Email Penulis') }}</th>
+                            <th scope="col" class="th">{{ __('Status') }}</th>
                             <th scope="col" class="th whitespace-nowrap" aria-sort="descending">
                                 <span class="inline-flex items-center gap-1.5">
-                                    Tanggal Dibuat <x-icon name="arrow-down" size="size-3" class="text-brand-600" />
+                                    {{ __('Tanggal Dibuat') }} <x-icon name="arrow-down" size="size-3" class="text-brand-600" />
                                 </span>
                             </th>
                         </tr>
@@ -135,7 +135,7 @@
                                 <td class="td whitespace-nowrap">
                                     <time datetime="{{ $createdAt->toIso8601String() }}">
                                         <span class="block text-gray-800">{{ $createdAt->translatedFormat('d M Y') }}</span>
-                                        <span class="block text-xs text-gray-500">pukul {{ $createdAt->format('H:i T') }}</span>
+                                        <span class="block text-xs text-gray-500">{{ __('pukul') }} {{ $createdAt->format('H:i T') }}</span>
                                     </time>
                                 </td>
                             </tr>

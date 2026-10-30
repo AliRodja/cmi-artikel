@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Tulis Artikel')
+@section('title', __('Tulis Artikel'))
 
 @section('hero')
-    <x-page-header title="Tulis Artikel" :back-url="route('articles.index')" back-label="Artikel Saya" />
+    <x-page-header :title="__('Tulis Artikel')" :back-url="route('articles.index')" :back-label="__('Artikel Saya')" />
 @endsection
 
 @section('content')
@@ -11,7 +11,7 @@
         @csrf
 
         @include('articles._form', [
-            'submitLabel' => 'Simpan Artikel',
+            'submitLabel' => __('Simpan Artikel'),
             'cancelUrl' => route('articles.index'),
         ])
     </form>

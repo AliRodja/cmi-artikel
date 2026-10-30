@@ -50,23 +50,24 @@ class ArticleRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'title' => 'judul',
-            'content' => 'isi artikel',
-            'sources' => 'sumber rujukan',
-            'focus_keyword' => 'kata kunci utama',
-            'seo_title' => 'judul SEO',
-            'seo_description' => 'deskripsi SEO',
-            'medical_reviewer_id' => 'peninjau medis',
-            'image' => 'gambar',
-            'status' => 'status',
-            'remove_image' => 'hapus gambar',
+            // Nama kolom di pesan validasi, ikut bahasa yang dipilih (lang/en.json).
+            'title' => __('judul'),
+            'content' => __('isi artikel'),
+            'sources' => __('sumber rujukan'),
+            'focus_keyword' => __('kata kunci utama'),
+            'seo_title' => __('judul SEO'),
+            'seo_description' => __('deskripsi SEO'),
+            'medical_reviewer_id' => __('peninjau medis'),
+            'image' => __('gambar'),
+            'status' => __('status'),
+            'remove_image' => __('hapus gambar'),
         ];
     }
 
     public function messages(): array
     {
         return [
-            'medical_reviewer_id.prohibited' => 'Peninjau medis hanya dapat ditentukan oleh admin.',
+            'medical_reviewer_id.prohibited' => __('Peninjau medis hanya dapat ditentukan oleh admin.'),
         ];
     }
 }

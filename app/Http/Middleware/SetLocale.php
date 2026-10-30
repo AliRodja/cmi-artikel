@@ -8,9 +8,8 @@ use Illuminate\Support\Number;
 use Symfony\Component\HttpFoundation\Response;
 
 /*
- * Memakai bahasa pilihan pengunjung (disimpan di sesi oleh LocaleController). Tanpa pilihan → APP_LOCALE (id).
- * Area penulis/admin (/dashboard...) selalu Bahasa Indonesia: penggunanya tenaga kesehatan CMI dan halaman itu
- * belum diterjemahkan, jadi tidak boleh tercampur dua bahasa.
+ * Memakai bahasa pilihan pengunjung (disimpan di sesi oleh LocaleController) di seluruh situs, termasuk area
+ * penulis/admin. Tanpa pilihan atau pilihan tidak dikenal → APP_LOCALE (id).
  */
 class SetLocale
 {
@@ -19,7 +18,7 @@ class SetLocale
         // (string): belum pernah memilih = null, dan PHP 8.5 menolak null sebagai kunci array.
         $locale = (string) $request->session()->get('locale');
 
-        if ($request->is('dashboard', 'dashboard/*') || ! array_key_exists($locale, config('app.supported_locales'))) {
+        if (! array_key_exists($locale, config('app.supported_locales'))) {
             $locale = config('app.locale');
         }
 

@@ -53,7 +53,7 @@ class UserController extends Controller
         $user->save();
 
         return redirect()->route('users.index')
-            ->with('success', "Akun {$user->name} berhasil dibuat sebagai {$user->role_label}.");
+            ->with('success', __('Akun :name berhasil dibuat sebagai :role.', ['name' => $user->name, 'role' => __($user->role_label)]));
     }
 
     public function edit(User $user): View
@@ -81,7 +81,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return redirect()->route('users.index')->with('success', "Akun {$user->name} berhasil diperbarui.");
+        return redirect()->route('users.index')->with('success', __('Akun :name berhasil diperbarui.', ['name' => $user->name]));
     }
 
     public function destroy(User $user): RedirectResponse
@@ -97,6 +97,6 @@ class UserController extends Controller
             $user->delete();
         });
 
-        return redirect()->route('users.index')->with('success', "Akun {$user->name} berhasil dihapus.");
+        return redirect()->route('users.index')->with('success', __('Akun :name berhasil dihapus.', ['name' => $user->name]));
     }
 }

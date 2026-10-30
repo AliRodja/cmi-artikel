@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Artikel')
+@section('title', __('Edit Artikel'))
 
 @section('hero')
-    <x-page-header title="Edit Artikel" :subtitle="$article->title"
-                   :back-url="route('articles.show', $article)" back-label="Detail artikel" />
+    <x-page-header :title="__('Edit Artikel')" :subtitle="$article->title"
+                   :back-url="route('articles.show', $article)" :back-label="__('Detail artikel')" />
 @endsection
 
 @section('content')
@@ -18,7 +18,7 @@
 
         @include('articles._form', [
             'article' => $article,
-            'submitLabel' => 'Simpan Perubahan',
+            'submitLabel' => __('Simpan Perubahan'),
             'cancelUrl' => route('articles.show', $article),
         ])
     </form>

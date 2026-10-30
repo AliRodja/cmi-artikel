@@ -1,8 +1,3 @@
-@php
-    // Area penulis/admin selalu Bahasa Indonesia (App\Http\Middleware\SetLocale), jadi pilihan bahasa tidak ditampilkan.
-    $localeLocked = request()->is('dashboard', 'dashboard/*');
-@endphp
-
 <header data-navbar class="sticky top-0 z-30 border-t-[3px] border-b border-t-brand-600 border-b-brand-100 bg-brand-50 transition-shadow data-scrolled:shadow-md data-scrolled:shadow-brand-900/5">
     {{--
         Tiga kolom: [1fr | auto | 1fr]. Kolom kiri & kanan selalu sama lebar, sehingga
@@ -33,16 +28,14 @@
         </a>
 
         <div class="flex items-center gap-1 justify-self-end sm:gap-2">
-            {{-- Pilihan bahasa (partials/locale-menu). Disembunyikan di area penulis/admin yang selalu Bahasa Indonesia. --}}
-            @unless ($localeLocked)
-                <button type="button" popovertarget="locale-menu" title="{{ __('Ganti bahasa') }}"
-                        class="nav-icon-btn sm:w-auto sm:gap-1.5 sm:px-3">
-                    <x-icon name="globe" size="size-4" />
-                    {{-- Di ponsel cukup ikon (seperti tombol Cari) agar logo di tengah tidak terdesak. --}}
-                    <span class="hidden text-sm font-semibold sm:inline">{{ config('app.supported_locales')[app()->getLocale()]['short'] }}</span>
-                    <span class="sr-only">{{ __('Ganti bahasa') }}</span>
-                </button>
-            @endunless
+            {{-- Pilihan bahasa (partials/locale-menu), tersedia di semua halaman. --}}
+            <button type="button" popovertarget="locale-menu" title="{{ __('Ganti bahasa') }}"
+                    class="nav-icon-btn sm:w-auto sm:gap-1.5 sm:px-3">
+                <x-icon name="globe" size="size-4" />
+                {{-- Di ponsel cukup ikon (seperti tombol Cari) agar logo di tengah tidak terdesak. --}}
+                <span class="hidden text-sm font-semibold sm:inline">{{ config('app.supported_locales')[app()->getLocale()]['short'] }}</span>
+                <span class="sr-only">{{ __('Ganti bahasa') }}</span>
+            </button>
 
             @guest
                 {{-- Hanya tombol Masuk (permintaan user); pendaftaran lewat link "Daftar akun baru" di halaman Masuk. --}}
@@ -76,9 +69,7 @@
 
 @include('partials.nav-drawer')
 @include('partials.search-panel')
-@unless ($localeLocked)
-    @include('partials.locale-menu')
-@endunless
+@include('partials.locale-menu')
 @auth
     @include('partials.notification-menu')
     @include('partials.user-menu')

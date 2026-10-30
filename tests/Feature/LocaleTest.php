@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Article;
 use App\Models\User;
+use App\Support\ArticleNotifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
@@ -54,19 +55,45 @@ class LocaleTest extends TestCase
         $this->get(route('home'))->assertSee('<html lang="id">', false);
     }
 
-    public function test_writer_area_stays_indonesian_and_hides_language_button(): void
+    public function test_writer_area_follows_chosen_language(): void
     {
-        $penulis = User::factory()->create();
+        $penulis = User::factory()->create(['name' => 'Rina']);
+        Article::factory()->for($penulis)->draft()->create();
 
         $this->actingAs($penulis)->post(route('locale.update'), ['locale' => 'en']);
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('<html lang="id">', false)
-            ->assertDontSee('popovertarget="locale-menu"', false);
+            ->assertSee('<html lang="en">', false)
+            ->assertSee('popovertarget="locale-menu"', false)
+            ->assertSee('Hello, Rina')
+            ->assertSee('Write Article');
 
-        // Halaman publik tetap memakai pilihan Inggris.
-        $this->get(route('home'))->assertSee('<html lang="en">', false);
+        $this->get(route('articles.index'))->assertSee('My Articles')->assertSee('Draft');
+        $this->get(route('articles.create'))->assertSee('Article title')->assertSee('SEO checklist');
+
+        // Pesan validasi Form Request ikut bahasa, termasuk nama kolomnya.
+        $this->post(route('articles.store'), ['title' => '', 'content' => '', 'status' => 0])
+            ->assertSessionHasErrors(['title' => 'The title field is required.']);
+    }
+
+    public function test_admin_pages_and_notifications_follow_chosen_language(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $penulis = User::factory()->create(['name' => 'Rina']);
+        $article = Article::factory()->for($penulis)->create(['status' => Article::STATUS_REVIEW]);
+        ArticleNotifier::submitted($article);
+
+        $this->actingAs($admin)->post(route('locale.update'), ['locale' => 'en']);
+
+        $this->get(route('review.index'))->assertSee('Review Articles')->assertSee('Awaiting Review');
+        $this->get(route('articles.report'))->assertSee('Article Report')->assertSee('Print');
+        $this->get(route('users.index'))->assertSee('Manage Users')->assertSee('Add User');
+        // Notifikasi disimpan sebagai templat + data, jadi tampil dalam bahasa pembaca.
+        $this->get(route('notifications.index'))->assertSee('Rina submitted an article for review.');
+
+        $this->post(route('locale.update'), ['locale' => 'id']);
+        $this->get(route('notifications.index'))->assertSee('Rina mengajukan artikel untuk direview.');
     }
 
     public function test_not_found_pages_follow_chosen_language(): void
@@ -95,16 +122,15 @@ class LocaleTest extends TestCase
         $this->assertMatchesRegularExpression('/1\.23[45] kali dilihat/', $this->get(route('public.articles.show', $article))->getContent());
     }
 
-    public function test_every_public_text_has_an_english_translation(): void
+    public function test_every_text_has_an_english_translation(): void
     {
         $english = json_decode(File::get(lang_path('en.json')), true);
 
-        $files = collect(['public', 'auth', 'errors', 'partials', 'components', 'layouts'])
-            ->flatMap(fn ($dir) => File::allFiles(resource_path("views/{$dir}")))
-            ->map->getPathname()
-            ->merge([base_path('bootstrap/app.php')])
-            ->merge(File::glob(app_path('Http/Controllers/{Bookmark,Comment,Notification}Controller.php'), GLOB_BRACE))
-            ->merge(File::glob(app_path('Http/Controllers/Auth/{Login,Register}Controller.php'), GLOB_BRACE));
+        // Semua view + PHP yang membuat teks untuk pengguna (controller, Form Request, bootstrap/app.php).
+        $files = collect(File::allFiles(resource_path('views')))
+            ->merge(File::allFiles(app_path('Http')))
+            ->map(fn ($file) => (string) $file)
+            ->push(base_path('bootstrap/app.php'));
 
         $indonesian = json_decode(File::get(lang_path('id.json')), true);
 
@@ -125,6 +151,14 @@ class LocaleTest extends TestCase
                 if ($function === 'trans_choice' && ! array_key_exists($key, $indonesian)) {
                     $missing[] = basename($file).' (id.json): '.$key;
                 }
+            }
+        }
+
+        // Templat pesan notifikasi (return '...' di message()) diterjemahkan saat tampil.
+        foreach (File::files(app_path('Notifications')) as $file) {
+            if (preg_match("/function message\\(\\): string\\s*\\{\\s*return '((?:[^'\\\\]|\\\\.)*)';/", File::get($file), $match)
+                && ! array_key_exists($match[1], $english)) {
+                $missing[] = $file->getFilename().': '.$match[1];
             }
         }
 

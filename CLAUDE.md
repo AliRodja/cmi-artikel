@@ -43,7 +43,7 @@ Aturan kerja untuk Claude. **Produk, fitur, tech stack, rute, model data, test c
 npm run dev                 # terminal 1 (biarkan berjalan)
 php artisan optimize:clear  # terminal 2
 php artisan serve           # http://localhost:8000
-php artisan test            # 150 test per 2026-10-30
+php artisan test            # 151 test per 2026-10-30
 npm run build               # wajib sebelum dikumpulkan / deploy
 ```
 - Dev server Vite tidak mengenali class Tailwind di file Blade baru → `touch resources/css/app.css`. Mengubah
@@ -91,10 +91,13 @@ npm run build               # wajib sebelum dikumpulkan / deploy
   `fa-*` langsung. Ukuran ikon = font-size.
 - Huruf: `font-sans` = Inter (UI & judul), `font-article` = Roboto (isi artikel & judul artikel di daftar). Tanggal
   lewat `<x-date>`. Validasi lewat Form Request dengan pesan Bahasa Indonesia.
-- **Dua bahasa (halaman publik):** teks antarmuka baru di halaman publik/auth/error/partial/komponen publik WAJIB lewat
+- **Dua bahasa (seluruh situs, termasuk area penulis/admin):** SEMUA teks antarmuka baru WAJIB lewat
   `__('Teks Indonesia')` (kunci = teks Indonesia) + terjemahan di `lang/en.json`; teks dengan angka →
   `trans_choice(...)` + `Number::format()`, dan kuncinya juga di `lang/id.json`. Teks untuk JS dikirim lewat `data-*`.
-  `LocaleTest` gagal bila ada kunci tanpa terjemahan. Area `/dashboard…` selalu Indonesia (belum diterjemahkan).
+  Nama kolom validasi (`attributes()` Form Request / `validate(attributes:)`) & pesan flash juga lewat `__()`.
+  Notifikasi: `message()` = templat Indonesia + `replace()` (nilai `:nama`), diterjemahkan saat tampil di
+  `components/notification-item` — jangan merangkai kalimat jadi di notifikasi. `LocaleTest` memindai semua view,
+  `app/Http`, `bootstrap/app.php`, dan templat notifikasi; gagal bila ada kunci tanpa terjemahan.
 - Ikuti gaya kode sekitar (komentar Bahasa Indonesia secukupnya, penamaan Laravel).
 
 ## Keputusan produk (jangan dilanggar tanpa izin user)

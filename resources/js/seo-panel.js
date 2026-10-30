@@ -20,6 +20,12 @@ if (panel) {
         return (div.textContent || '').replace(/\s+/g, ' ').trim();
     };
 
+    // Teks dari Blade (data-text-*, ikut bahasa yang dipilih); ":nama" diganti nilainya.
+    const text = (key, values = {}) => Object.entries(values).reduce(
+        (result, [name, value]) => result.replaceAll(`:${name}`, value),
+        panel.dataset[`text${key[0].toUpperCase()}${key.slice(1)}`] ?? '',
+    );
+
     const limit = (text, max) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text);
     const contains = (text, keyword) => keyword !== '' && text.toLowerCase().includes(keyword.toLowerCase());
 
@@ -34,7 +40,7 @@ if (panel) {
     const setCounter = (name, length) => {
         const counter = panel.querySelector(`[data-seo-counter="${name}"]`);
         const ideal = length >= Number(counter.dataset.min) && length <= Number(counter.dataset.max);
-        counter.textContent = `${length} karakter · ideal ${counter.dataset.min}–${counter.dataset.max}`;
+        counter.textContent = text('counter', { length, min: counter.dataset.min, max: counter.dataset.max });
         counter.classList.toggle('text-green-700', ideal);
         counter.classList.toggle('text-amber-700', !ideal);
     };
@@ -49,9 +55,8 @@ if (panel) {
         const host = new URL(panel.dataset.urlBase).host;
 
         panel.querySelector('[data-seo-preview-url]').textContent = `${host} › artikel › ${slug}`;
-        panel.querySelector('[data-seo-preview-title]').textContent = limit(metaTitle || 'Judul artikel Anda', 60);
-        panel.querySelector('[data-seo-preview-description]').textContent =
-            metaDescription || 'Penjelasan singkat artikel akan tampil di sini.';
+        panel.querySelector('[data-seo-preview-title]').textContent = limit(metaTitle || text('title'), 60);
+        panel.querySelector('[data-seo-preview-description]').textContent = metaDescription || text('description');
 
         setCounter('seo_title', metaTitle.length);
         setCounter('seo_description', metaDescription.length);
@@ -62,13 +67,13 @@ if (panel) {
             setCheck('keyword-description', contains(metaDescription, keyword)),
             setCheck('keyword-intro', contains(content.slice(0, 200), keyword)),
             setCheck('keyword-url', keyword !== '' && slug.includes(slugify(keyword))),
-            setCheck('title-length', metaTitle.length >= 30 && metaTitle.length <= 60, `(sekarang ${metaTitle.length})`),
-            setCheck('description-length', metaDescription.length >= 120 && metaDescription.length <= 160, `(sekarang ${metaDescription.length})`),
+            setCheck('title-length', metaTitle.length >= 30 && metaTitle.length <= 60, text('now', { length: metaTitle.length })),
+            setCheck('description-length', metaDescription.length >= 120 && metaDescription.length <= 160, text('now', { length: metaDescription.length })),
         ];
 
         const passed = results.filter(Boolean).length;
         const score = panel.querySelector('[data-seo-score]');
-        score.textContent = `${passed} dari ${results.length}`;
+        score.textContent = text('score', { passed, total: results.length });
         score.className = passed >= 6 ? 'text-green-700' : passed >= 4 ? 'text-amber-700' : 'text-red-700';
     };
 

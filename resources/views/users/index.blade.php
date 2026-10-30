@@ -2,13 +2,13 @@
 
 @use('App\Models\User')
 
-@section('title', 'Kelola Pengguna')
+@section('title', __('Kelola Pengguna'))
 
 @section('hero')
-    <x-page-header title="Kelola Pengguna" subtitle="Atur akun dan peran admin, penulis, serta pembaca.">
+    <x-page-header :title="__('Kelola Pengguna')" :subtitle="__('Atur akun dan peran admin, penulis, serta pembaca.')">
         <x-slot:actions>
             <a href="{{ route('users.create') }}" class="btn btn-primary">
-                <x-icon name="user-plus" size="size-4" /> Tambah Pengguna
+                <x-icon name="user-plus" size="size-4" /> {{ __('Tambah Pengguna') }}
             </a>
         </x-slot:actions>
     </x-page-header>
@@ -17,16 +17,16 @@
 @section('content')
     @php
         $tabs = [
-            ['label' => 'Semua', 'value' => null, 'count' => $roleCounts->sum()],
-            ['label' => 'Admin', 'value' => User::ROLE_ADMIN, 'count' => $roleCounts->get(User::ROLE_ADMIN, 0)],
-            ['label' => 'Penulis', 'value' => User::ROLE_PENULIS, 'count' => $roleCounts->get(User::ROLE_PENULIS, 0)],
-            ['label' => 'Pembaca', 'value' => User::ROLE_PEMBACA, 'count' => $roleCounts->get(User::ROLE_PEMBACA, 0)],
+            ['label' => __('Semua'), 'value' => null, 'count' => $roleCounts->sum()],
+            ['label' => __('Admin'), 'value' => User::ROLE_ADMIN, 'count' => $roleCounts->get(User::ROLE_ADMIN, 0)],
+            ['label' => __('Penulis'), 'value' => User::ROLE_PENULIS, 'count' => $roleCounts->get(User::ROLE_PENULIS, 0)],
+            ['label' => __('Pembaca'), 'value' => User::ROLE_PEMBACA, 'count' => $roleCounts->get(User::ROLE_PEMBACA, 0)],
         ];
         $activeRole = in_array($role, User::ROLES, true) ? $role : null;
     @endphp
 
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <nav class="flex flex-wrap gap-1 rounded-lg bg-gray-100 p-1" aria-label="Filter peran">
+        <nav class="flex flex-wrap gap-1 rounded-lg bg-gray-100 p-1" aria-label="{{ __('Filter peran') }}">
             @foreach ($tabs as $tab)
                 <a href="{{ route('users.index', array_filter(['role' => $tab['value'], 'search' => $search], 'filled')) }}"
                    @class([
@@ -46,29 +46,29 @@
             @endif
             <div class="relative w-full sm:w-72">
                 <x-icon name="magnifying-glass" size="size-4" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-500" />
-                <input type="search" name="search" value="{{ $search }}" placeholder="Cari nama atau email..." class="form-input pl-9">
+                <input type="search" name="search" value="{{ $search }}" placeholder="{{ __('Cari nama atau email...') }}" class="form-input pl-9">
             </div>
-            <button type="submit" class="btn btn-secondary">Cari</button>
+            <button type="submit" class="btn btn-secondary">{{ __('Cari') }}</button>
         </form>
     </div>
 
     <div class="card overflow-hidden">
         @if ($users->isEmpty())
             <div class="px-6 py-14 text-center">
-                <p class="font-semibold text-gray-900">Tidak ada pengguna yang cocok</p>
-                <p class="mt-1 text-sm text-gray-500">Coba kata kunci atau filter lain.</p>
-                <a href="{{ route('users.index') }}" class="btn btn-secondary mt-5">Reset filter</a>
+                <p class="font-semibold text-gray-900">{{ __('Tidak ada pengguna yang cocok') }}</p>
+                <p class="mt-1 text-sm text-gray-500">{{ __('Coba kata kunci atau filter lain.') }}</p>
+                <a href="{{ route('users.index') }}" class="btn btn-secondary mt-5">{{ __('Reset filter') }}</a>
             </div>
         @else
             <div class="relative overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="th">Pengguna</th>
-                            <th class="th">Peran</th>
-                            <th class="th text-center">Artikel</th>
-                            <th class="th">Bergabung</th>
-                            <th class="th text-right">Aksi</th>
+                            <th class="th">{{ __('Pengguna') }}</th>
+                            <th class="th">{{ __('Peran') }}</th>
+                            <th class="th text-center">{{ __('Artikel') }}</th>
+                            <th class="th">{{ __('Bergabung') }}</th>
+                            <th class="th text-right">{{ __('Aksi') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -81,7 +81,7 @@
                                             <p class="flex items-center gap-2 font-semibold text-gray-900">
                                                 <span class="truncate">{{ $user->name }}</span>
                                                 @if ($user->is(auth()->user()))
-                                                    <span class="badge bg-amber-50 text-amber-700">Anda</span>
+                                                    <span class="badge bg-amber-50 text-amber-700">{{ __('Anda') }}</span>
                                                 @endif
                                             </p>
                                             <p class="truncate text-xs text-gray-500">{{ $user->email }}</p>
@@ -97,18 +97,18 @@
                                 <td class="td">
                                     <div class="flex justify-end gap-2 whitespace-nowrap">
                                         <a href="{{ route('users.edit', $user) }}" class="btn btn-secondary btn-sm">
-                                            <x-icon name="pencil-square" size="size-3" /> Edit
+                                            <x-icon name="pencil-square" size="size-3" /> {{ __('Edit') }}
                                             <span class="sr-only">{{ $user->name }}</span>
                                         </a>
                                         @can('delete', $user)
                                             {{-- Pesan konfirmasi lewat data-* agar nama berisi tanda kutip tidak merusak JavaScript. --}}
                                             <form action="{{ route('users.destroy', $user) }}" method="POST"
-                                                  data-confirm="Hapus akun {{ $user->name }}? Artikelnya tetap ada tanpa penulis, sedangkan komentar dan Baca Nanti miliknya ikut terhapus."
+                                                  data-confirm="{{ __('Hapus akun :name? Artikelnya tetap ada tanpa penulis, sedangkan komentar dan Baca Nanti miliknya ikut terhapus.', ['name' => $user->name]) }}"
                                                   onsubmit="return confirm(this.dataset.confirm)">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm">
-                                                    <x-icon name="trash" size="size-3" /> Hapus
+                                                    <x-icon name="trash" size="size-3" /> {{ __('Hapus') }}
                                                     <span class="sr-only">{{ $user->name }}</span>
                                                 </button>
                                             </form>

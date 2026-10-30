@@ -7,7 +7,12 @@ class ArticleSubmittedForReview extends ArticleNotification
 {
     protected function message(): string
     {
-        return ($this->article->user?->name ?? 'Penulis').' mengajukan artikel untuk direview.';
+        return ':name mengajukan artikel untuk direview.';
+    }
+
+    protected function replace(): array
+    {
+        return ['name' => $this->article->user?->name ?? 'Penulis'];
     }
 
     protected function url(): string

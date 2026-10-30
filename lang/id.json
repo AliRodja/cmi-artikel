@@ -19,5 +19,10 @@
     ":count artikel untuk": ":count artikel untuk",
     ":count artikel kesehatan jantung dari :site": ":count artikel kesehatan jantung dari :site",
     ":count artikel ditemukan": ":count artikel ditemukan",
-    "Lihat semua :count hasil untuk \":term\"": "Lihat semua :count hasil untuk \":term\""
+    "Lihat semua :count hasil untuk \":term\"": "Lihat semua :count hasil untuk \":term\"",
+    ":count artikel": ":count artikel",
+    ":count kali": ":count kali",
+    ":count kali dibaca": ":count kali dibaca",
+    ":count artikel tersimpan": ":count artikel tersimpan",
+    "artikel": "artikel"
 }

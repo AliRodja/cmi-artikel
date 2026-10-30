@@ -34,7 +34,7 @@ class ProfileController extends Controller
 
         $user->update($validated);
 
-        return back()->with('success', 'Data akun Anda berhasil diperbarui.');
+        return back()->with('success', __('Data akun Anda berhasil diperbarui.'));
     }
 
     public function updatePassword(Request $request): RedirectResponse
@@ -43,11 +43,11 @@ class ProfileController extends Controller
             // Password lama wajib benar, agar orang yang meminjam perangkat yang masih login tidak bisa menggantinya.
             'current_password' => ['required', 'current_password'],
             'password' => ['required', 'confirmed', Password::min(8), 'different:current_password'],
-        ], attributes: ['password' => 'password baru']);
+        ], attributes: ['password' => __('password baru')]);
 
         // Cast "hashed" di model User yang meng-hash password baru.
         $request->user()->update(['password' => $validated['password']]);
 
-        return back()->with('success', 'Password Anda berhasil diganti.');
+        return back()->with('success', __('Password Anda berhasil diganti.'));
     }
 }

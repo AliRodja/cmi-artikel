@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Artikel Saya')
+@section('title', __('Artikel Saya'))
 
 @section('hero')
-    <x-page-header title="Artikel Saya" subtitle="Kelola semua artikel yang Anda tulis.">
+    <x-page-header :title="__('Artikel Saya')" :subtitle="__('Kelola semua artikel yang Anda tulis.')">
         <x-slot:actions>
             <a href="{{ route('articles.create') }}" class="btn btn-primary">
-                <x-icon name="plus" size="size-4" /> Tulis Artikel
+                <x-icon name="plus" size="size-4" /> {{ __('Tulis Artikel') }}
             </a>
         </x-slot:actions>
     </x-page-header>
@@ -15,16 +15,16 @@
 @section('content')
     @php
         $tabs = [
-            ['label' => 'Semua', 'value' => null, 'count' => $statusCounts->sum()],
-            ['label' => 'Published', 'value' => '1', 'count' => $statusCounts->get(\App\Models\Article::STATUS_PUBLISHED, 0)],
-            ['label' => 'Review', 'value' => '2', 'count' => $statusCounts->get(\App\Models\Article::STATUS_REVIEW, 0)],
-            ['label' => 'Draft', 'value' => '0', 'count' => $statusCounts->get(\App\Models\Article::STATUS_DRAFT, 0)],
+            ['label' => __('Semua'), 'value' => null, 'count' => $statusCounts->sum()],
+            ['label' => __('Published'), 'value' => '1', 'count' => $statusCounts->get(\App\Models\Article::STATUS_PUBLISHED, 0)],
+            ['label' => __('Review'), 'value' => '2', 'count' => $statusCounts->get(\App\Models\Article::STATUS_REVIEW, 0)],
+            ['label' => __('Draft'), 'value' => '0', 'count' => $statusCounts->get(\App\Models\Article::STATUS_DRAFT, 0)],
         ];
         $activeStatus = in_array($status, ['0', '1', '2'], true) ? $status : null;
     @endphp
 
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <nav class="flex flex-wrap gap-1 rounded-lg bg-gray-100 p-1" aria-label="Filter status">
+        <nav class="flex flex-wrap gap-1 rounded-lg bg-gray-100 p-1" aria-label="{{ __('Filter status') }}">
             @foreach ($tabs as $tab)
                 <a href="{{ route('articles.index', array_filter(['status' => $tab['value'], 'search' => $search], 'filled')) }}"
                    @class([
@@ -44,9 +44,9 @@
             @endif
             <div class="relative w-full sm:w-72">
                 <x-icon name="magnifying-glass" size="size-4" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-500" />
-                <input type="search" name="search" value="{{ $search }}" placeholder="Cari judul..." class="form-input pl-9">
+                <input type="search" name="search" value="{{ $search }}" placeholder="{{ __('Cari judul...') }}" class="form-input pl-9">
             </div>
-            <button type="submit" class="btn btn-secondary">Cari</button>
+            <button type="submit" class="btn btn-secondary">{{ __('Cari') }}</button>
         </form>
     </div>
 
@@ -54,14 +54,14 @@
         @if ($articles->isEmpty())
             <div class="px-6 py-14 text-center">
                 @if ($search !== '' || $activeStatus !== null)
-                    <p class="font-semibold text-gray-900">Tidak ada artikel yang cocok</p>
-                    <p class="mt-1 text-sm text-gray-500">Coba kata kunci atau filter lain.</p>
-                    <a href="{{ route('articles.index') }}" class="btn btn-secondary mt-5">Reset filter</a>
+                    <p class="font-semibold text-gray-900">{{ __('Tidak ada artikel yang cocok') }}</p>
+                    <p class="mt-1 text-sm text-gray-500">{{ __('Coba kata kunci atau filter lain.') }}</p>
+                    <a href="{{ route('articles.index') }}" class="btn btn-secondary mt-5">{{ __('Reset filter') }}</a>
                 @else
-                    <p class="font-semibold text-gray-900">Belum ada artikel</p>
-                    <p class="mt-1 text-sm text-gray-500">Artikel yang Anda tulis akan muncul di sini.</p>
+                    <p class="font-semibold text-gray-900">{{ __('Belum ada artikel') }}</p>
+                    <p class="mt-1 text-sm text-gray-500">{{ __('Artikel yang Anda tulis akan muncul di sini.') }}</p>
                     <a href="{{ route('articles.create') }}" class="btn btn-primary mt-5">
-                        <x-icon name="plus" size="size-4" /> Tulis Artikel Pertama
+                        <x-icon name="plus" size="size-4" /> {{ __('Tulis Artikel Pertama') }}
                     </a>
                 @endif
             </div>
@@ -70,11 +70,11 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="th">Artikel</th>
-                            <th class="th">Status</th>
-                            <th class="th text-center">Dilihat</th>
-                            <th class="th">Dibuat</th>
-                            <th class="th text-right">Aksi</th>
+                            <th class="th">{{ __('Artikel') }}</th>
+                            <th class="th">{{ __('Status') }}</th>
+                            <th class="th text-center">{{ __('Dilihat') }}</th>
+                            <th class="th">{{ __('Dibuat') }}</th>
+                            <th class="th text-right">{{ __('Aksi') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -86,34 +86,34 @@
                                         <div class="min-w-0">
                                             <a href="{{ route('articles.show', $article) }}" class="line-clamp-1 font-semibold text-gray-900 hover:text-brand-700">{{ $article->title }}</a>
                                             @if ($article->review_note)
-                                                <p class="mt-0.5 text-xs font-medium text-amber-700">Ada catatan dari admin</p>
+                                                <p class="mt-0.5 text-xs font-medium text-amber-700">{{ __('Ada catatan dari admin') }}</p>
                                             @endif
                                         </div>
                                     </div>
                                 </td>
                                 <td class="td"><x-status-badge :status="$article->status" /></td>
-                                <td class="td text-center text-gray-700">{{ number_format($article->view_count, 0, ',', '.') }}</td>
+                                <td class="td text-center text-gray-700">{{ Number::format($article->view_count) }}</td>
                                 <td class="td whitespace-nowrap text-gray-500">{{ $article->created_at->translatedFormat('d M Y') }}</td>
                                 <td class="td">
                                     <div class="flex justify-end gap-2 whitespace-nowrap">
                                         {{-- Tombol berlabel (bukan ikon saja) agar jelas fungsinya. --}}
                                         @if ($article->isPublished())
                                             <a href="{{ route('public.articles.show', $article) }}" target="_blank" class="btn btn-secondary btn-sm">
-                                                <x-icon name="arrow-top-right-on-square" size="size-3" /> Lihat
+                                                <x-icon name="arrow-top-right-on-square" size="size-3" /> {{ __('Lihat') }}
                                             </a>
                                         @endif
                                         @can('update', $article)
                                             <a href="{{ route('articles.edit', $article) }}" class="btn btn-secondary btn-sm">
-                                                <x-icon name="pencil-square" size="size-3" /> Edit
+                                                <x-icon name="pencil-square" size="size-3" /> {{ __('Edit') }}
                                             </a>
                                         @endcan
                                         @can('delete', $article)
                                             <form action="{{ route('articles.destroy', $article) }}" method="POST"
-                                                  onsubmit="return confirm('Hapus artikel ini? Tindakan ini tidak bisa dibatalkan.')">
+                                                  data-confirm="{{ __('Hapus artikel ini? Tindakan ini tidak bisa dibatalkan.') }}" onsubmit="return confirm(this.dataset.confirm)">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm">
-                                                    <x-icon name="trash" size="size-3" /> Hapus
+                                                    <x-icon name="trash" size="size-3" /> {{ __('Hapus') }}
                                                 </button>
                                             </form>
                                         @endcan

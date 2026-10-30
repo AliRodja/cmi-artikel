@@ -12,7 +12,7 @@
 | Asal | Jawaban **ujian masuk IT CMI** (Soal 1 website artikel Laravel, Soal 2 INNER JOIN) milik Ali Imran Rodja |
 | Fase | Sejak 2026-10-28 pengembangan lanjutan dengan **data real** CMI (artikel diinput lewat halaman) |
 | Revisi soal | 2026-10-29: situs dikhususkan untuk artikel jantung; fitur jenis/kategori penyakit dihapus |
-| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **150 test / 631 assertion lulus** |
+| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **151 test / 646 assertion lulus** |
 
 **Tujuan:** pasien dan masyarakat mendapat informasi kesehatan jantung yang tepercaya (penulis jelas, ditinjau tenaga
 medis, ada sumber rujukan), mudah dibaca, dan mudah menghubungi klinik (WhatsApp, telepon).
@@ -68,7 +68,7 @@ membuat 3 artikel Published **tanpa penulis** agar terbukti tersaring oleh INNER
 | Autentikasi | **Manual** (tanpa Breeze/Jetstream): session, password broker bawaan untuk reset |
 | Notifikasi | Laravel Notifications, channel `database` |
 | Email (lokal) | `MAIL_MAILER=log` → link reset di `storage/logs/laravel.log` |
-| Bahasa tampilan | Indonesia (bawaan) & English untuk halaman publik — `__()` dengan kunci teks Indonesia, terjemahan `lang/en.json`, middleware `SetLocale` |
+| Bahasa tampilan | Indonesia (bawaan) & English untuk seluruh situs (publik, akun, penulis, admin) — `__()` dengan kunci teks Indonesia, terjemahan `lang/en.json`, middleware `SetLocale` |
 | Test | PHPUnit (`php artisan test`), feature test |
 | Lokal | MacBook Pro M1, Node.js 24 |
 
@@ -114,8 +114,9 @@ Semua fitur di bawah ✅ selesai dan teruji kecuali ditandai lain.
 - Detail artikel: penulis + profesi, "Ditinjau oleh", tanggal, jumlah dilihat, bar progres membaca, bagikan (WA/X/FB/salin),
   Simpan, sumber rujukan, peninjau medis, komentar, Artikel Terkait (kata kunci fokus), Terpopuler. Draft → 404.
 - Navbar tamu: Menu, Cari, logo, **pilihan bahasa (ID/EN)**, **Masuk** (tombol Daftar dihapus; daftar lewat halaman Masuk & footer).
-- **Dua bahasa tampilan**: Indonesia & English untuk semua halaman publik, Masuk/Daftar/Lupa password, pop-up, dan
-  halaman error; isi artikel tetap Bahasa Indonesia. Area penulis/admin selalu Indonesia.
+- **Dua bahasa tampilan**: Indonesia & English untuk **seluruh situs** — halaman publik, Masuk/Daftar/Lupa password,
+  akun (Baca Nanti, Notifikasi, Kelola Akun), area penulis & admin (dashboard, tulis artikel + panel SEO, detail,
+  Review, Laporan, Kelola Pengguna), pop-up, pesan validasi, notifikasi, halaman error. Isi artikel tetap Indonesia.
 - Footer: info kontak klinik, media sosial resmi, navigasi.
 - SEO: meta & Open Graph, canonical, noindex untuk halaman privat/cari, JSON-LD (MedicalClinic, MedicalWebPage, Article,
   Breadcrumb), `/sitemap.xml`, `/robots.txt` dinamis.
@@ -246,8 +247,8 @@ lang/id/{auth,pagination,passwords,validation}.php, lang/id.json
 
 ## 12. Test case
 
-Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **20 file · 150 test ·
-631 assertion — semua lulus (2026-10-30).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
+Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **20 file · 151 test ·
+646 assertion — semua lulus (2026-10-30).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
 selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi nomor +62 dirusak).
 
 | File | Test | Yang diuji |
@@ -270,7 +271,7 @@ selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi n
 | `PopupMessageTest` | 6 | Pop-up berhasil keluar & simpan; halaman kedaluwarsa (419) → pop-up gagal; tamu menyimpan artikel → pop-up & kembali ke artikel setelah login; form tidak valid → pop-up gagal umum; tanpa pesan → tanpa pop-up |
 | `PagesRedesignTest` | 11 | Halaman 404/429/500; Baca Nanti; filter notifikasi; ringkasan & cetak laporan; detail artikel penulis (pratinjau, kelengkapan, Google); waktu baca tidak tampil; form bertahap + penghitung kata; statistik dashboard |
 | `SecurityTest` | 5 | Header keamanan di semua respons termasuk 404; HSTS hanya lewat HTTPS; sesi lain keluar saat password berubah; sesi yang mengganti password tetap login; ganti nama tidak mengeluarkan |
-| `LocaleTest` | 7 | Bawaan Indonesia + tombol bahasa; ganti ke English & bertahan (isi artikel tetap Indonesia); bahasa tak dikenal ditolak; area penulis tetap Indonesia tanpa tombol bahasa; 404 ikut bahasa; pop-up & pemisah ribuan ikut bahasa; setiap teks publik punya terjemahan (+ kunci `trans_choice` di `id.json`) |
+| `LocaleTest` | 8 | Bawaan Indonesia + tombol bahasa; ganti ke English & bertahan (isi artikel tetap Indonesia); bahasa tak dikenal ditolak; area penulis (dashboard, Artikel Saya, form tulis) & pesan validasi ikut bahasa; halaman admin (Review, Laporan, Kelola Pengguna) & notifikasi ikut bahasa (templat + data); 404 ikut bahasa; pop-up & pemisah ribuan ikut bahasa; setiap teks di view/`app/Http`/notifikasi punya terjemahan (+ kunci `trans_choice` di `id.json`) |
 | `HeartOnlySiteTest` | 4 | Kolom kategori sudah tidak ada, beranda bertema jantung tanpa filter jenis, tombol bagikan & konsultasi jantung, migration menjadikan artikel non-jantung Draft sebelum kolom dihapus |
 
 ### Checklist uji manual (browser) — semua ✅ (2026-10-19)
@@ -295,8 +296,6 @@ Coblong, Kota Bandung, Jawa Barat 40134 · Buka setiap hari, 24 jam · Telepon (
 
 **Menunggu / backlog:**
 - [ ] Akreditasi CMI (`CLINIC_ACCREDITATION`) — tunggu data dari user, jangan dikarang.
-- [ ] Terjemahan English tahap berikutnya (bila diminta): halaman Baca Nanti, Notifikasi, Kelola Akun (isi halaman
-  masih Indonesia; teks notifikasi tersimpan di database dalam Bahasa Indonesia), lalu area penulis/admin.
 - [ ] Link Google Maps resmi (`CLINIC_MAPS_URL`) — sementara link pencarian dari alamat.
 - [ ] `npm run build` sebelum dikumpulkan / deploy; isi `CLINIC_*` di `.env` server; jalankan "Checklist keamanan
   saat deploy" & "Checklist SEO saat deploy" di README.
@@ -330,6 +329,19 @@ bawah "Git di-init ulang".
   (UI & judul; sebelumnya Plus Jakarta Sans), **Roboto = `font-article`** (huruf artikel: paragraf `.article-content` + judul artikel di beranda, Baca Nanti, 404;
   subjudul di dalam isi tetap Inter; sejak 2026-10-29 menggantikan Lora/`font-serif` atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
+- [x] **Ganti bahasa juga di area penulis/admin & halaman akun** (2026-10-30). `SetLocale` tidak lagi memaksa `id` di
+  `/dashboard…`; tombol bahasa tampil di semua halaman. Dibungkus `__()`: dashboard, `articles/{index,_form,_seo-panel,
+  _reviewer-select,create,edit,show,report}`, `review/index`, `users/*`, `bookmarks/index`, `notifications/index`,
+  `profile/edit`, komponen `status-badge` (Published/Menunggu Review/Draft), `review-note`, `notification-item`;
+  pesan flash ArticleController/ArticleReviewController/UserController/ProfileController; `attributes()`/`messages()`
+  `ArticleRequest` & `UserRequest` + `validate(attributes:)` (pesan validasi Inggris: "The title field is required.").
+  JS `article-form.js` & `seo-panel.js` membaca templat dari `data-text-*` (`:count kata`, `:length karakter · ideal
+  :min–:max`, `:passed dari :total`, `(sekarang :length)`). **Notifikasi** kini disimpan `message` = templat Indonesia +
+  `replace` (mis. `:name mengomentari artikel Anda.` + `{name}`), diterjemahkan saat tampil; notifikasi lama (kalimat jadi)
+  tetap tampil apa adanya. `lang/en.json` 480 entri; kunci `trans_choice` baru (`:count artikel`, `:count kali`, `:count
+  kali dibaca`, `:count artikel tersimpan`, `artikel`) juga di `id.json`. EN "Artikel" = "Articles" (judul kolom/jumlah).
+  Uji: screenshot CDP dashboard/form+SEO/detail/laporan/pengguna dalam English; pemindai teks tanpa `__()` bersih.
+  `LocaleTest` 8 test (2 baru, terbukti gagal bila `__()` notifikasi atau nama kolom validasi dilepas) → 151 test / 646.
 - [x] **Tombol Daftar dihapus dari navbar + pilihan bahasa Indonesia/English** (2026-10-30). Navbar tamu hanya **Masuk**
   (kini `btn-primary`, di ponsel tanpa ikon & `whitespace-nowrap`); daftar lewat halaman Masuk & footer. Bahasa — cakupan
   dipilih user: **halaman publik dulu**. `config('app.supported_locales')` (id, en) · `POST /bahasa` → `LocaleController`

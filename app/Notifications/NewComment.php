@@ -14,7 +14,12 @@ class NewComment extends ArticleNotification
 
     protected function message(): string
     {
-        return $this->comment->user->name.' mengomentari artikel Anda.';
+        return ':name mengomentari artikel Anda.';
+    }
+
+    protected function replace(): array
+    {
+        return ['name' => $this->comment->user->name];
     }
 
     protected function url(): string

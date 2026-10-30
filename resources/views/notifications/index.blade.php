@@ -1,15 +1,15 @@
 @extends('layouts.app')
 
-@section('title', 'Notifikasi')
+@section('title', __('Notifikasi'))
 
 @section('hero')
-    <x-page-header title="Notifikasi" subtitle="Kabar terbaru tentang artikel dan komentar untuk Anda.">
+    <x-page-header :title="__('Notifikasi')" :subtitle="__('Kabar terbaru tentang artikel dan komentar untuk Anda.')">
         @if ($unreadCount > 0)
             <x-slot:actions>
                 <form action="{{ route('notifications.read-all') }}" method="POST">
                     @csrf
                     <button type="submit" class="btn btn-secondary">
-                        <x-icon name="check" size="size-4" /> Tandai semua dibaca
+                        <x-icon name="check" size="size-4" /> {{ __('Tandai semua dibaca') }}
                     </button>
                 </form>
             </x-slot:actions>
@@ -20,19 +20,19 @@
 @section('content')
     @php
         $tabs = [
-            ['label' => 'Semua', 'filter' => null, 'count' => $totalCount],
-            ['label' => 'Belum dibaca', 'filter' => 'belum-dibaca', 'count' => $unreadCount],
+            ['label' => __('Semua'), 'filter' => null, 'count' => $totalCount],
+            ['label' => __('Belum dibaca'), 'filter' => 'belum-dibaca', 'count' => $unreadCount],
         ];
         // Kelompok waktu: Hari ini / Kemarin / tanggal — lebih mudah dipahami daripada daftar panjang tanpa jeda.
         $groups = collect($notifications->items())->groupBy(fn ($notification) => match (true) {
-            $notification->created_at->isToday() => 'Hari ini',
-            $notification->created_at->isYesterday() => 'Kemarin',
+            $notification->created_at->isToday() => __('Hari ini'),
+            $notification->created_at->isYesterday() => __('Kemarin'),
             default => $notification->created_at->translatedFormat('d F Y'),
         });
     @endphp
 
     <div class="mx-auto max-w-3xl">
-        <nav class="mb-6 flex gap-1 rounded-lg bg-gray-100 p-1 sm:w-fit" aria-label="Filter notifikasi">
+        <nav class="mb-6 flex gap-1 rounded-lg bg-gray-100 p-1 sm:w-fit" aria-label="{{ __('Filter notifikasi') }}">
             @foreach ($tabs as $tab)
                 @php($isActive = $onlyUnread === ($tab['filter'] !== null))
                 <a href="{{ route('notifications.index', array_filter(['filter' => $tab['filter']])) }}"
@@ -57,9 +57,9 @@
                 <span class="mx-auto flex size-16 items-center justify-center rounded-full bg-brand-50 text-brand-600">
                     <x-icon name="bell" size="size-7" />
                 </span>
-                <p class="mt-4 text-lg font-semibold text-gray-900">{{ $onlyUnread ? 'Semua notifikasi sudah dibaca' : 'Belum ada notifikasi' }}</p>
+                <p class="mt-4 text-lg font-semibold text-gray-900">{{ $onlyUnread ? __('Semua notifikasi sudah dibaca') : __('Belum ada notifikasi') }}</p>
                 <p class="mt-1 text-gray-600">
-                    {{ $onlyUnread ? 'Tidak ada kabar baru untuk Anda saat ini.' : 'Kabar tentang artikel baru dan komentar akan muncul di sini.' }}
+                    {{ $onlyUnread ? __('Tidak ada kabar baru untuk Anda saat ini.') : __('Kabar tentang artikel baru dan komentar akan muncul di sini.') }}
                 </p>
             </div>
         @else

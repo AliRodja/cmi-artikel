@@ -58,8 +58,8 @@ class ArticleController extends Controller
         }
 
         return redirect()->route('articles.show', $article)->with('success', $article->isInReview()
-            ? 'Artikel berhasil dibuat dan diajukan ke admin untuk direview.'
-            : 'Artikel berhasil dibuat.');
+            ? __('Artikel berhasil dibuat dan diajukan ke admin untuk direview.')
+            : __('Artikel berhasil dibuat.'));
     }
 
     public function show(Request $request, Article $article): View
@@ -114,8 +114,8 @@ class ArticleController extends Controller
         }
 
         return redirect()->route('articles.show', $article)->with('success', $article->isInReview()
-            ? 'Artikel berhasil diperbarui dan diajukan ke admin untuk direview.'
-            : 'Artikel berhasil diperbarui.');
+            ? __('Artikel berhasil diperbarui dan diajukan ke admin untuk direview.')
+            : __('Artikel berhasil diperbarui.'));
     }
 
     public function destroy(Request $request, Article $article): RedirectResponse
@@ -128,7 +128,7 @@ class ArticleController extends Controller
         // Admin yang menghapus artikel orang lain dikembalikan ke halaman review.
         $redirectRoute = $article->user_id === $request->user()->id ? 'articles.index' : 'review.index';
 
-        return redirect()->route($redirectRoute)->with('success', 'Artikel berhasil dihapus.');
+        return redirect()->route($redirectRoute)->with('success', __('Artikel berhasil dihapus.'));
     }
 
     private function deleteImage(Article $article): void

@@ -23,7 +23,9 @@ if (root) {
 
     const update = () => {
         const words = countWords(plainText(field('content').value));
-        root.querySelector('[data-word-count]').textContent = `${words.toLocaleString('id-ID')} kata`;
+        // Templat dari Blade (data-text-words, ikut bahasa); pemisah ribuan mengikuti <html lang>.
+        root.querySelector('[data-word-count]').textContent = root.dataset.textWords
+            .replace(':count', words.toLocaleString(document.documentElement.lang || 'id'));
 
         const hasImage = imageInput.files.length > 0
             || (imageInput.dataset.hasImage === '1' && !field('remove_image')?.checked);

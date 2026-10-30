@@ -9,6 +9,9 @@ use Illuminate\Notifications\Notification;
  * Dasar semua notifikasi artikel. Disimpan di tabel "notifications" (channel
  * database bawaan Laravel) lalu ditampilkan di lonceng navbar & halaman Notifikasi.
  * Setiap notifikasi cukup menentukan pesan, tujuan link, dan ikonnya.
+ *
+ * "message" disimpan sebagai templat Indonesia (mis. ":name mengomentari artikel Anda.") + "replace" (nilai :name),
+ * lalu diterjemahkan saat ditampilkan (components/notification-item), sehingga ikut bahasa pembaca.
  */
 abstract class ArticleNotification extends Notification
 {
@@ -25,6 +28,7 @@ abstract class ArticleNotification extends Notification
             'article_id' => $this->article->id,
             'title' => $this->article->title,
             'message' => $this->message(),
+            'replace' => $this->replace(),
             // Path relatif (tanpa domain) agar link tetap benar walau APP_URL berubah.
             'url' => $this->url(),
             'icon' => $this->icon(),
@@ -32,6 +36,12 @@ abstract class ArticleNotification extends Notification
     }
 
     abstract protected function message(): string;
+
+    /** Nilai untuk :placeholder di message(). */
+    protected function replace(): array
+    {
+        return [];
+    }
 
     abstract protected function url(): string;
 

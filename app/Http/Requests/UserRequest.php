@@ -37,18 +37,18 @@ class UserRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'name' => 'nama',
-            'profession' => 'gelar / profesi',
-            'email' => 'email',
-            'role' => 'peran',
-            'password' => 'password',
+            'name' => __('nama'),
+            'profession' => __('gelar / profesi'),
+            'email' => __('email'),
+            'role' => __('peran'),
+            'password' => __('password'),
         ];
     }
 
     public function messages(): array
     {
         return [
-            'role.prohibited' => 'Anda tidak dapat mengubah peran akun Anda sendiri.',
+            'role.prohibited' => __('Anda tidak dapat mengubah peran akun Anda sendiri.'),
         ];
     }
 }

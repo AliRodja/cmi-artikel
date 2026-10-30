@@ -46,7 +46,7 @@ class ArticleReviewController extends Controller
         // Opsional: dokter yang meninjau isi artikel sebelum diterbitkan.
         $validated = $request->validate(
             ['medical_reviewer_id' => ['nullable', 'integer', Rule::exists('users', 'id')->whereIn('role', [User::ROLE_ADMIN, User::ROLE_PENULIS])]],
-            attributes: ['medical_reviewer_id' => 'peninjau medis'],
+            attributes: ['medical_reviewer_id' => __('peninjau medis')],
         );
 
         $article->update([
@@ -57,7 +57,7 @@ class ArticleReviewController extends Controller
         ArticleNotifier::published($article, $request->user());
 
         return redirect()->route('review.index')
-            ->with('success', 'Artikel "'.$article->title.'" sudah diterbitkan.');
+            ->with('success', __('Artikel ":title" sudah diterbitkan.', ['title' => $article->title]));
     }
 
     public function sendBack(Request $request, Article $article): RedirectResponse
@@ -66,13 +66,13 @@ class ArticleReviewController extends Controller
 
         $validated = $request->validate(
             ['review_note' => ['required', 'string', 'max:1000']],
-            attributes: ['review_note' => 'catatan untuk penulis'],
+            attributes: ['review_note' => __('catatan untuk penulis')],
         );
 
         $article->update(['status' => Article::STATUS_DRAFT, 'review_note' => $validated['review_note']]);
         ArticleNotifier::returned($article);
 
         return redirect()->route('review.index')
-            ->with('success', 'Artikel "'.$article->title.'" dikembalikan ke penulis.');
+            ->with('success', __('Artikel ":title" dikembalikan ke penulis.', ['title' => $article->title]));
     }
 }

@@ -5,11 +5,11 @@
     $isAdmin = auth()->user()->isAdmin();
 
     $labels = [
-        Article::STATUS_DRAFT => ['label' => 'Draft', 'hint' => $isAdmin ? 'Disimpan, belum tampil di situs publik.' : 'Simpan dulu, belum dikirim ke admin.'],
+        Article::STATUS_DRAFT => ['label' => __('Draft'), 'hint' => $isAdmin ? __('Disimpan, belum tampil di situs publik.') : __('Simpan dulu, belum dikirim ke admin.')],
         Article::STATUS_REVIEW => $isAdmin
-            ? ['label' => 'Menunggu Review', 'hint' => 'Biarkan tetap di antrean review.']
-            : ['label' => 'Ajukan ke Admin', 'hint' => 'Admin meninjau dulu sebelum artikel tayang.'],
-        Article::STATUS_PUBLISHED => ['label' => 'Published', 'hint' => 'Langsung tampil untuk semua pengunjung.'],
+            ? ['label' => __('Menunggu Review'), 'hint' => __('Biarkan tetap di antrean review.')]
+            : ['label' => __('Ajukan ke Admin'), 'hint' => __('Admin meninjau dulu sebelum artikel tayang.')],
+        Article::STATUS_PUBLISHED => ['label' => __('Published'), 'hint' => __('Langsung tampil untuk semua pengunjung.')],
     ];
 
     // Pilihan status mengikuti aturan yang sama dengan validasi di ArticleRequest.
@@ -25,24 +25,25 @@
 @php
     // Kelengkapan artikel (diperbarui langsung oleh resources/js/article-form.js).
     $completeness = [
-        'title' => 'Judul jelas (minimal 10 karakter)',
-        'content' => 'Isi minimal 300 kata',
-        'image' => 'Gambar utama',
-        'sources' => 'Sumber rujukan',
-        'keyword' => 'Kata kunci SEO',
+        'title' => __('Judul jelas (minimal 10 karakter)'),
+        'content' => __('Isi minimal 300 kata'),
+        'image' => __('Gambar utama'),
+        'sources' => __('Sumber rujukan'),
+        'keyword' => __('Kata kunci SEO'),
     ];
 @endphp
 
-<div class="grid items-start gap-6 lg:grid-cols-3" data-article-form>
+{{-- data-text-words: templat penghitung kata untuk resources/js/article-form.js (ikut bahasa). --}}
+<div class="grid items-start gap-6 lg:grid-cols-3" data-article-form data-text-words="{{ __(':count kata') }}">
     {{-- Kolom utama: langkah 1–4 --}}
     <div class="min-w-0 space-y-6 lg:col-span-2">
         <section class="card p-6">
-            <x-form-step number="1" title="Judul artikel" subtitle="Judul yang jelas membantu pembaca dan Google memahami isi artikel." />
+            <x-form-step number="1" :title="__('Judul artikel')" :subtitle="__('Judul yang jelas membantu pembaca dan Google memahami isi artikel.')" />
 
             <div>
-                <label for="title" class="form-label">Judul</label>
+                <label for="title" class="form-label">{{ __('Judul') }}</label>
                 <input type="text" id="title" name="title" value="{{ old('title', $article?->title) }}" required maxlength="255"
-                       placeholder="mis. Gejala Serangan Jantung yang Sering Diabaikan"
+                       placeholder="{{ __('mis. Gejala Serangan Jantung yang Sering Diabaikan') }}"
                        @class(['form-input py-3 text-lg font-semibold', 'form-input-error' => $errors->has('title')])>
                 @error('title')
                     <p class="form-error">{{ $message }}</p>
@@ -51,30 +52,30 @@
         </section>
 
         <section class="card p-6">
-            <x-form-step number="2" title="Isi artikel" subtitle="Gunakan subjudul dan daftar agar mudah dibaca. Toolbar ikut menempel saat Anda menulis." />
+            <x-form-step number="2" :title="__('Isi artikel')" :subtitle="__('Gunakan subjudul dan daftar agar mudah dibaca. Toolbar ikut menempel saat Anda menulis.')" />
 
-            <label for="content-editor" class="sr-only">Isi Artikel</label>
+            <label for="content-editor" class="sr-only">{{ __('Isi artikel') }}</label>
             {{-- Trix menulis HTML ke input tersembunyi ini; nilainya yang dikirim ke server. --}}
             <input type="hidden" id="content" name="content" value="{{ old('content', $article?->content_html) }}">
-            <trix-editor id="content-editor" input="content" placeholder="Mulai menulis isi artikel..."
+            <trix-editor id="content-editor" input="content" placeholder="{{ __('Mulai menulis isi artikel...') }}"
                          @class(['article-editor article-content', 'article-editor-error' => $errors->has('content')])></trix-editor>
             @error('content')
                 <p class="form-error">{{ $message }}</p>
             @enderror
             <p class="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm text-gray-600">
-                <span data-word-count>0 kata</span>
-                <span class="text-gray-500">Artikel kesehatan yang lengkap biasanya minimal 300 kata.</span>
+                <span data-word-count>{{ __(':count kata', ['count' => 0]) }}</span>
+                <span class="text-gray-500">{{ __('Artikel kesehatan yang lengkap biasanya minimal 300 kata.') }}</span>
             </p>
         </section>
 
         <section class="card p-6">
-            <x-form-step number="3" title="Sumber rujukan" subtitle="Opsional, tetapi membuat pembaca lebih percaya. Tampil di akhir artikel." />
+            <x-form-step number="3" :title="__('Sumber rujukan')" :subtitle="__('Opsional, tetapi membuat pembaca lebih percaya. Tampil di akhir artikel.')" />
 
-            <label for="sources" class="sr-only">Sumber rujukan</label>
+            <label for="sources" class="sr-only">{{ __('Sumber rujukan') }}</label>
             <textarea id="sources" name="sources" rows="4" maxlength="5000"
-                      placeholder="Satu sumber per baris, mis.&#10;Kementerian Kesehatan RI, Pedoman Hipertensi 2024 https://kemkes.go.id/..."
+                      placeholder="{{ __('Satu sumber per baris, mis.') }}&#10;Kementerian Kesehatan RI, Pedoman Hipertensi 2024 https://kemkes.go.id/..."
                       @class(['form-input', 'form-input-error' => $errors->has('sources')])>{{ old('sources', $article?->sources) }}</textarea>
-            <p class="mt-1 text-xs text-gray-500">Satu sumber per baris. Tautan yang diawali http:// atau https:// otomatis bisa diklik.</p>
+            <p class="mt-1 text-xs text-gray-500">{{ __('Satu sumber per baris. Tautan yang diawali http:// atau https:// otomatis bisa diklik.') }}</p>
             @error('sources')
                 <p class="form-error">{{ $message }}</p>
             @enderror
@@ -86,13 +87,13 @@
     {{-- Sidebar: ikut menempel saat scroll (bisa di-scroll sendiri bila lebih tinggi dari layar). --}}
     <aside class="min-w-0 space-y-6 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pb-2">
         <section class="card p-5">
-            <h2 class="font-bold text-gray-900">Publikasi</h2>
+            <h2 class="font-bold text-gray-900">{{ __('Publikasi') }}</h2>
             @unless ($isAdmin)
-                <p class="mt-1 text-sm text-gray-600">Artikel tayang setelah disetujui admin.</p>
+                <p class="mt-1 text-sm text-gray-600">{{ __('Artikel tayang setelah disetujui admin.') }}</p>
             @endunless
 
             <fieldset class="mt-4 space-y-2">
-                <legend class="sr-only">Status</legend>
+                <legend class="sr-only">{{ __('Status') }}</legend>
                 @foreach ($statusOptions as $option)
                     <label class="flex cursor-pointer gap-3 rounded-lg border border-gray-200 p-3 transition has-checked:border-brand-500 has-checked:bg-brand-50/60">
                         <input type="radio" name="status" value="{{ $option['value'] }}" @checked($currentStatus === $option['value'])
@@ -118,13 +119,13 @@
                 <button type="submit" class="btn btn-primary w-full py-2.5">
                     <x-icon name="check" size="size-4" /> {{ $submitLabel }}
                 </button>
-                <a href="{{ $cancelUrl }}" class="btn btn-secondary w-full py-2.5">Batal</a>
+                <a href="{{ $cancelUrl }}" class="btn btn-secondary w-full py-2.5">{{ __('Batal') }}</a>
             </div>
         </section>
 
         <section class="card p-5">
             <div class="flex items-center justify-between gap-3">
-                <h2 class="font-bold text-gray-900">Kelengkapan artikel</h2>
+                <h2 class="font-bold text-gray-900">{{ __('Kelengkapan artikel') }}</h2>
                 <span class="text-sm font-semibold text-gray-700" data-completeness-score></span>
             </div>
             <div class="mt-3 h-2 overflow-hidden rounded-full bg-gray-100">
@@ -139,19 +140,19 @@
                     </li>
                 @endforeach
             </ul>
-            <p class="mt-3 text-xs text-gray-500">Hanya judul dan isi yang wajib. Sisanya membuat artikel lebih lengkap dan tepercaya.</p>
+            <p class="mt-3 text-xs text-gray-500">{{ __('Hanya judul dan isi yang wajib. Sisanya membuat artikel lebih lengkap dan tepercaya.') }}</p>
         </section>
 
         <section class="card p-5">
-            <h2 class="font-bold text-gray-900">Gambar Utama</h2>
-            <p class="mt-1 text-sm text-gray-600">Opsional · JPG, PNG, atau WebP · maks 2 MB</p>
+            <h2 class="font-bold text-gray-900">{{ __('Gambar Utama') }}</h2>
+            <p class="mt-1 text-sm text-gray-600">{{ __('Opsional · JPG, PNG, atau WebP · maks 2 MB') }}</p>
 
             @if ($article?->image_url)
                 <div id="current-image" class="mt-4">
-                    <img src="{{ $article->image_url }}" alt="Gambar saat ini" class="aspect-[16/10] w-full rounded-lg object-cover">
+                    <img src="{{ $article->image_url }}" alt="{{ __('Gambar saat ini') }}" class="aspect-[16/10] w-full rounded-lg object-cover">
                     <label class="mt-2 flex items-center gap-2 text-sm text-gray-700">
                         <input type="checkbox" id="remove_image" name="remove_image" value="1" class="size-4 rounded border-gray-300 accent-red-600" @checked(old('remove_image'))>
-                        Hapus gambar ini
+                        {{ __('Hapus gambar ini') }}
                     </label>
                 </div>
             @endif
@@ -167,7 +168,7 @@
                        class="absolute inset-0 size-full cursor-pointer opacity-0">
                 <x-icon name="cloud-arrow-up" size="size-8" class="mx-auto text-gray-500" />
                 <p class="mt-2 text-sm font-medium text-gray-700">
-                    {{ $article?->image_url ? 'Ganti gambar' : 'Pilih atau seret gambar ke sini' }}
+                    {{ $article?->image_url ? __('Ganti gambar') : __('Pilih atau seret gambar ke sini') }}
                 </p>
                 <p id="image-name" class="mt-1 truncate text-xs text-gray-500"></p>
             </div>
@@ -175,7 +176,7 @@
                 <p class="form-error">{{ $message }}</p>
             @enderror
 
-            <img id="image-preview" alt="Preview gambar baru" class="mt-4 hidden aspect-[16/10] w-full rounded-lg object-cover">
+            <img id="image-preview" alt="{{ __('Preview gambar baru') }}" class="mt-4 hidden aspect-[16/10] w-full rounded-lg object-cover">
         </section>
     </aside>
 </div>

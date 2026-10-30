@@ -9,7 +9,12 @@ class ArticleReturned extends ArticleNotification
 {
     protected function message(): string
     {
-        return 'Artikel Anda dikembalikan admin: "'.Str::limit((string) $this->article->review_note, 80).'"';
+        return 'Artikel Anda dikembalikan admin: ":note"';
+    }
+
+    protected function replace(): array
+    {
+        return ['note' => Str::limit((string) $this->article->review_note, 80)];
     }
 
     protected function url(): string

@@ -367,11 +367,11 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
 ## 8. Keputusan Desain & Asumsi
 
 - **Autentikasi dibuat manual** (tanpa Breeze/Jetstream) agar setiap alurnya dipahami dan bisa dijelaskan.
-- **Dua bahasa tampilan (Indonesia & English)** untuk halaman publik (navbar, beranda, detail artikel, cari, footer,
-  Masuk/Daftar/Lupa password, pop-up, halaman error). Teks Indonesia ditulis langsung di Blade sebagai kunci
+- **Dua bahasa tampilan (Indonesia & English)** untuk seluruh situs: halaman publik, akun, serta area penulis & admin. Teks Indonesia ditulis langsung di Blade sebagai kunci
   `__('Masuk')`, terjemahannya di `lang/en.json`. Pilihan disimpan di sesi (`POST /bahasa`), dipasang middleware
-  `SetLocale`. Isi artikel tetap Bahasa Indonesia (ditandai `lang="id"`); area penulis/admin (`/dashboard…`) selalu
-  Indonesia. Mesin pencari selalu melihat versi Indonesia di URL yang sama, jadi tidak perlu URL `/en/`.
+  `SetLocale`. Berlaku di seluruh situs, termasuk area penulis/admin, pesan validasi, dan notifikasi (disimpan sebagai
+  templat + data lalu diterjemahkan saat tampil). Isi artikel tetap Bahasa Indonesia (ditandai `lang="id"`). Mesin
+  pencari selalu melihat versi Indonesia di URL yang sama, jadi tidak perlu URL `/en/`.
 - **Tiga peran: admin, penulis, pembaca** (kolom `users.role`), karena ini situs resmi klinik: tidak semua orang yang
   mendaftar boleh menulis, apalagi langsung menayangkan artikel kesehatan. Pendaftar baru = **pembaca**
   (komentar, Baca Nanti, notifikasi); penulis ditunjuk admin.
@@ -579,9 +579,9 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
 | `tests/Feature/UserManagementTest.php` | 8 | Hanya admin (penulis & pembaca **403**); cari nama/email + filter peran (search tidak menembus filter); tambah akun dengan peran, password ter-hash & bisa login; validasi (email unik, peran tidak dikenal, konfirmasi password); edit dengan password kosong = tidak diganti; reset password orang lain; admin tidak bisa mengubah peran / menghapus akun sendiri; hapus akun → artikel tetap tanpa penulis, komentar/Baca Nanti/notifikasi ikut terhapus |
 | `tests/Feature/SecurityTest.php` | 5 | Header keamanan (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) di semua halaman termasuk 404; HSTS hanya lewat HTTPS; sesi lain keluar saat password diganti, sesi yang mengganti tetap login, ganti nama tidak mengeluarkan |
-| `tests/Feature/LocaleTest.php` | 7 | Bawaan Indonesia + tombol bahasa; ganti ke English & bertahan di halaman lain (isi artikel tetap Indonesia, `lang="id"`); bahasa tak dikenal ditolak; area penulis tetap Indonesia & tanpa tombol bahasa; 404 (URL asing & artikel Draft) ikut bahasa; pop-up & pemisah ribuan ikut bahasa; setiap teks publik punya terjemahan di `lang/en.json` (dan kunci `trans_choice` terdaftar di `lang/id.json`) |
+| `tests/Feature/LocaleTest.php` | 8 | Bawaan Indonesia + tombol bahasa; ganti ke English & bertahan di halaman lain (isi artikel tetap Indonesia, `lang="id"`); bahasa tak dikenal ditolak; area penulis & pesan validasi ikut bahasa; halaman admin & notifikasi ikut bahasa; 404 ikut bahasa; pop-up & pemisah ribuan ikut bahasa; setiap teks punya terjemahan di `lang/en.json` (dan kunci `trans_choice` terdaftar di `lang/id.json`) |
 
-Hasil: **150 test, 631 assertion, semua lulus.**
+Hasil: **151 test, 646 assertion, semua lulus.**
 
 ---
 
