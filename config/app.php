@@ -82,6 +82,13 @@ return [
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
+    // Bahasa yang bisa dipilih pengunjung (tombol bahasa di navbar, App\Http\Middleware\SetLocale).
+    // Teks Indonesia ditulis langsung di Blade sebagai kunci __('...'); terjemahan Inggris di lang/en.json.
+    'supported_locales' => [
+        'id' => ['label' => 'Bahasa Indonesia', 'short' => 'ID'],
+        'en' => ['label' => 'English', 'short' => 'EN'],
+    ],
+
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
     /*

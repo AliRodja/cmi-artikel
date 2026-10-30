@@ -61,6 +61,15 @@ class AuthTest extends TestCase
             ->assertSee(route('register'));
     }
 
+    public function test_navbar_shows_only_login_button_for_guests(): void
+    {
+        $html = $this->get(route('home'))->assertOk()->getContent();
+        preg_match('/<header data-navbar.*?<\/header>/s', $html, $navbar);
+
+        $this->assertStringContainsString('href="'.route('login').'"', $navbar[0]);
+        $this->assertStringNotContainsString('href="'.route('register').'"', $navbar[0]);
+    }
+
     public function test_register_page_has_icons_hint_and_login_link(): void
     {
         $this->get('/register')

@@ -5,12 +5,12 @@
 @if ($results->isEmpty())
     <div class="px-4 py-10 text-center">
         <x-icon name="magnifying-glass" size="size-7" class="text-gray-300" />
-        <p class="mt-3 text-sm font-semibold text-gray-900">Tidak ada artikel untuk "{{ $term }}"</p>
-        <p class="mt-1 text-sm text-gray-500">Coba kata kunci lain, misalnya nama penyakit atau gejalanya.</p>
+        <p class="mt-3 text-sm font-semibold text-gray-900">{{ __('Tidak ada artikel untuk ":term"', ['term' => $term]) }}</p>
+        <p class="mt-1 text-sm text-gray-500">{{ __('Coba kata kunci lain, misalnya nama penyakit atau gejalanya.') }}</p>
     </div>
 @else
-    <p class="px-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">{{ $total }} artikel ditemukan</p>
-    <ul id="live-search-list" role="listbox" aria-label="Hasil pencarian" class="mt-2 space-y-1">
+    <p class="px-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">{{ trans_choice(':count artikel ditemukan', $total) }}</p>
+    <ul id="live-search-list" role="listbox" aria-label="{{ __('Hasil pencarian') }}" class="mt-2 space-y-1">
         @foreach ($results as $article)
             <li id="live-search-option-{{ $loop->index }}" role="option" aria-selected="false"
                 class="rounded-lg transition aria-selected:bg-brand-50">
@@ -32,6 +32,6 @@
     </ul>
     <a href="{{ route('home', ['search' => $term]) }}#daftar-artikel"
        class="mt-3 flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-brand-700 transition hover:bg-brand-50">
-        Lihat semua {{ $total }} hasil untuk "{{ $term }}" <x-icon name="chevron-right" size="size-3" />
+        {{ trans_choice('Lihat semua :count hasil untuk ":term"', $total, ['term' => $term]) }} <x-icon name="chevron-right" size="size-3" />
     </a>
 @endif

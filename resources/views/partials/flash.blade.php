@@ -8,21 +8,21 @@
 @php
     $toastTypes = [
         'success' => [
-            'title' => 'Berhasil',
+            'title' => __('Berhasil'),
             'icon' => 'check-circle',
             'role' => 'status',
             'iconClass' => 'bg-green-50 text-green-600',
             'timerClass' => 'bg-green-500 [--toast-duration:8s]',
         ],
         'status' => [
-            'title' => 'Informasi',
+            'title' => __('Informasi'),
             'icon' => 'info',
             'role' => 'status',
             'iconClass' => 'bg-brand-50 text-brand-600',
             'timerClass' => 'bg-brand-500 [--toast-duration:10s]',
         ],
         'error' => [
-            'title' => 'Gagal',
+            'title' => __('Gagal'),
             'icon' => 'exclamation-triangle',
             'role' => 'alert',
             'iconClass' => 'bg-red-50 text-red-600',
@@ -35,7 +35,7 @@
         ->filter(fn ($toast) => filled($toast['message']));
 
     if ($errors->any() && ! $toasts->has('error')) {
-        $toasts->put('error', $toastTypes['error'] + ['message' => 'Periksa kembali isian yang ditandai merah, lalu coba lagi.']);
+        $toasts->put('error', $toastTypes['error'] + ['message' => __('Periksa kembali isian yang ditandai merah, lalu coba lagi.')]);
     }
 @endphp
 
@@ -55,7 +55,7 @@
                     <button type="button" data-toast-close
                             class="-mt-1.5 -mr-1.5 flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700">
                         <x-icon name="x-mark" size="size-4" />
-                        <span class="sr-only">Tutup</span>
+                        <span class="sr-only">{{ __('Tutup') }}</span>
                     </button>
                 </div>
                 @if ($toast['timerClass'])

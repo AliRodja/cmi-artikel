@@ -23,7 +23,7 @@
 
         <div class="mt-5 flex items-center gap-2 border-t border-gray-100 pt-4">
             <x-avatar :name="$article->user?->name" />
-            <span class="text-sm font-medium text-gray-700">{{ $article->user?->name ?? 'Anonim' }}</span>
+            <span class="text-sm font-medium text-gray-700">{{ $article->user?->name ?? __('Anonim') }}</span>
         </div>
     </div>
 </article>

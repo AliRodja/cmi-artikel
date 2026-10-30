@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicArticleController;
@@ -24,6 +25,8 @@ Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
 Route::get('/artikel/{article}', [PublicArticleController::class, 'show'])->name('public.articles.show');
 // Live search panel cari navbar. Dibatasi 60 permintaan/menit per pengunjung (JS sudah memberi jeda saat mengetik).
 Route::get('/cari', [PublicArticleController::class, 'liveSearch'])->middleware('throttle:60,1')->name('articles.live-search');
+// Ganti bahasa tampilan (Indonesia / English), dari tombol bahasa di navbar.
+Route::post('/bahasa', LocaleController::class)->middleware('throttle:30,1')->name('locale.update');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
@@ -80,3 +83,7 @@ Route::middleware(['auth', 'writer'])->group(function () {
         });
     });
 });
+
+// URL yang tidak terdaftar tetap melewati grup "web" (sesi, login, bahasa), sehingga halaman 404 memakai bahasa
+// pilihan pengunjung dan navbar tahu siapa yang login.
+Route::fallback(fn () => abort(404));

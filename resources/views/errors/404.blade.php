@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Halaman Tidak Ditemukan')
+@section('title', __('Halaman Tidak Ditemukan'))
 @section('robots', 'noindex, follow')
 
 @section('content')
@@ -13,15 +13,15 @@
         }
     @endphp
 
-    <x-error-page code="404" icon="magnifying-glass" title="Halaman tidak ditemukan"
-                  message="Alamat yang Anda buka mungkin salah ketik, atau artikelnya sudah tidak ditayangkan lagi.">
-        <a href="{{ route('home') }}" class="btn btn-primary px-5 py-2.5"><x-icon name="newspaper" size="size-4" /> Ke Beranda</a>
-        <button type="button" data-dialog-open="search-panel" class="btn btn-secondary px-5 py-2.5"><x-icon name="magnifying-glass" size="size-4" /> Cari Artikel</button>
+    <x-error-page code="404" icon="magnifying-glass" :title="__('Halaman tidak ditemukan')"
+                  :message="__('Alamat yang Anda buka mungkin salah ketik, atau artikelnya sudah tidak ditayangkan lagi.')">
+        <a href="{{ route('home') }}" class="btn btn-primary px-5 py-2.5"><x-icon name="newspaper" size="size-4" /> {{ __('Ke Beranda') }}</a>
+        <button type="button" data-dialog-open="search-panel" class="btn btn-secondary px-5 py-2.5"><x-icon name="magnifying-glass" size="size-4" /> {{ __('Cari Artikel') }}</button>
 
         @if ($suggestions->isNotEmpty())
             <x-slot:after>
                 <div class="mt-12 text-left">
-                    <x-section-title title="Mungkin Anda mencari" />
+                    <x-section-title :title="__('Mungkin Anda mencari')" />
                     <ul class="divide-y divide-gray-200">
                         @foreach ($suggestions as $article)
                             <li>

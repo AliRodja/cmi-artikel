@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Lupa Password')
+@section('title', __('Lupa Password'))
 
 @php
     // Setelah link terkirim (flash "status" dari ForgotPasswordController), kartu berganti ke tampilan "Cek email Anda".
@@ -8,12 +8,12 @@
 @endphp
 
 @section('content')
-    <x-auth-card :title="$linkSent ? 'Cek email Anda' : 'Lupa password'"
-                 :subtitle="$linkSent ? 'Link untuk membuat password baru sudah dikirim.' : 'Masukkan email akun Anda. Kami akan mengirim link untuk membuat password baru.'">
+    <x-auth-card :title="$linkSent ? __('Cek email Anda') : __('Lupa password')"
+                 :subtitle="$linkSent ? __('Link untuk membuat password baru sudah dikirim.') : __('Masukkan email akun Anda. Kami akan mengirim link untuk membuat password baru.')">
         <x-slot:aside>
             @include('auth._aside', [
-                'heading' => 'Lupa password?',
-                'text' => 'Tidak masalah. Kami bantu Anda membuat password baru melalui link yang dikirim ke email Anda.',
+                'heading' => __('Lupa password?'),
+                'text' => __('Tidak masalah. Kami bantu Anda membuat password baru melalui link yang dikirim ke email Anda.'),
             ])
         </x-slot:aside>
 
@@ -23,24 +23,24 @@
                     <x-icon name="envelope-open" size="size-5" />
                 </span>
                 <p class="text-sm text-green-900">
-                    Kami sudah mengirim link ke <span class="font-semibold break-all">{{ old('email') }}</span>.
-                    Link berlaku <span class="font-semibold">{{ config('auth.passwords.users.expire') }} menit</span>.
+                    {{ __('Kami sudah mengirim link ke') }} <span class="font-semibold break-all">{{ old('email') }}</span>.
+                    {{ __('Link berlaku') }} <span class="font-semibold">{{ __(':count menit', ['count' => config('auth.passwords.users.expire')]) }}</span>.
                 </p>
             </div>
 
             <ul class="mt-5 space-y-2 text-sm text-gray-600">
                 <li class="flex gap-2">
                     <x-icon name="check" size="size-3" class="mt-1 text-brand-600" />
-                    <span>Buka email tersebut, lalu klik tombol <span class="font-medium text-gray-900">Reset Password</span>.</span>
+                    <span>{{ __('Buka email tersebut, lalu klik tombol') }} <span class="font-medium text-gray-900">{{ __('Reset Password') }}</span>.</span>
                 </li>
                 <li class="flex gap-2">
                     <x-icon name="check" size="size-3" class="mt-1 text-brand-600" />
-                    <span>Belum masuk? Periksa folder Spam atau Promosi.</span>
+                    <span>{{ __('Belum masuk? Periksa folder Spam atau Promosi.') }}</span>
                 </li>
             </ul>
 
             <a href="{{ route('login') }}" class="btn btn-primary mt-6 w-full py-2.5">
-                <x-icon name="login" size="size-4" /> Kembali ke halaman Masuk
+                <x-icon name="login" size="size-4" /> {{ __('Kembali ke halaman Masuk') }}
             </a>
 
             {{-- Kirim ulang memakai form yang sama. Laravel membatasi 1 permintaan per 60 detik per email. --}}
@@ -48,29 +48,29 @@
                 @csrf
                 <input type="hidden" name="email" value="{{ old('email') }}">
                 <button type="submit" class="btn btn-secondary w-full py-2.5">
-                    <x-icon name="rotate" size="size-4" /> Kirim ulang link
+                    <x-icon name="rotate" size="size-4" /> {{ __('Kirim ulang link') }}
                 </button>
             </form>
         @else
             <form action="{{ route('password.email') }}" method="POST">
                 @csrf
 
-                <x-input name="email" label="Email" type="email" icon="envelope" placeholder="nama@email.com"
-                         hint="Gunakan email yang Anda pakai saat mendaftar." required autofocus autocomplete="email" />
+                <x-input name="email" :label="__('Email')" type="email" icon="envelope" :placeholder="__('nama@email.com')"
+                         :hint="__('Gunakan email yang Anda pakai saat mendaftar.')" required autofocus autocomplete="email" />
 
                 <button type="submit" class="btn btn-primary mt-2 w-full py-2.5">
-                    <x-icon name="paper-plane" size="size-4" /> Kirim link reset password
+                    <x-icon name="paper-plane" size="size-4" /> {{ __('Kirim link reset password') }}
                 </button>
             </form>
 
             <a href="{{ route('login') }}" class="link mt-6 flex items-center justify-center gap-1.5 text-sm">
-                <x-icon name="arrow-left" size="size-3" /> Ingat password? Kembali ke halaman Masuk
+                <x-icon name="arrow-left" size="size-3" /> {{ __('Ingat password? Kembali ke halaman Masuk') }}
             </a>
         @endif
 
         <x-slot:footer>
             <a href="{{ route('home') }}" class="link inline-flex items-center gap-1.5">
-                <x-icon name="arrow-left" size="size-3" /> Kembali ke beranda
+                <x-icon name="arrow-left" size="size-3" /> {{ __('Kembali ke beranda') }}
             </a>
         </x-slot:footer>
     </x-auth-card>

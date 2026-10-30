@@ -77,7 +77,8 @@ document.querySelectorAll('[data-password-toggle]').forEach((button) => {
         const willShow = input.type === 'password';
         input.type = willShow ? 'text' : 'password';
         button.setAttribute('aria-pressed', String(willShow));
-        button.setAttribute('aria-label', willShow ? 'Sembunyikan password' : 'Tampilkan password');
+        // Label dari Blade (data-label-*) agar ikut bahasa yang dipilih.
+        button.setAttribute('aria-label', willShow ? button.dataset.labelHide : button.dataset.labelShow);
         showIcon.hidden = willShow;
         hideIcon.hidden = !willShow;
         input.focus();
@@ -105,7 +106,7 @@ document.querySelectorAll('[data-password-match]').forEach((status) => {
         }
         const match = confirmation.value === password.value;
         status.hidden = false;
-        status.textContent = match ? '✓ Password cocok' : 'Password belum sama';
+        status.textContent = match ? status.dataset.textMatch : status.dataset.textMismatch;
         status.classList.toggle('text-green-700', match);
         status.classList.toggle('text-amber-700', !match);
     };

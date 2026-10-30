@@ -41,7 +41,7 @@ Aturan kerja untuk Claude. **Produk, fitur, tech stack, rute, model data, test c
 npm run dev                 # terminal 1 (biarkan berjalan)
 php artisan optimize:clear  # terminal 2
 php artisan serve           # http://localhost:8000
-php artisan test            # 142 test per 2026-10-30
+php artisan test            # 150 test per 2026-10-30
 npm run build               # wajib sebelum dikumpulkan / deploy
 ```
 - Dev server Vite tidak mengenali class Tailwind di file Blade baru → `touch resources/css/app.css`. Mengubah
@@ -72,6 +72,8 @@ npm run build               # wajib sebelum dikumpulkan / deploy
 - Kontak klinik di `config/clinic.php` (`CLINIC_*`): WhatsApp **tombol Konsultasi 0821-2159-0000**
   (`whatsapp_consultation_url`) berbeda dengan **WhatsApp footer 0811 9161 166** (`whatsapp_url`) — pilihan user.
 - SEO terpusat di `App\Support\Seo` + `partials/seo`; JSON-LD wajib `Seo::JSON_FLAGS` (`JSON_HEX_TAG`).
+- Bahasa: `config('app.supported_locales')`, `SetLocale` (sesi `locale`), `POST /bahasa` (`LocaleController`),
+  `partials/locale-menu`. Navbar tamu hanya tombol **Masuk** (tombol Daftar dihapus atas permintaan user).
 - Keamanan: autentikasi **session, bukan JWT** (tanpa API; kalau kelak butuh API → Sanctum). `SecurityHeaders` (global)
   & `AuthenticateSession` (grup `web`) di `bootstrap/app.php` — jangan dilepas. Halaman yang dimuat dalam iframe situs
   lain akan diblokir (`X-Frame-Options: SAMEORIGIN`); CSP belum ada, uji skrip/font/Vite bila menambahkannya.
@@ -87,6 +89,10 @@ npm run build               # wajib sebelum dikumpulkan / deploy
   `fa-*` langsung. Ukuran ikon = font-size.
 - Huruf: `font-sans` = Inter (UI & judul), `font-article` = Roboto (isi artikel & judul artikel di daftar). Tanggal
   lewat `<x-date>`. Validasi lewat Form Request dengan pesan Bahasa Indonesia.
+- **Dua bahasa (halaman publik):** teks antarmuka baru di halaman publik/auth/error/partial/komponen publik WAJIB lewat
+  `__('Teks Indonesia')` (kunci = teks Indonesia) + terjemahan di `lang/en.json`; teks dengan angka →
+  `trans_choice(...)` + `Number::format()`, dan kuncinya juga di `lang/id.json`. Teks untuk JS dikirim lewat `data-*`.
+  `LocaleTest` gagal bila ada kunci tanpa terjemahan. Area `/dashboard…` selalu Indonesia (belum diterjemahkan).
 - Ikuti gaya kode sekitar (komentar Bahasa Indonesia secukupnya, penamaan Laravel).
 
 ## Keputusan produk (jangan dilanggar tanpa izin user)
@@ -103,7 +109,11 @@ npm run build               # wajib sebelum dikumpulkan / deploy
 - Blade: satu directive per baris (`@endif@endforeach` menempel tidak dikompilasi).
 - Kolom grid berisi konten panjang perlu `min-w-0`; pembungkus `overflow-x-auto` wajib `relative` (teks `sr-only`
   bisa melebarkan halaman di ponsel).
-- PHP 8.5 menolak offset array `null` → akses null-safe.
+- PHP 8.5 menolak offset array `null` (juga kunci `array_key_exists`) → akses null-safe / cast `(string)`.
+- `trans_choice()` memakai bahasa cadangan (`en`) bila kunci tidak ada di bahasa aktif → halaman Indonesia tampil
+  Inggris. Kunci `trans_choice` didaftarkan juga di `lang/id.json` (nilai sama). `__()` biasa tidak begitu.
+- Middleware yang harus jalan sebelum route model binding (mis. `SetLocale`) → `appendToPriorityList(after:
+  StartSession::class, …)`; URL tak terdaftar tidak lewat grup `web` kecuali ada `Route::fallback`.
 - Laravel 13: middleware CSRF = `PreventRequestForgery`; request `Sec-Fetch-Site: same-origin` lolos tanpa token
   (419 diuji dengan curl / memalsukan instance di test).
 - `env()` membaca `$_SERVER`/`$_ENV` lebih dulu (dari `.env`) → test yang menimpa env harus menimpa ketiganya.

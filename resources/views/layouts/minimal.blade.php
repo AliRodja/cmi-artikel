@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     {{--
         Layout minimal untuk halaman error server (500, 503): tanpa navbar/footer/View Composer, sehingga tetap

@@ -29,7 +29,7 @@ class CommentController extends Controller
         ArticleNotifier::commented($comment);
 
         return redirect(route('public.articles.show', $article).'#komentar')
-            ->with('success', 'Komentar Anda sudah ditambahkan.');
+            ->with('success', __('Komentar Anda sudah ditambahkan.'));
     }
 
     public function destroy(Comment $comment): RedirectResponse
@@ -39,6 +39,6 @@ class CommentController extends Controller
         $comment->delete();
 
         return redirect(route('public.articles.show', $comment->article).'#komentar')
-            ->with('success', 'Komentar dihapus.');
+            ->with('success', __('Komentar dihapus.'));
     }
 }

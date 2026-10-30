@@ -29,7 +29,7 @@ class BookmarkController extends Controller
         $result = $request->user()->bookmarks()->toggle($article->getKey());
 
         return back()->with('success', $result['attached']
-            ? 'Artikel disimpan ke Baca Nanti.'
-            : 'Artikel dihapus dari Baca Nanti.');
+            ? __('Artikel disimpan ke Baca Nanti.')
+            : __('Artikel dihapus dari Baca Nanti.'));
     }
 }

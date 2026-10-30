@@ -10,13 +10,13 @@
 <form action="{{ route('bookmarks.toggle', $article) }}" method="POST">
     @csrf
     <button type="submit" aria-pressed="{{ $isBookmarked ? 'true' : 'false' }}"
-            title="{{ $isBookmarked ? 'Hapus dari Baca Nanti' : 'Simpan ke Baca Nanti' }}"
+            title="{{ $isBookmarked ? __('Hapus dari Baca Nanti') : __('Simpan ke Baca Nanti') }}"
             @class([$class, 'text-brand-700' => $isBookmarked, 'text-gray-600 hover:text-brand-700' => ! $isBookmarked])>
         <x-icon :name="$isBookmarked ? 'bookmark-solid' : 'bookmark'" :size="$withLabel ? 'size-3' : 'size-4'" />
         @if ($withLabel)
-            {{ $isBookmarked ? 'Tersimpan' : 'Simpan' }}
+            {{ $isBookmarked ? __('Tersimpan') : __('Simpan') }}
         @else
-            <span class="sr-only">{{ $isBookmarked ? 'Tersimpan di Baca Nanti' : 'Simpan ke Baca Nanti' }}</span>
+            <span class="sr-only">{{ $isBookmarked ? __('Tersimpan di Baca Nanti') : __('Simpan ke Baca Nanti') }}</span>
         @endif
     </button>
 </form>

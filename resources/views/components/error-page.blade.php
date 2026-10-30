@@ -5,7 +5,7 @@
     <span class="mx-auto flex size-20 items-center justify-center rounded-full bg-brand-50 text-brand-600">
         <x-icon :name="$icon" size="size-8" />
     </span>
-    <p class="mt-6 text-sm font-semibold tracking-wider text-brand-700 uppercase">Kode {{ $code }}</p>
+    <p class="mt-6 text-sm font-semibold tracking-wider text-brand-700 uppercase">{{ __('Kode :code', ['code' => $code]) }}</p>
     <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">{{ $title }}</h1>
     <p class="mx-auto mt-3 max-w-lg text-base leading-relaxed text-gray-600">{{ $message }}</p>
 

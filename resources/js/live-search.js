@@ -69,7 +69,11 @@ if (input) {
             if (error.name === 'AbortError') {
                 return;
             }
-            results.innerHTML = '<p class="px-2 py-6 text-center text-sm text-gray-500">Pencarian langsung sedang tidak tersedia. Tekan Enter untuk mencari.</p>';
+            // Pesan dari Blade (data-live-search-error) agar ikut bahasa yang dipilih.
+            const message = document.createElement('p');
+            message.className = 'px-2 py-6 text-center text-sm text-gray-500';
+            message.textContent = form.dataset.liveSearchError;
+            results.replaceChildren(message);
             lastTerm = '';
         } finally {
             results.removeAttribute('aria-busy');

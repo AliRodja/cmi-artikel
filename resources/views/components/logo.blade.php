@@ -9,7 +9,7 @@
 
 <span {{ $attributes->class('flex items-center gap-2.5') }}>
     @if ($logoPath)
-        <img src="{{ asset($logoPath) }}" alt="Logo {{ config('app.name') }}" class="h-10 w-auto">
+        <img src="{{ asset($logoPath) }}" alt="{{ __('Logo :site', ['site' => config('app.name')]) }}" @class(['w-auto', 'h-8 sm:h-10' => $compact, 'h-10' => ! $compact])>
     @else
         <span @class([
             'flex size-9 items-center justify-center rounded-lg text-sm font-extrabold',

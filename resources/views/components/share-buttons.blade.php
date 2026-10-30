@@ -31,19 +31,20 @@
 --}}
 <div {{ $attributes->class('flex items-center gap-2') }}>
     @foreach ($shareLinks as $link)
-        <a href="{{ $link['href'] }}" target="_blank" rel="noopener noreferrer" title="Bagikan ke {{ $link['label'] }}"
+        <a href="{{ $link['href'] }}" target="_blank" rel="noopener noreferrer" title="{{ __('Bagikan ke :network', ['network' => $link['label']]) }}"
            @class(['share-btn', 'w-auto gap-2 px-4 text-sm font-semibold' => $labels, $link['class'], 'hover:text-white'])>
             <x-icon :name="$link['icon']" size="size-5" />
-            <span @class(['sr-only' => ! $labels])>@unless ($labels)Bagikan ke @endunless{{ $link['label'] }}</span>
+            <span @class(['sr-only' => ! $labels])>{{ $labels ? $link['label'] : __('Bagikan ke :network', ['network' => $link['label']]) }}</span>
         </a>
     @endforeach
 
     {{-- Ditangani JS di public/show (data-copy-link). Ikon centang disembunyikan dengan atribut hidden,
          bukan class: CSS Font Awesome yang tak berlayer menimpa class "hidden" Tailwind. --}}
-    <button type="button" data-copy-link="{{ $shareUrl }}" title="Salin tautan"
+    <button type="button" data-copy-link="{{ $shareUrl }}" title="{{ __('Salin tautan') }}"
+            data-text-copy="{{ __('Salin tautan') }}" data-text-copied="{{ __('Tautan disalin') }}" data-text-failed="{{ __('Gagal menyalin') }}"
             @class(['share-btn text-gray-700 hover:bg-brand-600 hover:text-white', 'w-auto gap-2 px-4 text-sm font-semibold' => $labels])>
         <x-icon name="link" size="size-4" data-copy-icon />
         <x-icon name="check" size="size-4" data-copy-done hidden />
-        <span @class(['sr-only' => ! $labels]) data-copy-label>Salin tautan</span>
+        <span @class(['sr-only' => ! $labels]) data-copy-label>{{ __('Salin tautan') }}</span>
     </button>
 </div>

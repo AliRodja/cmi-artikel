@@ -3,11 +3,13 @@
 use App\Http\Middleware\EnsureUserCanWrite;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Session\Middleware\AuthenticateSession;
+use Illuminate\Session\Middleware\StartSession;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -27,7 +29,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Setiap sesi menyimpan sidik password. Bila password diganti (Kelola Akun, reset lewat email, atau admin),
         // sesi di perangkat lain tidak cocok lagi dan otomatis keluar; sesi yang mengganti tetap login.
         // Cookie "ingat saya" juga dicek karena ikut memuat sidik password.
-        $middleware->web(append: [AuthenticateSession::class]);
+        $middleware->web(append: [AuthenticateSession::class, SetLocale::class]);
+
+        // Bahasa dipasang tepat setelah sesi dimulai, sebelum route model binding: halaman 404 artikel Draft
+        // (binding gagal) pun tampil dalam bahasa pilihan.
+        $middleware->appendToPriorityList(after: StartSession::class, append: SetLocale::class);
 
         // User yang sudah login lalu membuka /login atau /register: pembaca ke beranda, lainnya ke dashboard.
         $middleware->redirectUsersTo(fn (Request $request) => $request->user()?->canWrite() ? route('dashboard') : route('home'));
@@ -37,7 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // sebelumnya (artikel tadi) sebagai tujuan redirect()->intended() di LoginController.
         $middleware->redirectGuestsTo(function (Request $request) {
             if ($request->routeIs('bookmarks.toggle')) {
-                $request->session()->flash('error', 'Artikel belum tersimpan. Silakan masuk terlebih dahulu.');
+                $request->session()->flash('error', __('Artikel belum tersimpan. Silakan masuk terlebih dahulu.'));
             }
 
             return route('login');
@@ -56,8 +62,8 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             $message = $request->routeIs('logout')
-                ? 'Anda belum keluar karena sesi halaman sudah kedaluwarsa. Silakan coba lagi.'
-                : 'Permintaan belum diproses karena halaman sudah terlalu lama dibuka. Silakan coba lagi.';
+                ? __('Anda belum keluar karena sesi halaman sudah kedaluwarsa. Silakan coba lagi.')
+                : __('Permintaan belum diproses karena halaman sudah terlalu lama dibuka. Silakan coba lagi.');
 
             return back()
                 ->withInput($request->except(['_token', 'password', 'password_confirmation']))

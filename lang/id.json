@@ -14,5 +14,10 @@
     "of": "dari",
     "results": "hasil",
     "Pagination Navigation": "Navigasi Halaman",
-    "Go to page :page": "Ke halaman :page"
+    "Go to page :page": "Ke halaman :page",
+    ":count kali dilihat": ":count kali dilihat",
+    ":count artikel untuk": ":count artikel untuk",
+    ":count artikel kesehatan jantung dari :site": ":count artikel kesehatan jantung dari :site",
+    ":count artikel ditemukan": ":count artikel ditemukan",
+    "Lihat semua :count hasil untuk \":term\"": "Lihat semua :count hasil untuk \":term\""
 }

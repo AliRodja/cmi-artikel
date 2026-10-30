@@ -26,14 +26,15 @@
         <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,var(--color-brand-700),transparent_45%)] opacity-70"></div>
 
         <div class="container-page relative py-12 sm:py-16">
-            <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-xs font-medium text-brand-300">
-                <a href="{{ route('home') }}" class="hover:text-white">Beranda</a>
+            <nav aria-label="{{ __('Breadcrumb') }}" class="flex flex-wrap items-center gap-2 text-xs font-medium text-brand-300">
+                <a href="{{ route('home') }}" class="hover:text-white">{{ __('Beranda') }}</a>
                 <x-icon name="chevron-right" size="size-3" class="text-brand-500" />
-                <a href="{{ route('home') }}#daftar-artikel" class="hover:text-white">Artikel Kesehatan Jantung</a>
+                <a href="{{ route('home') }}#daftar-artikel" class="hover:text-white">{{ __('Artikel Kesehatan Jantung') }}</a>
             </nav>
 
             <div class="mt-6 max-w-4xl">
-                <h1 class="text-3xl leading-[1.15] font-extrabold tracking-tight text-white sm:text-4xl lg:text-[2.75rem]">
+                {{-- lang="id": judul & isi artikel selalu Bahasa Indonesia, walau antarmuka sedang Inggris (lafal pembaca layar). --}}
+                <h1 lang="id" class="text-3xl leading-[1.15] font-extrabold tracking-tight text-white sm:text-4xl lg:text-[2.75rem]">
                     {{ $article->title }}
                 </h1>
 
@@ -41,8 +42,8 @@
                     <div class="flex items-center gap-3">
                         <x-avatar :name="$article->user?->name" size="md" tone="dark" />
                         <div class="leading-tight">
-                            <p class="font-semibold text-white">{{ $article->user?->name ?? 'Anonim' }}</p>
-                            <p class="text-xs">{{ $article->user?->profession ?? 'Penulis · '.config('app.name') }}</p>
+                            <p class="font-semibold text-white">{{ $article->user?->name ?? __('Anonim') }}</p>
+                            <p class="text-xs">{{ $article->user?->profession ?? __('Penulis').' · '.config('app.name') }}</p>
                         </div>
                     </div>
                     <span class="hidden h-8 w-px bg-white/15 sm:block"></span>
@@ -52,12 +53,12 @@
                     </span>
                     <span class="inline-flex items-center gap-1.5">
                         <x-icon name="eye" size="size-4" class="text-brand-300" />
-                        {{ number_format($article->view_count, 0, ',', '.') }} kali dilihat
+                        {{ trans_choice(':count kali dilihat', $article->view_count, ['count' => Number::format($article->view_count)]) }}
                     </span>
                     @if ($article->medicalReviewer)
                         <span class="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-white">
                             <x-icon name="shield" size="size-4" class="text-brand-300" />
-                            Ditinjau oleh {{ $article->medicalReviewer->name }}
+                            {{ __('Ditinjau oleh :name', ['name' => $article->medicalReviewer->name]) }}
                         </span>
                     @endif
                 </div>
@@ -70,11 +71,11 @@
     {{-- Tiga kolom di layar lebar: aksi (simpan & bagikan) | isi artikel | sidebar. Di ponsel tersusun ke bawah. --}}
     <div class="grid gap-8 lg:grid-cols-[3rem_minmax(0,1fr)_18rem] xl:gap-12">
         {{-- Kolom 1: rel aksi. Di layar lebar tersusun ke bawah dan ikut menempel saat scroll. --}}
-        <aside aria-label="Simpan dan bagikan artikel" class="lg:sticky lg:top-24 lg:self-start">
+        <aside aria-label="{{ __('Simpan dan bagikan artikel') }}" class="lg:sticky lg:top-24 lg:self-start">
             <div class="flex flex-wrap items-center gap-2 lg:flex-col lg:gap-3">
                 @include('public._bookmark-button', ['class' => 'share-btn'])
                 <span class="mx-1 h-6 w-px bg-gray-200 lg:mx-0 lg:h-px lg:w-6"></span>
-                <span class="text-[0.75rem] font-semibold tracking-wide text-gray-500 uppercase">Bagikan</span>
+                <span class="text-[0.75rem] font-semibold tracking-wide text-gray-500 uppercase">{{ __('Bagikan') }}</span>
                 <x-share-buttons :article="$article" class="lg:flex-col lg:gap-3" />
             </div>
         </aside>
@@ -88,7 +89,7 @@
 
                 <div class="px-6 py-8 sm:px-12 sm:py-10">
                     {{-- content_html sudah disanitasi (App\Support\ArticleContent), aman untuk {!! !!}. --}}
-                    <div class="article-content article-lead">{!! $article->content_html !!}</div>
+                    <div lang="id" class="article-content article-lead">{!! $article->content_html !!}</div>
                 </div>
 
                 {{-- Tinjauan medis & sumber rujukan: penanda kredibilitas informasi kesehatan. --}}
@@ -100,7 +101,7 @@
 
                 {{-- Akhir artikel: ajakan menyimpan & membagikan. --}}
                 <footer class="border-t border-gray-100 bg-gray-50/70 px-6 py-5 sm:px-12">
-                    <p class="text-sm font-semibold text-gray-900">Artikel ini bermanfaat? Bagikan ke keluarga &amp; teman.</p>
+                    <p class="text-sm font-semibold text-gray-900">{{ __('Artikel ini bermanfaat? Bagikan ke keluarga & teman.') }}</p>
                     <x-share-buttons :article="$article" labels class="mt-3 flex-wrap" />
                 </footer>
             </article>
@@ -109,9 +110,9 @@
                 <section class="card flex items-center gap-4 p-5 sm:p-6">
                     <x-avatar :name="$article->user->name" size="md" />
                     <div class="min-w-0 flex-1">
-                        <p class="text-xs font-semibold tracking-wider text-gray-500 uppercase">Ditulis oleh</p>
+                        <p class="text-xs font-semibold tracking-wider text-gray-500 uppercase">{{ __('Ditulis oleh') }}</p>
                         <p class="font-bold text-gray-900">{{ $article->user->name }}</p>
-                        <p class="text-sm text-gray-600">{{ $article->user->profession ?? 'Penulis di '.config('app.name') }}</p>
+                        <p class="text-sm text-gray-600">{{ $article->user->profession ?? __('Penulis di :site', ['site' => config('app.name')]) }}</p>
                     </div>
                     @include('public._bookmark-button', ['class' => 'btn btn-secondary btn-sm', 'withLabel' => true])
                 </section>
@@ -120,7 +121,7 @@
             {{-- Komentar --}}
             <section id="komentar" class="card scroll-mt-24 p-5 sm:p-6">
                 <h2 class="flex items-center gap-2 text-lg font-bold text-gray-900">
-                    <x-icon name="comments" class="text-brand-600" /> Komentar
+                    <x-icon name="comments" class="text-brand-600" /> {{ __('Komentar') }}
                     <span class="rounded-full bg-gray-100 px-2 text-sm font-semibold text-gray-600">{{ $article->comments->count() }}</span>
                 </h2>
 
@@ -129,27 +130,27 @@
                         @csrf
                         <x-avatar :name="auth()->user()->name" />
                         <div class="min-w-0 flex-1">
-                            <label for="body" class="sr-only">Tulis komentar</label>
+                            <label for="body" class="sr-only">{{ __('Tulis komentar') }}</label>
                             <textarea id="body" name="body" rows="3" maxlength="2000" required
-                                      placeholder="Tulis komentar atau pertanyaan Anda..."
+                                      placeholder="{{ __('Tulis komentar atau pertanyaan Anda...') }}"
                                       @class(['form-input', 'form-input-error' => $errors->has('body')])>{{ old('body') }}</textarea>
                             @error('body')
                                 <p class="form-error">{{ $message }}</p>
                             @enderror
                             <div class="mt-3 flex justify-end">
-                                <button type="submit" class="btn btn-primary btn-sm">Kirim Komentar</button>
+                                <button type="submit" class="btn btn-primary btn-sm">{{ __('Kirim Komentar') }}</button>
                             </div>
                         </div>
                     </form>
                 @else
                     <div class="mt-5 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-900">
-                        <a href="{{ route('login') }}" class="link">Masuk</a> atau
-                        <a href="{{ route('register') }}" class="link">daftar</a> untuk ikut berkomentar.
+                        <a href="{{ route('login') }}" class="link">{{ __('Masuk') }}</a> {{ __('atau') }}
+                        <a href="{{ route('register') }}" class="link">{{ __('daftar') }}</a> {{ __('untuk ikut berkomentar.') }}
                     </div>
                 @endauth
 
                 @if ($article->comments->isEmpty())
-                    <p class="mt-6 text-sm text-gray-500">Belum ada komentar. Jadilah yang pertama berkomentar.</p>
+                    <p class="mt-6 text-sm text-gray-500">{{ __('Belum ada komentar. Jadilah yang pertama berkomentar.') }}</p>
                 @else
                     <ul class="mt-6 space-y-4">
                         @foreach ($article->comments as $comment)
@@ -159,20 +160,20 @@
                                     <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                                         <p class="text-sm font-semibold text-gray-900">{{ $comment->user->name }}</p>
                                         @if ($comment->user_id === $article->user_id)
-                                            <span class="badge bg-brand-50 text-brand-700">Penulis artikel</span>
+                                            <span class="badge bg-brand-50 text-brand-700">{{ __('Penulis artikel') }}</span>
                                         @elseif ($comment->user->isAdmin())
-                                            <span class="badge bg-gray-100 text-gray-600">Admin</span>
+                                            <span class="badge bg-gray-100 text-gray-600">{{ __('Admin') }}</span>
                                         @endif
                                         <span class="text-xs text-gray-500">· <x-date :value="$comment->created_at" format="d M Y, H:i" /></span>
 
                                         @can('delete', $comment)
                                             <form action="{{ route('comments.destroy', $comment) }}" method="POST" class="ml-auto"
-                                                  onsubmit="return confirm('Hapus komentar ini?')">
+                                                  data-confirm="{{ __('Hapus komentar ini?') }}" onsubmit="return confirm(this.dataset.confirm)">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" title="Hapus komentar" class="cursor-pointer rounded-md p-2 text-gray-500 hover:bg-red-50 hover:text-red-600">
+                                                <button type="submit" title="{{ __('Hapus komentar') }}" class="cursor-pointer rounded-md p-2 text-gray-500 hover:bg-red-50 hover:text-red-600">
                                                     <x-icon name="trash" size="size-3" />
-                                                    <span class="sr-only">Hapus komentar</span>
+                                                    <span class="sr-only">{{ __('Hapus komentar') }}</span>
                                                 </button>
                                             </form>
                                         @endcan
@@ -191,7 +192,7 @@
         <aside class="min-w-0 space-y-6">
             @if ($latestArticles->isNotEmpty())
                 <section class="card p-5">
-                    <h2 class="font-bold text-gray-900">Artikel Lainnya</h2>
+                    <h2 class="font-bold text-gray-900">{{ __('Artikel Lainnya') }}</h2>
                     <ul class="mt-2 divide-y divide-gray-100">
                         @foreach ($latestArticles as $related)
                             <li>
@@ -216,9 +217,9 @@
     @if ($relatedArticles->isNotEmpty())
         <section class="mt-16">
             <div class="mb-6 flex flex-wrap items-end justify-between gap-2 border-b border-gray-200 pb-3">
-                <h2 class="text-xl font-bold text-gray-900">Artikel Terkait</h2>
+                <h2 class="text-xl font-bold text-gray-900">{{ __('Artikel Terkait') }}</h2>
                 <a href="{{ route('home') }}#daftar-artikel" class="link inline-flex items-center gap-1.5 text-sm">
-                    Semua artikel <x-icon name="chevron-right" size="size-3" />
+                    {{ __('Semua artikel') }} <x-icon name="chevron-right" size="size-3" />
                 </a>
             </div>
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -233,17 +234,17 @@
     <section class="mt-16">
         <div class="mb-6 flex flex-wrap items-end justify-between gap-2 border-b border-gray-200 pb-3">
             <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900">
-                <x-icon name="fire" class="text-orange-500" /> Artikel Terpopuler
+                <x-icon name="fire" class="text-orange-500" /> {{ __('Artikel Terpopuler') }}
             </h2>
-            <p class="text-xs text-gray-500">Berdasarkan jumlah pembaca</p>
+            <p class="text-xs text-gray-500">{{ __('Berdasarkan jumlah pembaca') }}</p>
         </div>
 
         @if ($popularArticles->isEmpty())
             <div class="card px-6 py-10 text-center">
                 <x-icon name="chart-line" size="size-7" class="text-gray-300" />
                 <p class="mt-2 text-sm text-gray-500">
-                    Belum ada artikel populer. Artikel akan muncul di sini setelah dibaca minimal
-                    {{ config('clinic.popular_min_views') }} kali.
+                    {{ __('Belum ada artikel populer.') }}
+                    {{ __('Artikel akan muncul di sini setelah dibaca minimal :count kali.', ['count' => config('clinic.popular_min_views')]) }}
                 </p>
             </div>
         @else
@@ -259,7 +260,7 @@
 @push('scripts')
     <script>
         // Tombol salin tautan (components/share-buttons, bisa lebih dari satu di halaman):
-        // ikon tautan berganti centang selama 2 detik; label untuk pembaca layar ikut berubah.
+        // ikon tautan berganti centang selama 2 detik; label ikut berubah (teksnya dari data-text-*, ikut bahasa).
         document.querySelectorAll('[data-copy-link]').forEach((button) => {
             const icon = button.querySelector('[data-copy-icon]');
             const done = button.querySelector('[data-copy-done]');
@@ -270,14 +271,14 @@
                     await navigator.clipboard.writeText(button.dataset.copyLink);
                     icon.hidden = true;
                     done.hidden = false;
-                    label.textContent = 'Tautan disalin';
+                    label.textContent = button.dataset.textCopied;
                 } catch {
-                    label.textContent = 'Gagal menyalin';
+                    label.textContent = button.dataset.textFailed;
                 }
                 setTimeout(() => {
                     icon.hidden = false;
                     done.hidden = true;
-                    label.textContent = 'Salin tautan';
+                    label.textContent = button.dataset.textCopy;
                 }, 2000);
             });
         });

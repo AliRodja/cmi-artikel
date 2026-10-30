@@ -7,7 +7,7 @@
     - JSON-LD lewat @push('structured-data')
     Robots & canonical ditentukan otomatis oleh App\Support\Seo. Nilai @section('x', $nilai) sudah di-escape Blade.
 --}}
-<title>@yield('title', 'Beranda') · {{ config('app.name') }}</title>
+<title>@yield('title', __('Beranda')) · {{ config('app.name') }}</title>
 <meta name="description" content="@yield('description', config('seo.description'))">
 <meta name="robots" content="@hasSection('robots')@yield('robots')@else{{ Seo::isIndexable(request()) ? 'index, follow, max-image-preview:large' : 'noindex, follow' }}@endif">
 <link rel="canonical" href="{{ Seo::canonicalUrl(request()) }}">
@@ -15,9 +15,9 @@
 
 {{-- Open Graph & Twitter Card: judul, ringkasan, dan gambar saat link dibagikan ke WhatsApp/Facebook/X. --}}
 <meta property="og:site_name" content="{{ config('app.name') }}">
-<meta property="og:locale" content="id_ID">
+<meta property="og:locale" content="{{ app()->getLocale() === 'en' ? 'en_US' : 'id_ID' }}">
 <meta property="og:type" content="@yield('og_type', 'website')">
-<meta property="og:title" content="@yield('title', 'Beranda')">
+<meta property="og:title" content="@yield('title', __('Beranda'))">
 <meta property="og:description" content="@yield('description', config('seo.description'))">
 <meta property="og:url" content="{{ Seo::canonicalUrl(request()) }}">
 <meta property="og:image" content="@yield('og_image', asset(config('seo.image')))">

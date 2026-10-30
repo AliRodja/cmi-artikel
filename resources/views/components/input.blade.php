@@ -19,7 +19,8 @@
                value="{{ $type === 'password' ? '' : old($name, $value) }}"
                {{ $attributes->class(['form-input', 'pl-10' => $icon, 'pr-11' => $type === 'password', 'form-input-error' => $errors->has($name)]) }}>
         @if ($type === 'password')
-            <button type="button" data-password-toggle aria-controls="{{ $name }}" aria-pressed="false" aria-label="Tampilkan password"
+            <button type="button" data-password-toggle aria-controls="{{ $name }}" aria-pressed="false" aria-label="{{ __('Tampilkan password') }}"
+                    data-label-show="{{ __('Tampilkan password') }}" data-label-hide="{{ __('Sembunyikan password') }}"
                     class="absolute inset-y-0 right-0 flex w-11 cursor-pointer items-center justify-center rounded-r-lg text-gray-500 transition hover:text-gray-700">
                 <x-icon name="eye" size="size-4" data-password-show />
                 <x-icon name="eye-slash" size="size-4" data-password-hide hidden />
@@ -28,7 +29,7 @@
     </div>
     @if ($type === 'password')
         <p id="{{ $name }}-capslock" class="mt-1 flex items-center gap-1.5 text-xs font-medium text-amber-700" hidden>
-            <x-icon name="exclamation-triangle" size="size-3" /> Caps Lock aktif
+            <x-icon name="exclamation-triangle" size="size-3" /> {{ __('Caps Lock aktif') }}
         </p>
     @endif
     @error($name)

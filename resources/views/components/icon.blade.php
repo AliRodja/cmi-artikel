@@ -55,6 +55,7 @@
         'rotate' => 'fa-solid fa-rotate-right',
         'map-pin' => 'fa-solid fa-location-dot',
         'phone' => 'fa-solid fa-phone',
+        'globe' => 'fa-solid fa-globe',
         'chart-line' => 'fa-solid fa-chart-line',
         'printer' => 'fa-solid fa-print',
         'arrow-down' => 'fa-solid fa-arrow-down',

@@ -12,7 +12,7 @@
 | Asal | Jawaban **ujian masuk IT CMI** (Soal 1 website artikel Laravel, Soal 2 INNER JOIN) milik Ali Imran Rodja |
 | Fase | Sejak 2026-10-28 pengembangan lanjutan dengan **data real** CMI (artikel diinput lewat halaman) |
 | Revisi soal | 2026-10-29: situs dikhususkan untuk artikel jantung; fitur jenis/kategori penyakit dihapus |
-| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **142 test / 596 assertion lulus** |
+| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **150 test / 631 assertion lulus** |
 
 **Tujuan:** pasien dan masyarakat mendapat informasi kesehatan jantung yang tepercaya (penulis jelas, ditinjau tenaga
 medis, ada sumber rujukan), mudah dibaca, dan mudah menghubungi klinik (WhatsApp, telepon).
@@ -68,6 +68,7 @@ membuat 3 artikel Published **tanpa penulis** agar terbukti tersaring oleh INNER
 | Autentikasi | **Manual** (tanpa Breeze/Jetstream): session, password broker bawaan untuk reset |
 | Notifikasi | Laravel Notifications, channel `database` |
 | Email (lokal) | `MAIL_MAILER=log` → link reset di `storage/logs/laravel.log` |
+| Bahasa tampilan | Indonesia (bawaan) & English untuk halaman publik — `__()` dengan kunci teks Indonesia, terjemahan `lang/en.json`, middleware `SetLocale` |
 | Test | PHPUnit (`php artisan test`), feature test |
 | Lokal | MacBook Pro M1, Node.js 24 |
 
@@ -112,6 +113,9 @@ Semua fitur di bawah ✅ selesai dan teruji kecuali ditandai lain.
 - Live search di navbar (hasil saat mengetik, kata kunci disorot, panah/Enter).
 - Detail artikel: penulis + profesi, "Ditinjau oleh", tanggal, jumlah dilihat, bar progres membaca, bagikan (WA/X/FB/salin),
   Simpan, sumber rujukan, peninjau medis, komentar, Artikel Terkait (kata kunci fokus), Terpopuler. Draft → 404.
+- Navbar tamu: Menu, Cari, logo, **pilihan bahasa (ID/EN)**, **Masuk** (tombol Daftar dihapus; daftar lewat halaman Masuk & footer).
+- **Dua bahasa tampilan**: Indonesia & English untuk semua halaman publik, Masuk/Daftar/Lupa password, pop-up, dan
+  halaman error; isi artikel tetap Bahasa Indonesia. Area penulis/admin selalu Indonesia.
 - Footer: info kontak klinik, media sosial resmi, navigasi.
 - SEO: meta & Open Graph, canonical, noindex untuk halaman privat/cari, JSON-LD (MedicalClinic, MedicalWebPage, Article,
   Breadcrumb), `/sitemap.xml`, `/robots.txt` dinamis.
@@ -161,7 +165,8 @@ Published** (kalau Draft, sudah tersaring oleh `status = 1` dan tidak membuktika
 ## 9. Rute
 
 - Publik: `GET /` (`home`), `GET /artikel/{article}` (`public.articles.show`), `GET /cari` (`articles.live-search`,
-  throttle 60/menit), `GET /sitemap.xml` (`sitemap`), `GET /robots.txt` (`robots`).
+  throttle 60/menit), `POST /bahasa` (`locale.update`, throttle 30/menit), `GET /sitemap.xml` (`sitemap`),
+  `GET /robots.txt` (`robots`), `Route::fallback` → 404 lewat grup `web` (sesi & bahasa ikut).
 - `guest`: `/register`, `/login` (POST throttle 5/menit), `/forgot-password` (`password.request`, `password.email`),
   `/reset-password/{token}` (`password.reset` — nama wajib persis), `POST /reset-password` (`password.update`).
 - `auth` (semua peran): `POST /logout`, `POST /artikel/{article}/komentar` (`comments.store`),
@@ -239,13 +244,13 @@ lang/id/{auth,pagination,passwords,validation}.php, lang/id.json
 
 ## 12. Test case
 
-Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **19 file · 142 test ·
-596 assertion — semua lulus (2026-10-30).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
+Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **20 file · 150 test ·
+631 assertion — semua lulus (2026-10-30).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
 selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi nomor +62 dirusak).
 
 | File | Test | Yang diuji |
 |---|:-:|---|
-| `AuthTest` | 15 | Daftar (+ validasi), Masuk benar/salah, throttle 5×, Keluar, lupa password & tampilan "Cek email", reset password (token sekali pakai, token salah), tamu ke `/dashboard` → login, user login tidak bisa buka login/daftar |
+| `AuthTest` | 16 | Navbar tamu hanya tombol Masuk; daftar (+ validasi), Masuk benar/salah, throttle 5×, Keluar, lupa password & tampilan "Cek email", reset password (token sekali pakai, token salah), tamu ke `/dashboard` → login, user login tidak bisa buka login/daftar |
 | `ArticleAuthorizationTest` | 9 | Pemilik bisa lihat/ubah/hapus artikel belum terbit; user lain 403 (lihat, ubah, hapus); daftar hanya milik sendiri; tamu ditolak; `user_id` dari user login; publik hanya Published; halaman publik tanpa tombol kelola |
 | `ArticleReportTest` | 9 | **Soal 2:** INNER JOIN membuang artikel tanpa penulis, hanya Published, nama & email dari `users`, urut terbaru, 10/halaman, cari judul/nama/email, cari tidak membocorkan Draft, kata kunci ikut di link halaman, tamu ditolak |
 | `ArticleRoleTest` | 11 | Pendaftar selalu pembaca, penulis tidak bisa terbit langsung / mengubah artikel terbit / membuka halaman admin, ajukan review, admin terbitkan & kembalikan (catatan wajib), catatan terhapus saat diajukan ulang, aksi review hanya untuk status Review, perintah `user:role` |
@@ -263,6 +268,7 @@ selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi n
 | `PopupMessageTest` | 6 | Pop-up berhasil keluar & simpan; halaman kedaluwarsa (419) → pop-up gagal; tamu menyimpan artikel → pop-up & kembali ke artikel setelah login; form tidak valid → pop-up gagal umum; tanpa pesan → tanpa pop-up |
 | `PagesRedesignTest` | 11 | Halaman 404/429/500; Baca Nanti; filter notifikasi; ringkasan & cetak laporan; detail artikel penulis (pratinjau, kelengkapan, Google); waktu baca tidak tampil; form bertahap + penghitung kata; statistik dashboard |
 | `SecurityTest` | 5 | Header keamanan di semua respons termasuk 404; HSTS hanya lewat HTTPS; sesi lain keluar saat password berubah; sesi yang mengganti password tetap login; ganti nama tidak mengeluarkan |
+| `LocaleTest` | 7 | Bawaan Indonesia + tombol bahasa; ganti ke English & bertahan (isi artikel tetap Indonesia); bahasa tak dikenal ditolak; area penulis tetap Indonesia tanpa tombol bahasa; 404 ikut bahasa; pop-up & pemisah ribuan ikut bahasa; setiap teks publik punya terjemahan (+ kunci `trans_choice` di `id.json`) |
 | `HeartOnlySiteTest` | 4 | Kolom kategori sudah tidak ada, beranda bertema jantung tanpa filter jenis, tombol bagikan & konsultasi jantung, migration menjadikan artikel non-jantung Draft sebelum kolom dihapus |
 
 ### Checklist uji manual (browser) — semua ✅ (2026-10-19)
@@ -287,6 +293,8 @@ Coblong, Kota Bandung, Jawa Barat 40134 · Buka setiap hari, 24 jam · Telepon (
 
 **Menunggu / backlog:**
 - [ ] Akreditasi CMI (`CLINIC_ACCREDITATION`) — tunggu data dari user, jangan dikarang.
+- [ ] Terjemahan English tahap berikutnya (bila diminta): halaman Baca Nanti, Notifikasi, Kelola Akun (isi halaman
+  masih Indonesia; teks notifikasi tersimpan di database dalam Bahasa Indonesia), lalu area penulis/admin.
 - [ ] Link Google Maps resmi (`CLINIC_MAPS_URL`) — sementara link pencarian dari alamat.
 - [ ] `npm run build` sebelum dikumpulkan / deploy; isi `CLINIC_*` di `.env` server; jalankan "Checklist keamanan
   saat deploy" & "Checklist SEO saat deploy" di README.
@@ -320,6 +328,25 @@ bawah "Git di-init ulang".
   (UI & judul; sebelumnya Plus Jakarta Sans), **Roboto = `font-article`** (huruf artikel: paragraf `.article-content` + judul artikel di beranda, Baca Nanti, 404;
   subjudul di dalam isi tetap Inter; sejak 2026-10-29 menggantikan Lora/`font-serif` atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
+- [x] **Tombol Daftar dihapus dari navbar + pilihan bahasa Indonesia/English** (2026-10-30). Navbar tamu hanya **Masuk**
+  (kini `btn-primary`, di ponsel tanpa ikon & `whitespace-nowrap`); daftar lewat halaman Masuk & footer. Bahasa — cakupan
+  dipilih user: **halaman publik dulu**. `config('app.supported_locales')` (id, en) · `POST /bahasa` → `LocaleController`
+  (validasi `Rule::in`, simpan di sesi, `back()`) · middleware `SetLocale` (grup `web`, prioritas tepat setelah
+  `StartSession` agar 404 binding ikut bahasa; `/dashboard…` dipaksa `id`; `Number::useLocale`; Carbon otomatis) ·
+  `Route::fallback(abort 404)` agar URL asing lewat grup `web` · `partials/locale-menu` (popover `.dropdown-panel`,
+  ikon `globe` + kode ID/EN, nama bahasa dalam bahasanya sendiri, catatan "isi artikel tetap Indonesia"; disembunyikan
+  di `/dashboard…`; di ponsel ikon saja, logo navbar `h-8` di ponsel, gap navbar `gap-2`). Teks: **kunci = teks
+  Indonesia** `__('Masuk')`, terjemahan `lang/en.json` (213 entri). Dibungkus: layout, navbar, drawer, user-menu,
+  notification-menu, search-panel, flash, footer (jam klinik `__($clinic['hours'])`), seo (`og:locale`), komponen publik
+  (article-card, consultation-card, error-page, popular-article, section-title, share-buttons, logo, input, role-badge),
+  `public/*`, `auth/*`, `errors/*`, pesan flash BookmarkController/CommentController/Login/Register/Notification, pesan
+  419 & tamu di `bootstrap/app.php`. JS (`app.js`, `live-search.js`, salin tautan) membaca teks dari `data-*` Blade.
+  Jamak: `trans_choice` (`:count view|:count views`) + angka `Number::format`. **Jebakan:** `trans_choice` memakai
+  bahasa cadangan (en) bila kunci tak ada di bahasa aktif → kunci `trans_choice` wajib juga di `lang/id.json`. `<html
+  lang>` dinamis, judul & isi artikel `lang="id"`. SEO tetap satu URL (crawler tanpa sesi = Indonesia). Uji: navbar
+  diukur di 320/360/390px (ID & EN) via Chrome DevTools Protocol — tidak bertumpuk/melebar. Test `LocaleTest` (7,
+  terbukti gagal bila `SetLocale` dilepas, kunci dashboard dibuka, atau kunci `id.json` dihapus) + 1 test navbar di
+  `AuthTest` → 150 test / 631 assertion.
 - [x] **Keamanan: header HTTP, keluar dari perangkat lain, pengaturan production** (2026-10-30). User bertanya soal JWT
   → tidak dipakai (aplikasi Blade tanpa API; session + cookie `http_only` + CSRF lebih aman & bisa dicabut). Middleware
   baru `App\Http\Middleware\SecurityHeaders` (global `append` di `bootstrap/app.php`, ikut di 404): `X-Frame-Options:
