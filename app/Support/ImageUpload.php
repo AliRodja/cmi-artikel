@@ -55,6 +55,11 @@ class ImageUpload
     /** Putar/balik piksel sesuai tag EXIF Orientation (1–8). imagerotate() berputar berlawanan arah jarum jam. */
     private static function applyOrientation(GdImage $image, string $path): GdImage
     {
+        // Tanpa ekstensi exif (sering belum aktif di Windows) metadata tetap terbuang; hanya koreksi orientasi dilewati.
+        if (! function_exists('exif_read_data')) {
+            return $image;
+        }
+
         $orientation = (int) (@exif_read_data($path)['Orientation'] ?? 1);
 
         $rotate = [3 => 180, 4 => 180, 5 => 270, 6 => 270, 7 => 90, 8 => 90][$orientation] ?? 0;

@@ -32,7 +32,8 @@ Aturan kerja untuk Claude. **Produk, fitur, tech stack, rute, model data, test c
 - Data kontak klinik dari user (PRD bagian 13). **Jangan mengarang** data yang belum ada (akreditasi, link peta resmi).
 
 ## Environment & menjalankan
-- MacBook Pro M1, macOS. PHP 8.5 + Composer + MySQL via Homebrew (`brew services start mysql`), Node 24.
+- MacBook Pro M1, macOS. PHP 8.5 + Composer + MySQL via Homebrew (`brew services start mysql`), Node 24. Proyek butuh
+  **PHP ≥ 8.4.1** (Symfony 8 di `composer.lock`) + ekstensi `intl`, `gd`, `exif`; tutorial instalasi per-OS di README §1–6.
   DB di `.env`: `DB_DATABASE=artikel_app`, user `root`. phpMyAdmin opsional:
   `php -S localhost:8080 -t /opt/homebrew/share/phpmyadmin`.
 - `MAIL_MAILER=log` → link reset password di `storage/logs/laravel.log`.

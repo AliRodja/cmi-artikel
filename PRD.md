@@ -48,7 +48,7 @@ INNER JOIN `articles` × `users` · hanya artikel yang punya penulis · hanya `s
 terbaru · 10 per halaman · Query Builder/Eloquent. Bonus: search.
 Rubrik (100): INNER JOIN 30 · Filter status 15 · Sorting 10 · Pagination 15 · Query Laravel 15 · Blade 10 · Bonus search 5.
 
-Pemetaan rubrik → fitur & file ada di **README bagian 5**. Halaman Soal 2 = **Laporan Artikel** (`/dashboard/laporan-artikel`,
+Pemetaan rubrik → fitur & file ada di **README bagian 7**. Halaman Soal 2 = **Laporan Artikel** (`/dashboard/laporan-artikel`,
 khusus admin karena menampilkan email semua penulis): `DB::table('articles')->join('users', …)` + `where status = 1` +
 search dalam `where(closure)` + `orderByDesc('articles.created_at')` + `paginate(10)->withQueryString()`. Seeder
 membuat 3 artikel Published **tanpa penulis** agar terbukti tersaring oleh INNER JOIN.
@@ -57,7 +57,7 @@ membuat 3 artikel Published **tanpa penulis** agar terbukti tersaring oleh INNER
 
 | Lapisan | Teknologi |
 |---|---|
-| Bahasa & framework | PHP 8.5 (minimal ^8.3), **Laravel 13** |
+| Bahasa & framework | PHP 8.5 lokal (**minimal 8.4.1** — syarat Symfony 8 di `composer.lock`; `composer.json` `^8.4`), **Laravel 13** |
 | Database | **MySQL** (Homebrew; lokal berisi data real) · SQLite in-memory untuk test |
 | ORM & query | Eloquent (relasi, scope, accessor, policy) · Query Builder untuk Soal 2 |
 | Tampilan | **Blade** (komponen `x-*`, partial) · **Tailwind CSS v4** lewat **Vite 8** + laravel-vite-plugin 3 |
@@ -334,6 +334,15 @@ bawah "Git di-init ulang".
   (UI & judul; sebelumnya Plus Jakarta Sans), **Roboto = `font-article`** (huruf artikel: paragraf `.article-content` + judul artikel di beranda, Baca Nanti, 404;
   subjudul di dalam isi tetap Inter; sejak 2026-10-29 menggantikan Lora/`font-serif` atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
+- [x] **README jadi tutorial instalasi macOS, Linux, Windows** (2026-10-30). Bagian 1–6 ditulis ulang: kebutuhan (PHP
+  **8.4.1+**, bukan 8.3 seperti tertulis sebelumnya; ekstensi `intl`, `gd`, `exif`, dll.; Node 20.19+/22.12+; internet saat
+  build untuk Google Fonts), persiapan perangkat per OS (Homebrew; apt + PPA ondrej/sury PHP 8.4, NodeSource, user MySQL
+  khusus karena `root` = auth_socket; Windows via WSL 2 atau PHP zip + `php.ini` + Composer-Setup + MySQL Installer),
+  10 langkah instalasi, akun demo, uji reset password (tail / Get-Content), menjalankan lagi & memperbarui (`git pull`
+  … `migrate`). Bagian rubrik dst. jadi 7–11, ringkasan perintah 12, troubleshooting 13 (+ error khas OS). Alamat clone
+  dibetulkan ke `github.com/AliRodja/cmi-artikel.git` (sebelumnya `artikel-app.git`). Ikut diperbaiki: `composer.json`
+  `php ^8.4`; `ImageUpload` tidak crash bila ekstensi `exif` tidak ada (Windows). Diverifikasi dengan mengikuti tutorial
+  dari clone baru di folder sementara (DB `artikel_app_tutorial`, lalu dihapus): semua halaman 200, 166 test lulus.
 - [x] **Versi Bahasa Inggris artikel, diterjemahkan sendiri oleh penulis** (2026-10-30; user memilih opsi C, bukan
   terjemahan otomatis). Migration `add_english_version_to_articles_table` (`title_en`, `content_en` longText,
   `seo_title_en` 70, `seo_description_en` 160, nullable; MySQL dimigrasi, backup

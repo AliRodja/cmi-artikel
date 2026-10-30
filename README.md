@@ -1,41 +1,275 @@
-# Artikel App
+# Klinik Utama CMI — Website Artikel Kesehatan Jantung
 
-Website artikel berbasis **Laravel 13 + MySQL + Blade + Tailwind CSS v4** untuk ujian masuk IT CMI.
-Pengunjung dapat membaca artikel yang sudah *Published*. User yang login dapat mengelola artikelnya sendiri
-dan melihat laporan artikel (INNER JOIN `articles` × `users`).
+Website artikel kesehatan jantung berbasis **Laravel 13 + MySQL + Blade + Tailwind CSS v4**, dibuat untuk ujian masuk
+IT CMI. Pengunjung membaca artikel yang sudah *Published* (dalam Bahasa Indonesia atau Inggris); penulis menulis artikel
+dan mengajukannya ke admin; admin meninjau, menerbitkan, dan melihat laporan artikel (INNER JOIN `articles` × `users`).
 
 Dokumen produk lengkap — fitur & status, tech stack, peran & hak akses, model data, daftar test case, dan log progres —
 ada di [`PRD.md`](PRD.md).
 
+> **Tutorial ini** memandu dari perangkat kosong sampai website berjalan di komputer Anda, untuk **macOS** (MacBook
+> Intel maupun Apple Silicon), **Linux** (Ubuntu/Debian), dan **Windows 10/11**. Ikuti bagian 2 sesuai sistem operasi
+> Anda, lalu bagian 3 yang sama untuk semua sistem operasi.
+
+## Daftar Isi
+
+1. [Yang Dibutuhkan](#1-yang-dibutuhkan)
+2. [Menyiapkan Perangkat](#2-menyiapkan-perangkat) — [macOS](#2a-macos) · [Linux](#2b-linux-ubuntu--debian) · [Windows](#2c-windows-1011)
+3. [Instalasi Proyek (Semua OS)](#3-instalasi-proyek-semua-os)
+4. [Akun Demo](#4-akun-demo)
+5. [Menguji Lupa & Reset Password](#5-menguji-lupa--reset-password)
+6. [Menjalankan Lagi & Memperbarui](#6-menjalankan-lagi--memperbarui)
+7. [Fitur vs Rubrik Penilaian](#7-fitur-vs-rubrik-penilaian)
+8. [Struktur Database](#8-struktur-database)
+9. [Daftar Route](#9-daftar-route)
+10. [Keputusan Desain & Asumsi](#10-keputusan-desain--asumsi)
+11. [Automated Test](#11-automated-test)
+12. [Ringkasan Perintah](#12-ringkasan-perintah)
+13. [Troubleshooting](#13-troubleshooting)
+
 ---
 
-## 1. Kebutuhan Sistem
+## 1. Yang Dibutuhkan
 
-| Software | Versi minimal | Cek dengan |
+| Software | Versi | Cek dengan |
 |---|---|---|
-| PHP | 8.3 | `php -v` |
+| **PHP** | **8.4.1 atau lebih baru** (8.5 juga bisa) — PHP 8.3 **tidak cukup** | `php -v` |
 | Composer | 2.x | `composer -V` |
-| MySQL / MariaDB | 8.0 / 10.6 | `mysql --version` |
-| Node.js + npm | 20.19 | `node -v` dan `npm -v` |
-| Git | — | `git --version` |
+| MySQL / MariaDB | MySQL 8.0+ / MariaDB 10.6+ | `mysql --version` |
+| Node.js + npm | 20.19+ atau 22.12+ (disarankan versi LTS terbaru) | `node -v` dan `npm -v` |
+| Git | versi apa saja | `git --version` |
 
-Ekstensi PHP yang dibutuhkan (biasanya sudah aktif): `pdo_mysql`, `mbstring`, `openssl`, `fileinfo`, `gd`.
+**Ekstensi PHP** (cek dengan `php -m`):
 
-> **Windows:** paket seperti [Laragon](https://laragon.org) atau [XAMPP](https://www.apachefriends.org) sudah menyertakan
-> PHP dan MySQL. Pastikan `php` dan `composer` bisa dipanggil dari terminal.
->
-> **macOS (Homebrew):** `brew install php composer mysql node`, lalu jalankan MySQL dengan `brew services start mysql`.
+| Ekstensi | Untuk apa |
+|---|---|
+| `pdo_mysql` | koneksi ke MySQL |
+| `mbstring`, `openssl`, `fileinfo`, `ctype`, `tokenizer`, `xml`/`dom` | kebutuhan dasar Laravel |
+| `intl` | format angka & tanggal sesuai bahasa (1.234 / 1,234) |
+| `gd` (dengan dukungan JPEG & WebP) | memproses gambar artikel yang di-upload |
+| `exif` (disarankan) | memutar foto ponsel agar tidak miring |
+| `curl`, `zip` | dipakai Composer saat mengunduh paket |
+| `pdo_sqlite` | hanya untuk menjalankan automated test |
+
+> **Butuh koneksi internet** saat instalasi: Composer dan npm mengunduh paket, dan `npm run build` mengunduh huruf
+> Inter & Roboto dari Google Fonts (setelah itu huruf disajikan dari server sendiri).
 
 ---
 
-## 2. Instalasi dari Awal
+## 2. Menyiapkan Perangkat
+
+Lewati perangkat lunak yang sudah terpasang dengan versi yang cukup. Di akhir setiap bagian ada perintah untuk
+memastikan semuanya siap.
+
+### 2A. macOS
+
+Berlaku untuk MacBook Intel maupun Apple Silicon (M1/M2/M3/M4). Kita memakai [Homebrew](https://brew.sh).
+
+1. **Pasang Command Line Tools** (berisi Git & compiler), buka aplikasi **Terminal**, lalu:
+
+   ```bash
+   xcode-select --install
+   ```
+
+2. **Pasang Homebrew:**
+
+   ```bash
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
+
+   Khusus **Apple Silicon**, tambahkan Homebrew ke PATH (Homebrew juga menampilkan perintah ini di akhir instalasi):
+
+   ```bash
+   echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+   eval "$(/opt/homebrew/bin/brew shellenv)"
+   ```
+
+3. **Pasang PHP, Composer, MySQL, Node.js, dan Git:**
+
+   ```bash
+   brew install php composer mysql node git
+   ```
+
+   PHP dari Homebrew sudah membawa semua ekstensi yang dibutuhkan (`intl`, `gd`, `exif`, `pdo_mysql`, `pdo_sqlite`, dll.).
+
+4. **Jalankan MySQL** (otomatis menyala lagi setiap komputer dinyalakan):
+
+   ```bash
+   brew services start mysql
+   ```
+
+   Secara bawaan user MySQL `root` di Homebrew **tanpa password**. Opsional: `mysql_secure_installation` untuk
+   memberinya password.
+
+5. **Periksa:**
+
+   ```bash
+   php -v && composer -V && mysql --version && node -v && git --version
+   ```
+
+Lanjut ke [bagian 3](#3-instalasi-proyek-semua-os).
+
+### 2B. Linux (Ubuntu / Debian)
+
+Contoh untuk **Ubuntu 22.04 / 24.04** dan **Debian 12**. PHP bawaan Ubuntu 24.04 adalah 8.3 (belum cukup), jadi kita
+memasang PHP 8.4 dari repositori resmi Ondřej Surý.
+
+1. **Paket dasar:**
+
+   ```bash
+   sudo apt update
+   sudo apt install -y git curl unzip ca-certificates lsb-release software-properties-common
+   ```
+
+2. **Tambahkan repositori PHP 8.4** — pilih sesuai distro:
+
+   ```bash
+   # Ubuntu
+   sudo add-apt-repository -y ppa:ondrej/php
+   sudo apt update
+   ```
+
+   ```bash
+   # Debian
+   sudo curl -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb
+   sudo dpkg -i /tmp/debsuryorg-archive-keyring.deb
+   echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" \
+     | sudo tee /etc/apt/sources.list.d/php.list
+   sudo apt update
+   ```
+
+3. **Pasang PHP 8.4 beserta ekstensinya** (`exif`, `fileinfo`, `ctype`, `tokenizer` sudah termasuk di paket inti):
+
+   ```bash
+   sudo apt install -y php8.4-cli php8.4-mysql php8.4-sqlite3 php8.4-mbstring php8.4-xml \
+     php8.4-curl php8.4-zip php8.4-gd php8.4-intl php8.4-bcmath
+   ```
+
+4. **Pasang Composer** (penginstal resmi):
+
+   ```bash
+   php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+   php composer-setup.php
+   sudo mv composer.phar /usr/local/bin/composer
+   rm composer-setup.php
+   ```
+
+5. **Pasang dan jalankan MySQL:**
+
+   ```bash
+   # Ubuntu
+   sudo apt install -y mysql-server
+   sudo systemctl enable --now mysql
+   ```
+
+   ```bash
+   # Debian (memakai MariaDB, kompatibel)
+   sudo apt install -y mariadb-server
+   sudo systemctl enable --now mariadb
+   ```
+
+   > Di Linux, user `root` MySQL biasanya hanya bisa dipakai lewat `sudo` (bukan dengan password). Karena itu di
+   > [Langkah 4](#langkah-4--buat-database) kita membuat **user khusus** untuk aplikasi.
+
+6. **Pasang Node.js versi LTS** (dari NodeSource; versi bawaan apt biasanya terlalu lama):
+
+   ```bash
+   curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+   sudo apt install -y nodejs
+   ```
+
+7. **Periksa:**
+
+   ```bash
+   php -v && composer -V && mysql --version && node -v && git --version
+   ```
+
+Lanjut ke [bagian 3](#3-instalasi-proyek-semua-os).
+
+### 2C. Windows 10/11
+
+Ada dua cara. **Cara 1 (disarankan): WSL 2** — Linux di dalam Windows, paling mirip dengan server tempat website
+nantinya berjalan. **Cara 2: langsung di Windows.**
+
+#### Cara 1 — WSL 2 (Ubuntu di dalam Windows)
+
+1. Buka **PowerShell sebagai Administrator**, jalankan:
+
+   ```powershell
+   wsl --install -d Ubuntu
+   ```
+
+2. Restart komputer bila diminta, buka aplikasi **Ubuntu** dari Start Menu, lalu buat username & password Linux.
+3. Di jendela Ubuntu tersebut, ikuti [bagian 2B (Linux)](#2b-linux-ubuntu--debian) dan seterusnya. Simpan proyek di
+   folder Linux (mis. `~/projects`), bukan di `/mnt/c/...`, agar jauh lebih cepat. Website tetap dibuka dari browser
+   Windows di `http://localhost:8000`.
+
+#### Cara 2 — Langsung di Windows
+
+Semua perintah di bawah dijalankan di **PowerShell** (atau Git Bash).
+
+1. **Git:** unduh & pasang [Git for Windows](https://git-scm.com/download/win) (pilihan bawaan sudah tepat).
+
+2. **PHP 8.4:**
+   1. Buka [windows.php.net/download](https://windows.php.net/download), unduh **PHP 8.4 — VS17 x64 Non Thread Safe**
+      (file `.zip`).
+   2. Ekstrak ke `C:\php` (sehingga ada file `C:\php\php.exe`).
+   3. Di folder `C:\php`, salin `php.ini-development` lalu ubah namanya menjadi `php.ini`.
+   4. Buka `php.ini` dengan Notepad, hapus tanda `;` di depan baris berikut agar aktif:
+
+      ```ini
+      extension_dir = "ext"
+      extension=curl
+      extension=fileinfo
+      extension=gd
+      extension=intl
+      extension=mbstring
+      extension=exif
+      extension=openssl
+      extension=pdo_mysql
+      extension=pdo_sqlite
+      extension=zip
+      ```
+
+   5. Tambahkan `C:\php` ke **PATH**: Start → ketik *environment variables* → **Edit the system environment
+      variables** → **Environment Variables…** → di *System variables* pilih `Path` → **Edit** → **New** → `C:\php` → OK.
+   6. Bila muncul error `VCRUNTIME140.dll` saat menjalankan `php`, pasang
+      [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe).
+
+3. **Composer:** unduh & jalankan [Composer-Setup.exe](https://getcomposer.org/Composer-Setup.exe); saat diminta,
+   pilih `C:\php\php.exe`.
+
+4. **MySQL:** unduh **MySQL Installer** dari [dev.mysql.com/downloads/installer](https://dev.mysql.com/downloads/installer/),
+   pilih *Server only*, lalu ikuti wizard. **Catat password `root`** yang Anda buat. MySQL otomatis berjalan sebagai
+   service Windows.
+
+5. **Node.js:** unduh & pasang versi **LTS** dari [nodejs.org](https://nodejs.org).
+
+6. **Tutup lalu buka lagi PowerShell** (agar PATH baru terbaca), kemudian periksa:
+
+   ```powershell
+   php -v; composer -V; node -v; git --version
+   ```
+
+   Perintah `mysql` biasanya belum ada di PATH; untuk membuat database pakai **MySQL Command Line Client** dari Start
+   Menu (lihat [Langkah 4](#langkah-4--buat-database)).
+
+---
+
+## 3. Instalasi Proyek (Semua OS)
+
+Langkah berikut sama untuk macOS, Linux, dan Windows. Perbedaan kecil antar-OS ditulis di dalam langkahnya.
 
 ### Langkah 1 — Clone repository
 
+Pindah ke folder tempat menyimpan proyek (mis. `~/Developer` di macOS/Linux atau `C:\Projects` di Windows), lalu:
+
 ```bash
-git clone https://github.com/AliRodja/artikel-app.git
-cd artikel-app
+git clone https://github.com/AliRodja/cmi-artikel.git
+cd cmi-artikel
 ```
+
+Semua perintah berikutnya dijalankan **di dalam folder `cmi-artikel`**.
 
 ### Langkah 2 — Install dependency PHP
 
@@ -43,85 +277,81 @@ cd artikel-app
 composer install
 ```
 
-Perintah ini membaca `composer.lock` dan mengunduh Laravel beserta library lain ke folder `vendor/`.
+Composer membaca `composer.lock` dan mengunduh Laravel beserta library lain ke folder `vendor/`. Bila muncul pesan
+`requires php >=8.4.1` atau ekstensi yang kurang, kembali ke bagian 2 atau lihat [Troubleshooting](#13-troubleshooting).
 
 ### Langkah 3 — Buat file konfigurasi `.env`
 
 ```bash
 # macOS / Linux / Git Bash
 cp .env.example .env
-
-# Windows (Command Prompt)
-copy .env.example .env
 ```
 
-Info kontak klinik untuk footer (`CLINIC_ADDRESS`, `CLINIC_HOURS`, `CLINIC_PHONE`, `CLINIC_WHATSAPP`, `CLINIC_EMAIL`)
-sudah terisi data resmi CMI di `.env.example`. `CLINIC_MAPS_URL` kosong = link pencarian Google Maps dari alamat;
-`CLINIC_ACCREDITATION` masih kosong. Yang dikosongkan tidak ditampilkan. Nomor WhatsApp tombol Konsultasi
-(0821-2159-0000) terpisah, ada di `config/clinic.php`.
+```powershell
+# Windows PowerShell
+Copy-Item .env.example .env
+```
 
-Lalu buat *application key* (dipakai untuk enkripsi session & cookie):
+Lalu buat *application key* (kunci enkripsi untuk session & cookie):
 
 ```bash
 php artisan key:generate
 ```
 
-### Langkah 4 — Jalankan MySQL dan buat database
+Info kontak klinik untuk footer (`CLINIC_ADDRESS`, `CLINIC_HOURS`, `CLINIC_PHONE`, `CLINIC_WHATSAPP`, `CLINIC_EMAIL`)
+sudah terisi data resmi CMI di `.env.example`. `CLINIC_MAPS_URL` kosong = link pencarian Google Maps dari alamat;
+`CLINIC_ACCREDITATION` masih kosong. Yang dikosongkan tidak ditampilkan. Nomor WhatsApp tombol Konsultasi
+(0821-2159-0000) ada di `config/clinic.php`.
 
-Pastikan service MySQL sudah berjalan:
+### Langkah 4 — Buat database
 
-- **macOS (Homebrew):** `brew services start mysql`
-- **Laragon / XAMPP:** klik *Start* pada MySQL di control panel.
+Pastikan MySQL sudah berjalan (bagian 2), lalu buka konsol MySQL:
 
-Buat database kosong bernama `artikel_app`, pilih salah satu cara:
+| OS | Cara membuka konsol MySQL |
+|---|---|
+| macOS | `mysql -u root` (tambahkan `-p` bila `root` diberi password) |
+| Linux | `sudo mysql` |
+| Windows | Start Menu → **MySQL 8.x Command Line Client** → masukkan password `root` |
 
-**Cara A — lewat terminal**
-
-```bash
-mysql -u root -p
-```
+Di konsol MySQL, jalankan:
 
 ```sql
 CREATE DATABASE artikel_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'artikel'@'localhost' IDENTIFIED BY 'ganti-dengan-password-anda';
+GRANT ALL PRIVILEGES ON artikel_app.* TO 'artikel'@'localhost';
+FLUSH PRIVILEGES;
 EXIT;
 ```
 
-> Jika user `root` tidak memakai password, jalankan `mysql -u root` (tanpa `-p`).
+Membuat user khusus `artikel` **wajib di Linux** (karena `root` hanya bisa lewat `sudo`) dan **disarankan** di macOS &
+Windows — aplikasi tidak perlu hak penuh atas semua database. Bila tetap ingin memakai `root` di macOS/Windows, cukup
+jalankan baris `CREATE DATABASE` saja.
 
-**Cara B — lewat phpMyAdmin / HeidiSQL / TablePlus**
-
-Buat database baru dengan nama `artikel_app` dan collation `utf8mb4_unicode_ci`.
+> Lebih suka aplikasi grafis? Database juga bisa dibuat lewat phpMyAdmin, TablePlus, DBeaver, atau HeidiSQL:
+> nama `artikel_app`, collation `utf8mb4_unicode_ci`.
 
 ### Langkah 5 — Hubungkan aplikasi ke database
 
-Buka file `.env` dan sesuaikan bagian berikut dengan MySQL di komputer Anda:
+Buka file `.env` di editor (VS Code, Notepad, nano, dll.), sesuaikan bagian ini:
 
 ```dotenv
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=artikel_app
-DB_USERNAME=root
-DB_PASSWORD=          # isi jika user MySQL Anda memakai password
+DB_USERNAME=artikel                     # atau root
+DB_PASSWORD=ganti-dengan-password-anda  # kosongkan bila root tanpa password
 ```
 
-Kosongkan cache konfigurasi agar perubahan `.env` terbaca, lalu cek koneksi:
+Bersihkan cache konfigurasi agar perubahan terbaca, lalu cek koneksi:
 
 ```bash
 php artisan config:clear
 php artisan db:show
 ```
 
-Jika koneksi berhasil, akan tampil informasi seperti:
-
-```
-MySQL ............ 8.x
-Connection ....... mysql
-Database ......... artikel_app
-Host ............. 127.0.0.1
-```
-
-Jika muncul error, lihat bagian [Troubleshooting](#11-troubleshooting).
+Bila berhasil, muncul ringkasan seperti `MySQL 8.x · Connection mysql · Database artikel_app`. Bila error, lihat
+[Troubleshooting](#13-troubleshooting).
 
 ### Langkah 6 — Buat tabel dan isi data contoh
 
@@ -129,17 +359,15 @@ Jika muncul error, lihat bagian [Troubleshooting](#11-troubleshooting).
 php artisan migrate --seed
 ```
 
-- `migrate` membuat tabel `users`, `articles`, `password_reset_tokens`, `sessions`, `cache`, dan `jobs`.
+- `migrate` membuat semua tabel (`users`, `articles`, `comments`, `bookmarks`, `notifications`, `article_views`,
+  `sessions`, dll.).
 - `--seed` mengisi data contoh: akun **admin** demo dengan 20 artikel, akun **penulis** demo dengan 6 artikel
-  (Published, Menunggu Review, dan Draft yang dikembalikan admin), 10 artikel milik user lain,
-  3 artikel **tanpa penulis** (untuk membuktikan INNER JOIN pada halaman Laporan Artikel), dan akun **pembaca** demo
-  dengan beberapa komentar & artikel tersimpan.
+  (Published — 3 di antaranya punya versi Bahasa Inggris —, Menunggu Review, dan Draft yang dikembalikan admin), 10 artikel
+  milik user lain, 3 artikel **tanpa penulis** (untuk membuktikan INNER JOIN di halaman Laporan Artikel), dan akun
+  **pembaca** demo dengan beberapa komentar & artikel tersimpan.
 
-Untuk mengulang database dari nol kapan saja:
-
-```bash
-php artisan migrate:fresh --seed
-```
+> Mengulang database dari nol: `php artisan migrate:fresh --seed`. **Hanya untuk database contoh** — perintah ini
+> menghapus seluruh isi database.
 
 ### Langkah 7 — Aktifkan akses gambar upload
 
@@ -147,65 +375,114 @@ php artisan migrate:fresh --seed
 php artisan storage:link
 ```
 
-Gambar artikel disimpan di `storage/app/public/articles`. Perintah ini membuat shortcut `public/storage`
-agar gambar tersebut bisa dibuka dari browser.
+Gambar artikel disimpan di `storage/app/public/articles`; perintah ini membuat shortcut `public/storage` agar gambar
+bisa dibuka dari browser.
 
-### Langkah 8 — Install dan build aset front-end (Tailwind CSS)
+> **Windows (Cara 2):** bila muncul `symlink(): Permission denied` atau *A required privilege is not held*, jalankan
+> PowerShell **sebagai Administrator** (atau aktifkan *Developer Mode* di Settings), lalu ulangi perintah di atas.
+
+### Langkah 8 — Install dan build tampilan (Tailwind CSS & JavaScript)
 
 ```bash
 npm install
 npm run build
 ```
 
-### Langkah 9 — Jalankan aplikasi
+### Langkah 9 — Jalankan website
 
 ```bash
 php artisan serve
 ```
 
-Buka **http://localhost:8000** di browser.
+Buka **http://localhost:8000** di browser. Untuk menghentikan, tekan `Ctrl + C` di terminal.
 
-> **Mode development:** jika ingin mengubah tampilan, jalankan `npm run dev` di terminal terpisah
-> (biarkan tetap berjalan) agar perubahan CSS langsung terlihat tanpa build ulang.
+> Port 8000 sudah dipakai aplikasi lain? Jalankan `php artisan serve --port=8001`, buka `http://localhost:8001`, dan
+> ubah `APP_URL` di `.env` menjadi `http://localhost:8001`.
+
+### Langkah 10 (opsional) — Pastikan semuanya benar
+
+```bash
+php artisan test
+```
+
+Hasil yang diharapkan: **166 test lulus**. Test memakai database SQLite sementara di memori, jadi database
+`artikel_app` tidak tersentuh.
 
 ---
 
-## 3. Akun Demo
+## 4. Akun Demo
 
 | Email | Password | Peran |
 |---|---|---|
-| `admin@example.com` | `password` | **Admin**: menerbitkan artikel, antrean Review, Laporan Artikel (Soal 2), kelola semua artikel |
-| `penulis@example.com` | `password` | **Penulis**: menulis artikel lalu mengajukannya ke admin |
+| `admin@example.com` | `password` | **Admin**: menerbitkan artikel, antrean Review, Laporan Artikel (Soal 2), kelola semua artikel & pengguna |
+| `penulis@example.com` | `password` | **Penulis**: menulis artikel (termasuk versi Bahasa Inggris) lalu mengajukannya ke admin |
 | `pembaca@example.com` | `password` | **Pembaca**: berkomentar, menyimpan artikel (Baca Nanti), menerima notifikasi artikel baru |
 
 User lain hasil seeder juga memakai password `password` (email-nya dapat dilihat di tabel `users`).
 Akun yang mendaftar lewat halaman **Daftar** selalu berperan **pembaca**. Admin mengubah peran (dan menambah,
 mengedit, atau menghapus akun) lewat menu kiri → Admin → **Kelola Pengguna** (`/dashboard/users`). Setiap user
-mengubah nama, email, dan password miliknya sendiri lewat menu avatar → **Kelola Akun** (`/akun`). Lewat terminal juga bisa,
-misalnya untuk menunjuk admin pertama pada instalasi baru:
+mengubah nama, email, dan password miliknya sendiri lewat menu avatar → **Kelola Akun** (`/akun`). Lewat terminal juga
+bisa, misalnya untuk menunjuk admin pertama pada instalasi baru tanpa data contoh:
 
 ```bash
 php artisan user:role email@contoh.com admin   # admin / penulis / pembaca
 ```
 
 > **Untuk menguji CRUD artikel & dashboard**, masuk dengan akun penulis/admin di atas: akun hasil Daftar adalah
-> pembaca dan tidak punya area penulis (mengakses `/dashboard` → 403).
+> pembaca dan tidak punya area penulis (membuka `/dashboard` → 403). Bahasa tampilan bisa diganti lewat tombol
+> 🌐 **ID/EN** di navbar.
 
 ---
 
-## 4. Menguji Lupa & Reset Password
+## 5. Menguji Lupa & Reset Password
 
 Aplikasi memakai `MAIL_MAILER=log`, sehingga email **tidak benar-benar dikirim**, melainkan ditulis ke file log.
 
 1. Buka halaman **Masuk → Lupa password?** dan masukkan `admin@example.com`.
-2. Buka file `storage/logs/laravel.log`, cari baris paling bawah yang berisi `reset-password/...`.
+2. Lihat bagian akhir file log dan cari link yang berisi `reset-password/...`:
+
+   ```bash
+   # macOS / Linux
+   tail -n 40 storage/logs/laravel.log
+   ```
+
+   ```powershell
+   # Windows PowerShell
+   Get-Content storage\logs\laravel.log -Tail 40
+   ```
+
 3. Salin link tersebut ke browser, isi password baru, lalu masuk dengan password baru.
 
-Link reset berlaku 60 menit dan hanya bisa dipakai satu kali.
+Link reset berlaku 60 menit dan hanya bisa dipakai satu kali. Demi keamanan, halaman Lupa Password selalu menjawab
+"jika email terdaftar, link sudah dikirim" — baik email terdaftar maupun tidak.
 
 ---
 
-## 5. Fitur vs Rubrik Penilaian
+## 6. Menjalankan Lagi & Memperbarui
+
+**Menjalankan lagi** (hari berikutnya, setelah komputer dinyalakan ulang):
+
+1. Pastikan MySQL menyala — macOS: `brew services start mysql` · Linux: `sudo systemctl start mysql` (atau `mariadb`)
+   · Windows: otomatis (service).
+2. Di folder proyek: `php artisan serve`, lalu buka `http://localhost:8000`.
+
+**Memperbarui ke versi terbaru dari GitHub:**
+
+```bash
+git pull
+composer install
+npm install
+php artisan migrate        # menambah tabel/kolom baru tanpa menghapus data
+npm run build
+php artisan optimize:clear
+```
+
+**Mode pengembangan** (mengubah tampilan): jalankan `npm run dev` di terminal kedua dan biarkan berjalan bersama
+`php artisan serve`; perubahan CSS/JS langsung terlihat tanpa `npm run build` ulang.
+
+---
+
+## 7. Fitur vs Rubrik Penilaian
 
 ### Soal 1 — Website Artikel
 
@@ -213,7 +490,7 @@ Link reset berlaku 60 menit dan hanya bisa dipakai satu kali.
 |---|---|---|---|---|
 | 1 | Login & Logout | 10 | `Auth\LoginController` — `Auth::attempt()`, "ingat saya", `session()->regenerate()` (cegah session fixation), `throttle:5,1` (maks 5 percobaan/menit), logout meng-*invalidate* session & token CSRF | Masuk dengan akun demo → klik **Keluar** |
 | 2 | Register | 10 | `Auth\RegisterController` — validasi nama, email unik, password min 8 + konfirmasi; password di-hash otomatis oleh cast `hashed`; langsung login setelah daftar sebagai **pembaca** (kolom `role` tidak bisa diisi dari form) | Klik **Daftar** → diarahkan ke beranda |
-| 3 | Lupa & Reset Password | 10 | `ForgotPasswordController` + `ResetPasswordController` dengan *password broker* Laravel; token disimpan ter-hash, berlaku 60 menit, sekali pakai; email Bahasa Indonesia | Lihat [bagian 4](#4-menguji-lupa--reset-password) |
+| 3 | Lupa & Reset Password | 10 | `ForgotPasswordController` + `ResetPasswordController` dengan *password broker* Laravel; token disimpan ter-hash, berlaku 60 menit, sekali pakai; email Bahasa Indonesia | Lihat [bagian 4](#5-menguji-lupa--reset-password) |
 | 4 | Dashboard | 5 | `DashboardController` (invokable) — jumlah artikel, Published, Draft, dan 5 artikel terbaru **milik user yang login** | Masuk → halaman Dashboard |
 | 5 | CRUD Artikel | 20 | `ArticleController` (resource) — daftar milik sendiri + search judul + filter status + pagination, tambah, detail, edit, hapus dengan konfirmasi; slug unik otomatis | Menu **Artikel Saya** |
 | 6 | Upload & Pengelolaan Gambar | 10 | Disimpan di disk `public` folder `articles/` (nama file acak); preview sebelum upload; file lama **dihapus dari disk** saat gambar diganti, saat checkbox "Hapus gambar" dicentang, dan saat artikel dihapus | Tulis artikel dengan gambar → edit → ganti/hapus gambar |
@@ -294,7 +571,7 @@ lain diacak oleh factory, tetapi selisihnya selalu 3.)*
 
 ---
 
-## 6. Struktur Database
+## 8. Struktur Database
 
 ```
 users                                   articles
@@ -330,7 +607,7 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
 
 ---
 
-## 7. Daftar Route
+## 9. Daftar Route
 
 | Method | URL | Nama | Middleware | Keterangan |
 |---|---|---|---|---|
@@ -366,7 +643,7 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
 
 ---
 
-## 8. Keputusan Desain & Asumsi
+## 10. Keputusan Desain & Asumsi
 
 - **Autentikasi dibuat manual** (tanpa Breeze/Jetstream) agar setiap alurnya dipahami dan bisa dijelaskan.
 - **Artikel dua bahasa, diterjemahkan sendiri oleh penulis** (bukan mesin penerjemah, karena salah terjemah pada
@@ -560,7 +837,7 @@ aksi simpan/ubah/hapus per akun; Lupa Password tidak membocorkan email mana yang
 sehingga metadata EXIF (lokasi GPS, perangkat) terbuang tanpa membuat foto miring; `%`/`_` di pencarian publik dianggap
 huruf biasa.
 
-## 9. Automated Test
+## 11. Automated Test
 
 ```bash
 php artisan test
@@ -598,36 +875,48 @@ Hasil: **166 test, 843 assertion, semua lulus.**
 
 ---
 
-## 10. Ringkasan Perintah
+## 12. Ringkasan Perintah
+
+Setelah perangkat siap (bagian 2):
 
 ```bash
-git clone https://github.com/AliRodja/artikel-app.git
-cd artikel-app
+git clone https://github.com/AliRodja/cmi-artikel.git
+cd cmi-artikel
 composer install
-cp .env.example .env
+cp .env.example .env              # Windows PowerShell: Copy-Item .env.example .env
 php artisan key:generate
-# buat database "artikel_app" di MySQL, lalu sesuaikan DB_* di .env
+# buat database "artikel_app" (+ user khusus) di MySQL, lalu isi DB_* di .env — lihat Langkah 4 & 5
 php artisan config:clear
 php artisan db:show
 php artisan migrate --seed
 php artisan storage:link
 npm install
 npm run build
-php artisan serve
+php artisan serve                 # buka http://localhost:8000
 ```
 
 ---
 
-## 11. Troubleshooting
+## 13. Troubleshooting
 
 | Pesan error | Penyebab | Solusi |
 |---|---|---|
-| `SQLSTATE[HY000] [2002] Connection refused` | MySQL belum berjalan, atau host/port salah | Jalankan MySQL (`brew services start mysql` / Start di Laragon/XAMPP), cek `DB_HOST` & `DB_PORT` |
-| `SQLSTATE[HY000] [1045] Access denied for user 'root'` | Username/password MySQL salah | Sesuaikan `DB_USERNAME` & `DB_PASSWORD` di `.env`, lalu `php artisan config:clear` |
-| `SQLSTATE[HY000] [1049] Unknown database 'artikel_app'` | Database belum dibuat | Ulangi [Langkah 4](#langkah-4--jalankan-mysql-dan-buat-database) |
-| `could not find driver` | Ekstensi `pdo_mysql` belum aktif | Aktifkan `extension=pdo_mysql` di `php.ini`, lalu buka ulang terminal |
+| `requires php >=8.4.1` / `Root composer.json requires php ^8.4` saat `composer install` | Versi PHP terlalu lama (mis. PHP 8.3 bawaan Ubuntu 24.04) | Pasang PHP 8.4+ (bagian 2B langkah 2–3 / 2C), cek `php -v` |
+| `ext-intl` / `The "intl" PHP extension is required` | Ekstensi `intl` belum aktif | Linux: `sudo apt install php8.4-intl` · Windows: aktifkan `extension=intl` di `php.ini` |
+| `Call to undefined function imagecreatefromstring()` saat upload gambar | Ekstensi `gd` belum aktif | Linux: `sudo apt install php8.4-gd` · Windows: aktifkan `extension=gd` di `php.ini` |
+| `'php' is not recognized as an internal or external command` (Windows) | `C:\php` belum ada di PATH, atau terminal belum dibuka ulang | Tambahkan ke PATH (bagian 2C langkah 2), tutup & buka lagi PowerShell |
+| `SQLSTATE[HY000] [2002] Connection refused` | MySQL belum berjalan, atau host/port salah | Jalankan MySQL (bagian 6), cek `DB_HOST` & `DB_PORT` |
+| `SQLSTATE[HY000] [1698] Access denied for user 'root'@'localhost'` (Linux) | `root` MySQL di Linux hanya bisa lewat `sudo` | Buat user khusus seperti [Langkah 4](#langkah-4--buat-database), isi `DB_USERNAME`/`DB_PASSWORD` |
+| `SQLSTATE[HY000] [1045] Access denied for user` | Username/password MySQL salah | Sesuaikan `DB_USERNAME` & `DB_PASSWORD` di `.env`, lalu `php artisan config:clear` |
+| `SQLSTATE[HY000] [1049] Unknown database 'artikel_app'` | Database belum dibuat | Ulangi [Langkah 4](#langkah-4--buat-database) |
+| `could not find driver` | Ekstensi `pdo_mysql` belum aktif | Linux: `sudo apt install php8.4-mysql` · Windows: aktifkan `extension=pdo_mysql`, buka ulang terminal |
 | `No application encryption key has been specified` | `APP_KEY` di `.env` masih kosong | `php artisan key:generate` |
-| `Vite manifest not found` | Aset front-end belum di-build | `npm install && npm run build` |
-| Gambar artikel tidak muncul (404) | Symlink storage belum dibuat | `php artisan storage:link` |
-| `419 Page Expired` saat submit form | Session kedaluwarsa / tabel `sessions` belum ada | Refresh halaman; pastikan `php artisan migrate` sudah dijalankan |
+| `Vite requires Node.js version 20.19+ or 22.12+` | Node.js terlalu lama | Pasang Node.js LTS terbaru (bagian 2), cek `node -v` |
+| `npm run build` gagal mengunduh font / `ENOTFOUND` | Tidak ada koneksi internet saat build | Sambungkan internet, ulangi `npm run build` |
+| `Vite manifest not found` | Aset tampilan belum di-build | `npm install && npm run build` |
+| Gambar artikel tidak muncul (404) | Symlink storage belum dibuat | `php artisan storage:link` (Windows: PowerShell sebagai Administrator) |
+| `Failed to listen on 127.0.0.1:8000` | Port 8000 sedang dipakai aplikasi lain | `php artisan serve --port=8001` dan ubah `APP_URL` |
+| `419 Page Expired` saat submit form | Halaman terlalu lama dibuka / tabel `sessions` belum ada | Refresh halaman; pastikan `php artisan migrate` sudah dijalankan |
+| `429 Too Many Requests` | Batas percobaan keamanan (mis. 5× salah password per menit) | Tunggu sekitar 1 menit, lalu coba lagi |
 | Perubahan `.env` tidak berpengaruh | Konfigurasi masih ter-cache | `php artisan optimize:clear` |
+| Test terhubung ke MySQL / gagal `could not find driver (sqlite)` | Konfigurasi ter-cache, atau `pdo_sqlite` belum aktif | `php artisan config:clear`; aktifkan `pdo_sqlite` (Linux: `php8.4-sqlite3`) |
