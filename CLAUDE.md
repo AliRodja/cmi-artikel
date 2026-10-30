@@ -43,7 +43,7 @@ Aturan kerja untuk Claude. **Produk, fitur, tech stack, rute, model data, test c
 npm run dev                 # terminal 1 (biarkan berjalan)
 php artisan optimize:clear  # terminal 2
 php artisan serve           # http://localhost:8000
-php artisan test            # 160 test per 2026-10-30
+php artisan test            # 166 test per 2026-10-30
 npm run build               # wajib sebelum dikumpulkan / deploy
 ```
 - Dev server Vite tidak mengenali class Tailwind di file Blade baru → `touch resources/css/app.css`. Mengubah
@@ -67,6 +67,12 @@ npm run build               # wajib sebelum dikumpulkan / deploy
   `orderByDesc('articles.created_at')` + `paginate(10)->withQueryString()` — **jangan diubah** saat redesign.
 - Slug unik otomatis di `Article::booted()`, tidak berubah saat judul diedit; route model binding memakai `slug`.
 - Isi artikel: Trix → disanitasi `App\Support\ArticleContent` dua lapis (mutator saat simpan + accessor `content_html`).
+- **Versi Bahasa Inggris artikel** (diterjemahkan penulis, opsional): kolom `title_en`, `content_en` (disanitasi
+  `setContentEnAttribute`, kosong → null), `seo_title_en`, `seo_description_en`; judul & isi wajib berpasangan
+  (`ArticleRequest`). Halaman publik WAJIB memakai `display_title` / `display_content_html` / `display_excerpt` /
+  `display_locale` (+ `meta_title`/`meta_description` yang sudah ikut bahasa) — Inggris bila pengunjung memilih English
+  DAN `hasEnglish()`, selain itu Indonesia. Area admin & Laporan Soal 2 tetap memakai kolom Indonesia (naskah induk).
+  Query yang membatasi kolom untuk kartu/daftar publik pakai `Article::LIST_COLUMNS` (harus memuat title_en/content_en).
 - Gambar di disk `public` folder `articles/`, **selalu lewat `App\Support\ImageUpload::store()`** (digambar ulang GD:
   EXIF/GPS terbuang, orientasi diterapkan) — jangan `->store()` langsung. File lama dihapus saat diganti / checkbox
   `remove_image` / artikel dihapus (butuh `storage:link`).
@@ -83,8 +89,8 @@ npm run build               # wajib sebelum dikumpulkan / deploy
   lain akan diblokir (`X-Frame-Options: SAMEORIGIN`); CSP belum ada, uji skrip/font/Vite bila menambahkannya.
 
 ## Konvensi kode
-- Blade: selalu `{{ }}`. **Satu-satunya** `{!! !!}`: `{!! $article->content_html !!}` di dalam `.article-content`.
-  Jangan pernah `{!! $article->content !!}`.
+- Blade: selalu `{{ }}`. `{!! !!}` **hanya** untuk accessor HTML tersanitasi isi artikel di dalam `.article-content`:
+  `content_html`, `content_en_html`, `display_content_html`. Jangan pernah `{!! $article->content !!}` / `content_en`.
 - Tailwind: **jangan merangkai nama class dinamis** (`text-{{ $color }}-600`); tulis class lengkap.
 - Pagination: view Tailwind bawaan (jangan `Paginator::useBootstrapFive()`).
 - Form upload `enctype="multipart/form-data"`; form PUT/DELETE `@csrf` + `@method`. Konfirmasi hapus:

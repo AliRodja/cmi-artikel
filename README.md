@@ -304,6 +304,8 @@ name                                       user_id     FK → users.id, NULLABLE
 email         UNIQUE                       title
 password      (bcrypt)                     slug        UNIQUE  (dipakai di URL)
 remember_token                             content     LONGTEXT
+                                           title_en / content_en / seo_title_en / seo_description_en
+                                                       NULLABLE (versi Bahasa Inggris, ditulis penulis)
 timestamps
                                            image       NULLABLE (path, mis. articles/abc.jpg)
                                            status      TINYINT  0 = Draft, 1 = Published, 2 = Review
@@ -367,6 +369,10 @@ Tabel lain: `comments`, `bookmarks`, `notifications`, serta bawaan Laravel `sess
 ## 8. Keputusan Desain & Asumsi
 
 - **Autentikasi dibuat manual** (tanpa Breeze/Jetstream) agar setiap alurnya dipahami dan bisa dijelaskan.
+- **Artikel dua bahasa, diterjemahkan sendiri oleh penulis** (bukan mesin penerjemah, karena salah terjemah pada
+  informasi kesehatan berisiko): langkah ⑤ di form tulis berisi judul, isi, dan SEO Bahasa Inggris (opsional, judul &
+  isi wajib berpasangan, isi disanitasi seperti versi Indonesia). Pengunjung yang memilih English melihat versi itu;
+  bila belum ada, artikel tampil dalam Bahasa Indonesia dengan pemberitahuan.
 - **Dua bahasa tampilan (Indonesia & English)** untuk seluruh situs: halaman publik, akun, serta area penulis & admin. Teks Indonesia ditulis langsung di Blade sebagai kunci
   `__('Masuk')`, terjemahannya di `lang/en.json`. Pilihan disimpan di sesi (`POST /bahasa`), dipasang middleware
   `SetLocale`. Berlaku di seluruh situs, termasuk area penulis/admin, pesan validasi, dan notifikasi (disimpan sebagai
@@ -584,10 +590,11 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/ReaderFeaturesTest.php` | 8 | Pembaca **403** di area penulis & diarahkan ke beranda setelah login; komentar (wajib login, validasi, di-escape, tidak bisa di artikel Draft, hapus hanya pemilik/admin); Baca Nanti (simpan/batal, artikel yang ditarik hilang dari daftar) |
 | `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
 | `tests/Feature/UserManagementTest.php` | 8 | Hanya admin (penulis & pembaca **403**); cari nama/email + filter peran (search tidak menembus filter); tambah akun dengan peran, password ter-hash & bisa login; validasi (email unik, peran tidak dikenal, konfirmasi password); edit dengan password kosong = tidak diganti; reset password orang lain; admin tidak bisa mengubah peran / menghapus akun sendiri; hapus akun → artikel tetap tanpa penulis, komentar/Baca Nanti/notifikasi ikut terhapus |
+| `tests/Feature/ArticleTranslationTest.php` | 6 | Simpan versi Inggris (tersanitasi); judul & isi Inggris wajib berpasangan; pengunjung English melihat terjemahan penulis (judul, isi, kartu, sidebar, `lang="en"`); tanpa terjemahan → versi Indonesia + pemberitahuan; pencarian mencakup teks Inggris; detail admin menampilkan status & pratinjau versi Inggris |
 | `tests/Feature/SecurityTest.php` | 13 | Header keamanan di semua halaman termasuk 404; HSTS hanya lewat HTTPS; sesi lain keluar saat password diganti, sesi yang mengganti tetap login; batas login per email + IP (rekan satu IP tetap bisa masuk); batas daftar/reset/ganti password; batas aksi tulis per akun (membuka halaman tidak dihitung); tiap batas punya penghitung sendiri (live search tidak menghabiskan jatah komentar); foto upload kehilangan EXIF/GPS dan orientasinya diterapkan; `%`/`_` di pencarian bukan wildcard; tombol kembali di halaman error tidak mengarah ke situs lain; rute storage lokal tidak aktif |
 | `tests/Feature/LocaleTest.php` | 8 | Bawaan Indonesia + tombol bahasa; ganti ke English & bertahan di halaman lain (isi artikel tetap Indonesia, `lang="id"`); bahasa tak dikenal ditolak; area penulis & pesan validasi ikut bahasa; halaman admin & notifikasi ikut bahasa; 404 ikut bahasa; pop-up & pemisah ribuan ikut bahasa; setiap teks punya terjemahan di `lang/en.json` (dan kunci `trans_choice` terdaftar di `lang/id.json`) |
 
-Hasil: **160 test, 800 assertion, semua lulus.**
+Hasil: **166 test, 843 assertion, semua lulus.**
 
 ---
 

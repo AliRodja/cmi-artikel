@@ -7,13 +7,13 @@
         [
             'label' => 'WhatsApp',
             'icon' => 'whatsapp',
-            'href' => 'https://wa.me/?'.http_build_query(['text' => $article->title."\n".$shareUrl]),
+            'href' => 'https://wa.me/?'.http_build_query(['text' => $article->display_title."\n".$shareUrl]),
             'class' => 'text-[#0E7A3F] hover:bg-[#0E7A3F]',
         ],
         [
             'label' => 'X',
             'icon' => 'x-twitter',
-            'href' => 'https://x.com/intent/post?'.http_build_query(['text' => $article->title, 'url' => $shareUrl]),
+            'href' => 'https://x.com/intent/post?'.http_build_query(['text' => $article->display_title, 'url' => $shareUrl]),
             'class' => 'text-gray-900 hover:bg-gray-900',
         ],
         [

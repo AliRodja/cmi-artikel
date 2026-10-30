@@ -38,4 +38,13 @@ class ArticleFactory extends Factory
     {
         return $this->state(['status' => Article::STATUS_REVIEW]);
     }
+
+    /** Dengan versi Bahasa Inggris (terjemahan penulis). */
+    public function withEnglish(): static
+    {
+        return $this->state(fn () => [
+            'title_en' => rtrim(fake()->sentence(6), '.'),
+            'content_en' => collect(fake()->paragraphs(3))->map(fn ($paragraph) => "<div>{$paragraph}</div>")->implode(''),
+        ]);
+    }
 }

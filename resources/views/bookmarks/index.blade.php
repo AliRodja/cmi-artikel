@@ -35,10 +35,10 @@
                         <x-article-thumb :article="$article" class="aspect-[16/9] w-full rounded-xl sm:aspect-[4/3] sm:w-36" />
                     </a>
                     <div class="min-w-0 flex-1">
-                        <h2 lang="id" class="font-article text-lg leading-snug font-semibold text-gray-900">
-                            <a href="{{ route('public.articles.show', $article) }}" class="hover:text-brand-700">{{ $article->title }}</a>
+                        <h2 lang="{{ $article->display_locale }}" class="font-article text-lg leading-snug font-semibold text-gray-900">
+                            <a href="{{ route('public.articles.show', $article) }}" class="hover:text-brand-700">{{ $article->display_title }}</a>
                         </h2>
-                        <p lang="id" class="mt-1 line-clamp-2 text-sm text-gray-600">{{ $article->excerpt }}</p>
+                        <p lang="{{ $article->display_locale }}" class="mt-1 line-clamp-2 text-sm text-gray-600">{{ $article->display_excerpt }}</p>
                         <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
                             <span class="inline-flex items-center gap-1.5"><x-icon name="bookmark-solid" size="size-3" class="text-brand-600" /> {{ __('Disimpan') }} <x-date :value="$article->pivot->created_at" /></span>
                         </p>

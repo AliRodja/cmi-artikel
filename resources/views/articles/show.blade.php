@@ -179,6 +179,12 @@
                             <dt class="text-gray-500">{{ __('Panjang isi') }}</dt>
                             <dd class="mt-1 text-gray-900">{{ __(':count kata', ['count' => Number::format($article->word_count)]) }}</dd>
                         </div>
+                        <div class="col-span-2">
+                            <dt class="text-gray-500">{{ __('Versi Bahasa Inggris') }}</dt>
+                            <dd @class(['mt-1 font-medium', 'text-green-700' => $article->hasEnglish(), 'text-gray-600' => ! $article->hasEnglish()])>
+                                {{ $article->hasEnglish() ? __('Tersedia') : __('Belum ada') }}
+                            </dd>
+                        </div>
                     </div>
                 </dl>
             </section>
@@ -316,6 +322,20 @@
                     </div>
                 @endif
             </article>
+
+            {{-- Pratinjau terjemahan penulis, untuk dicek admin/peninjau medis sebelum terbit. --}}
+            @if ($article->hasEnglish())
+                <article class="card overflow-hidden">
+                    <div class="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-5 py-3 text-sm font-semibold text-gray-700">
+                        <x-icon name="globe" size="size-4" class="text-gray-500" /> {{ __('Pratinjau versi Bahasa Inggris') }}
+                    </div>
+                    <div lang="en" class="px-6 py-8 sm:px-10">
+                        <h2 class="text-2xl leading-tight font-extrabold tracking-tight text-gray-900 sm:text-3xl">{{ $article->title_en }}</h2>
+                        {{-- content_en_html sudah disanitasi (App\Support\ArticleContent), aman untuk {!! !!}. --}}
+                        <div class="article-content mt-6 border-t border-gray-100 pt-6">{!! $article->content_en_html !!}</div>
+                    </div>
+                </article>
+            @endif
         </div>
     </div>
 @endsection

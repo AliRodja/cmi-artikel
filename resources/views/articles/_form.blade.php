@@ -82,6 +82,7 @@
         </section>
 
         @include('articles._seo-panel')
+        @include('articles._english-version')
     </div>
 
     {{-- Sidebar: ikut menempel saat scroll (bisa di-scroll sendiri bila lebih tinggi dari layar). --}}

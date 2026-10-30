@@ -21,9 +21,17 @@ class Article extends Model
     /** Diajukan penulis, menunggu admin menerbitkan atau mengembalikannya. */
     public const STATUS_REVIEW = 2;
 
+    /**
+     * Kolom minimum untuk daftar/kartu artikel publik (live search, sidebar, 404). title_en & content_en wajib ikut:
+     * tanpa keduanya display_title selalu jatuh ke versi Indonesia walau pengunjung memilih English.
+     */
+    public const LIST_COLUMNS = ['id', 'title', 'title_en', 'content_en', 'slug', 'image', 'created_at'];
+
     protected $fillable = [
         'user_id', 'medical_reviewer_id', 'title', 'slug', 'content', 'sources', 'image', 'status', 'review_note',
         'focus_keyword', 'seo_title', 'seo_description',
+        // Versi Bahasa Inggris (opsional, diterjemahkan penulis).
+        'title_en', 'content_en', 'seo_title_en', 'seo_description_en',
     ];
 
     protected $casts = [
@@ -87,9 +95,12 @@ class Article extends Model
     {
         $pattern = static::likePattern($term);
 
+        // Termasuk versi Bahasa Inggris, agar pengunjung bisa mencari dengan kata Inggris juga.
         return $query->where(fn (Builder $query) => $query
             ->whereRaw("title LIKE ? ESCAPE '!'", [$pattern])
-            ->orWhereRaw("content LIKE ? ESCAPE '!'", [$pattern]));
+            ->orWhereRaw("content LIKE ? ESCAPE '!'", [$pattern])
+            ->orWhereRaw("title_en LIKE ? ESCAPE '!'", [$pattern])
+            ->orWhereRaw("content_en LIKE ? ESCAPE '!'", [$pattern]));
     }
 
     /**
@@ -185,15 +196,73 @@ class Article extends Model
         return ArticleContent::toHtml($this->content);
     }
 
+    /** Isi Bahasa Inggris disanitasi sama seperti isi Indonesia; editor kosong disimpan sebagai null. */
+    public function setContentEnAttribute(?string $value): void
+    {
+        $this->attributes['content_en'] = ArticleContent::toPlainText((string) $value) === ''
+            ? null
+            : ArticleContent::toHtml($value);
+    }
+
+    public function getContentEnHtmlAttribute(): string
+    {
+        return ArticleContent::toHtml($this->content_en);
+    }
+
+    /** Versi Inggris dianggap ada bila judul DAN isinya terisi (ArticleRequest mewajibkan keduanya berpasangan). */
+    public function hasEnglish(): bool
+    {
+        return filled($this->title_en) && ArticleContent::toPlainText((string) $this->content_en) !== '';
+    }
+
+    /**
+     * Versi yang tampil untuk pengunjung: Inggris bila antarmuka sedang English DAN penulis sudah menerjemahkan,
+     * selain itu Indonesia. Dipakai halaman publik lewat accessor display_* di bawah.
+     */
+    public function showsEnglish(): bool
+    {
+        return app()->getLocale() === 'en' && $this->hasEnglish();
+    }
+
+    /** Kode bahasa versi yang tampil, untuk atribut lang="..." (lafal pembaca layar). */
+    public function getDisplayLocaleAttribute(): string
+    {
+        return $this->showsEnglish() ? 'en' : 'id';
+    }
+
+    public function getDisplayTitleAttribute(): string
+    {
+        return $this->showsEnglish() ? $this->title_en : $this->title;
+    }
+
+    /** HTML tersanitasi versi yang tampil, aman untuk {!! !!} (lihat getContentHtmlAttribute). */
+    public function getDisplayContentHtmlAttribute(): string
+    {
+        return $this->showsEnglish() ? $this->content_en_html : $this->content_html;
+    }
+
+    public function getDisplayExcerptAttribute(): string
+    {
+        return Str::limit(ArticleContent::toPlainText($this->showsEnglish() ? $this->content_en : $this->content), 140);
+    }
+
     /** Judul di hasil Google: Judul SEO bila diisi, selain itu judul artikel. */
     public function getMetaTitleAttribute(): string
     {
+        if ($this->showsEnglish()) {
+            return $this->seo_title_en ?: $this->title_en;
+        }
+
         return $this->seo_title ?: $this->title;
     }
 
     /** Penjelasan di hasil Google: Deskripsi SEO bila diisi, selain itu ringkasan isi artikel. */
     public function getMetaDescriptionAttribute(): string
     {
+        if ($this->showsEnglish()) {
+            return $this->seo_description_en ?: Str::limit(ArticleContent::toPlainText($this->content_en), 155);
+        }
+
         return $this->seo_description ?: Str::limit(ArticleContent::toPlainText($this->content), 155);
     }
 

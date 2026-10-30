@@ -33,9 +33,10 @@
             </nav>
 
             <div class="mt-6 max-w-4xl">
-                {{-- lang="id": judul & isi artikel selalu Bahasa Indonesia, walau antarmuka sedang Inggris (lafal pembaca layar). --}}
-                <h1 lang="id" class="text-3xl leading-[1.15] font-extrabold tracking-tight text-white sm:text-4xl lg:text-[2.75rem]">
-                    {{ $article->title }}
+                {{-- display_*: versi Inggris bila pengunjung memilih English dan penulis sudah menerjemahkan (Article::showsEnglish),
+                     selain itu Indonesia. Atribut lang mengikuti versi yang tampil (lafal pembaca layar). --}}
+                <h1 lang="{{ $article->display_locale }}" class="text-3xl leading-[1.15] font-extrabold tracking-tight text-white sm:text-4xl lg:text-[2.75rem]">
+                    {{ $article->display_title }}
                 </h1>
 
                 <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-brand-200">
@@ -84,12 +85,19 @@
         <div class="min-w-0 space-y-8">
             <article class="card overflow-hidden">
                 @if ($article->image_url)
-                    <img src="{{ $article->image_url }}" alt="{{ $article->title }}" class="aspect-[16/9] w-full object-cover">
+                    <img src="{{ $article->image_url }}" alt="{{ $article->display_title }}" class="aspect-[16/9] w-full object-cover">
                 @endif
 
                 <div class="px-6 py-8 sm:px-12 sm:py-10">
-                    {{-- content_html sudah disanitasi (App\Support\ArticleContent), aman untuk {!! !!}. --}}
-                    <div lang="id" class="article-content article-lead">{!! $article->content_html !!}</div>
+                    @if (app()->getLocale() === 'en' && ! $article->hasEnglish())
+                        {{-- Pengunjung memilih English, tetapi penulis belum menerjemahkan artikel ini. --}}
+                        <p class="mb-6 flex items-start gap-2 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-900">
+                            <x-icon name="globe" size="size-4" class="mt-0.5 shrink-0 text-brand-600" />
+                            {{ __('Artikel ini belum tersedia dalam Bahasa Inggris, jadi ditampilkan dalam Bahasa Indonesia.') }}
+                        </p>
+                    @endif
+                    {{-- display_content_html sudah disanitasi (App\Support\ArticleContent), aman untuk {!! !!}. --}}
+                    <div lang="{{ $article->display_locale }}" class="article-content article-lead">{!! $article->display_content_html !!}</div>
                 </div>
 
                 {{-- Tinjauan medis & sumber rujukan: penanda kredibilitas informasi kesehatan. --}}
@@ -199,7 +207,7 @@
                                 <a href="{{ route('public.articles.show', $related) }}" class="group flex gap-3 py-3">
                                     <x-article-thumb :article="$related" class="size-16" />
                                     <div class="min-w-0">
-                                        <p class="line-clamp-2 text-sm leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $related->title }}</p>
+                                        <p class="line-clamp-2 text-sm leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $related->display_title }}</p>
                                         <p class="mt-1 text-xs text-gray-500">{{ $related->created_at->translatedFormat('d M Y') }}</p>
                                     </div>
                                 </a>

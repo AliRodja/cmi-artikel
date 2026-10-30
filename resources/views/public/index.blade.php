@@ -57,7 +57,7 @@
                     <a href="{{ route('public.articles.show', $featured) }}" class="block">
                         <div class="aspect-[16/10] w-full overflow-hidden bg-brand-900 sm:aspect-[16/9]">
                             @if ($featured->image_url)
-                                <img src="{{ $featured->image_url }}" alt="{{ $featured->title }}"
+                                <img src="{{ $featured->image_url }}" alt="{{ $featured->display_title }}"
                                      class="size-full object-cover transition duration-500 group-hover:scale-105">
                             @else
                                 <div class="size-full bg-gradient-to-br from-brand-700 to-brand-950"></div>
@@ -66,8 +66,8 @@
                         <div class="absolute inset-0 bg-gradient-to-t from-brand-950/95 via-brand-950/40 to-transparent"></div>
                         <div class="absolute inset-x-0 bottom-0 p-6 sm:p-8">
                             <span class="badge bg-amber-400 text-amber-950">{{ __('Terbaru') }}</span>
-                            <h3 class="mt-3 font-article text-2xl leading-tight font-semibold text-white sm:text-[2rem]">{{ $featured->title }}</h3>
-                            <p class="mt-3 line-clamp-2 hidden max-w-2xl text-sm text-brand-100 sm:block">{{ $featured->excerpt }}</p>
+                            <h3 class="mt-3 font-article text-2xl leading-tight font-semibold text-white sm:text-[2rem]">{{ $featured->display_title }}</h3>
+                            <p class="mt-3 line-clamp-2 hidden max-w-2xl text-sm text-brand-100 sm:block">{{ $featured->display_excerpt }}</p>
                             <p class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-brand-200">
                                 <span class="inline-flex items-center gap-1.5"><x-icon name="user" size="size-3" /> {{ $featured->user?->name ?? __('Anonim') }}</span>
                                 <span class="inline-flex items-center gap-1.5"><x-icon name="calendar" size="size-3" /> <x-date :value="$featured->created_at" format="d F Y" /></span>
@@ -87,7 +87,7 @@
                             <li>
                                 <a href="{{ route('public.articles.show', $article) }}" class="group flex gap-4 py-3.5 first:pt-0">
                                     <div class="min-w-0 flex-1">
-                                        <h3 class="line-clamp-3 font-article text-[0.95rem] leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $article->title }}</h3>
+                                        <h3 class="line-clamp-3 font-article text-[0.95rem] leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $article->display_title }}</h3>
                                         <p class="mt-1.5 text-xs text-gray-500"><x-date :value="$article->created_at" /></p>
                                     </div>
                                     <x-article-thumb :article="$article" class="size-20" />
@@ -147,7 +147,7 @@
                                 <a href="{{ route('public.articles.show', $popular) }}" class="group flex gap-4 py-3.5 first:pt-0">
                                     <span class="w-6 shrink-0 font-article text-3xl leading-none font-semibold text-brand-400 tabular-nums group-hover:text-brand-600">{{ $loop->iteration }}</span>
                                     <div class="min-w-0">
-                                        <h3 class="line-clamp-3 font-article text-[0.95rem] leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $popular->title }}</h3>
+                                        <h3 class="line-clamp-3 font-article text-[0.95rem] leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $popular->display_title }}</h3>
                                         <p class="mt-1.5 inline-flex items-center gap-1 text-xs text-gray-500">
                                             <x-icon name="eye" size="size-3" /> {{ trans_choice(':count kali dilihat', $popular->view_count, ['count' => Number::format($popular->view_count)]) }}
                                         </p>

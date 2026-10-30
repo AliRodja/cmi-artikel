@@ -16,6 +16,14 @@ class ArticleRequest extends FormRequest
         return true;
     }
 
+    /** Editor Trix yang kosong tetap mengirim "<div><br></div>"; anggap kosong agar aturan required_with benar. */
+    protected function prepareForValidation(): void
+    {
+        if (ArticleContent::toPlainText((string) $this->input('content_en')) === '') {
+            $this->merge(['content_en' => null]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -36,6 +44,12 @@ class ArticleRequest extends FormRequest
             'focus_keyword' => ['nullable', 'string', 'max:100'],
             'seo_title' => ['nullable', 'string', 'max:70'],
             'seo_description' => ['nullable', 'string', 'max:160'],
+            // Versi Bahasa Inggris (opsional): judul & isi wajib berpasangan, agar pengunjung tidak melihat judul
+            // Inggris dengan isi kosong.
+            'title_en' => ['nullable', 'string', 'max:255', 'required_with:content_en'],
+            'content_en' => ['nullable', 'string', 'required_with:title_en'],
+            'seo_title_en' => ['nullable', 'string', 'max:70'],
+            'seo_description_en' => ['nullable', 'string', 'max:160'],
             // Peninjau medis hanya ditentukan admin; penulis yang menyisipkan field ini lewat DevTools ditolak.
             'medical_reviewer_id' => $this->user()->isAdmin()
                 ? ['nullable', 'integer', Rule::exists('users', 'id')->whereIn('role', [User::ROLE_ADMIN, User::ROLE_PENULIS])]
@@ -57,6 +71,10 @@ class ArticleRequest extends FormRequest
             'focus_keyword' => __('kata kunci utama'),
             'seo_title' => __('judul SEO'),
             'seo_description' => __('deskripsi SEO'),
+            'title_en' => __('judul (Bahasa Inggris)'),
+            'content_en' => __('isi artikel (Bahasa Inggris)'),
+            'seo_title_en' => __('judul SEO (Bahasa Inggris)'),
+            'seo_description_en' => __('deskripsi SEO (Bahasa Inggris)'),
             'medical_reviewer_id' => __('peninjau medis'),
             'image' => __('gambar'),
             'status' => __('status'),

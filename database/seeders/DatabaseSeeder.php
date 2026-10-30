@@ -28,8 +28,8 @@ class DatabaseSeeder extends Seeder
             'email' => 'penulis@example.com',
         ]);
 
-        // Artikel tayang penulis demo: contoh "Ditinjau secara medis oleh" + sumber rujukan.
-        Article::factory(3)->for($penulis)->published()->create([
+        // Artikel tayang penulis demo: contoh "Ditinjau secara medis oleh" + sumber rujukan + versi Bahasa Inggris.
+        Article::factory(3)->for($penulis)->published()->withEnglish()->create([
             'medical_reviewer_id' => $admin->id,
             'sources' => "World Health Organization (WHO) https://www.who.int\nKementerian Kesehatan RI https://www.kemkes.go.id",
         ]);

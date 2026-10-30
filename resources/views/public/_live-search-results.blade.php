@@ -19,7 +19,7 @@
                     <x-article-thumb :article="$article" class="size-12" />
                     <div class="min-w-0 flex-1">
                         <p class="line-clamp-1 text-sm font-semibold text-gray-900">
-                            <x-highlight :text="$article->title" :term="$term" />
+                            <x-highlight :text="$article->display_title" :term="$term" />
                         </p>
                         <p class="mt-1 flex items-center gap-2 text-xs text-gray-500">
                             {{ $article->created_at->translatedFormat('d M Y') }}

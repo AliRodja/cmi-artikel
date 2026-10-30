@@ -20,6 +20,6 @@
         @endforeach
     </form>
     <p class="border-t border-gray-100 px-4 py-3 text-xs leading-relaxed text-gray-500">
-        {{ __('Isi artikel tetap ditulis dalam Bahasa Indonesia.') }}
+        {{ __('Artikel tampil dalam Bahasa Inggris bila penulis sudah menyediakan terjemahannya.') }}
     </p>
 </div>

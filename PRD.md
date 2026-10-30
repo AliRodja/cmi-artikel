@@ -12,7 +12,7 @@
 | Asal | Jawaban **ujian masuk IT CMI** (Soal 1 website artikel Laravel, Soal 2 INNER JOIN) milik Ali Imran Rodja |
 | Fase | Sejak 2026-10-28 pengembangan lanjutan dengan **data real** CMI (artikel diinput lewat halaman) |
 | Revisi soal | 2026-10-29: situs dikhususkan untuk artikel jantung; fitur jenis/kategori penyakit dihapus |
-| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **160 test / 800 assertion lulus** |
+| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **166 test / 843 assertion lulus** |
 
 **Tujuan:** pasien dan masyarakat mendapat informasi kesehatan jantung yang tepercaya (penulis jelas, ditinjau tenaga
 medis, ada sumber rujukan), mudah dibaca, dan mudah menghubungi klinik (WhatsApp, telepon).
@@ -114,6 +114,8 @@ Semua fitur di bawah ✅ selesai dan teruji kecuali ditandai lain.
 - Detail artikel: penulis + profesi, "Ditinjau oleh", tanggal, jumlah dilihat, bar progres membaca, bagikan (WA/X/FB/salin),
   Simpan, sumber rujukan, peninjau medis, komentar, Artikel Terkait (kata kunci fokus), Terpopuler. Draft → 404.
 - Navbar tamu: Menu, Cari, logo, **pilihan bahasa (ID/EN)**, **Masuk** (tombol Daftar dihapus; daftar lewat halaman Masuk & footer).
+- **Artikel dua bahasa**: penulis bisa menulis sendiri versi Bahasa Inggris (langkah ⑤ form, opsional). Pengunjung yang
+  memilih English melihat versi itu; belum diterjemahkan → versi Indonesia + pemberitahuan. Pencarian mencakup teks Inggris.
 - **Dua bahasa tampilan**: Indonesia & English untuk **seluruh situs** — halaman publik, Masuk/Daftar/Lupa password,
   akun (Baca Nanti, Notifikasi, Kelola Akun), area penulis & admin (dashboard, tulis artikel + panel SEO, detail,
   Review, Laporan, Kelola Pengguna), pop-up, pesan validasi, notifikasi, halaman error. Isi artikel tetap Indonesia.
@@ -150,7 +152,7 @@ Semua fitur di bawah ✅ selesai dan teruji kecuali ditandai lain.
 | Tabel | Kolom utama | Catatan |
 |---|---|---|
 | `users` | name, email (unique), password (hashed), `role` (admin/penulis/pembaca, default pembaca), `profession` | `role` tidak di `$fillable` |
-| `articles` | `user_id` (**nullable**, nullOnDelete), `medical_reviewer_id` (nullable, FK users), title, `slug` (unique), content (longText, HTML tersanitasi), `sources`, image, `status` (0 Draft · 1 Published · 2 Review), `review_note`, `focus_keyword`, `seo_title`, `seo_description`, `view_count` | index (status, created_at); `user_id` nullable sengaja untuk bukti INNER JOIN |
+| `articles` | `user_id` (**nullable**, nullOnDelete), `medical_reviewer_id` (nullable, FK users), title, `slug` (unique), content (longText, HTML tersanitasi), `sources`, image, `status` (0 Draft · 1 Published · 2 Review), `review_note`, `focus_keyword`, `seo_title`, `seo_description`, `view_count`, versi Inggris opsional `title_en`, `content_en`, `seo_title_en`, `seo_description_en` | index (status, created_at); `user_id` nullable sengaja untuk bukti INNER JOIN |
 | `comments` | article_id, user_id (cascade), body | index (article_id, created_at) |
 | `bookmarks` | user_id, article_id (cascade) | unique (user_id, article_id) — Baca Nanti |
 | `article_views` | article_id (cascade), user_id (nullOnDelete), `visitor` (`user:{id}` / `guest:{hash sesi}`), viewed_at | riwayat kunjungan unik |
@@ -249,8 +251,8 @@ lang/id/{auth,pagination,passwords,validation}.php, lang/id.json
 
 ## 12. Test case
 
-Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **20 file · 160 test ·
-800 assertion — semua lulus (2026-10-30).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
+Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **21 file · 166 test ·
+843 assertion — semua lulus (2026-10-30).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
 selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi nomor +62 dirusak).
 
 | File | Test | Yang diuji |
@@ -272,6 +274,7 @@ selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi n
 | `ReadabilityTest` | 3 | Tanggal relatif hanya < 24 jam; pop-up gagal tanpa timer, berhasil dengan timer; hijau WhatsApp kontras tinggi |
 | `PopupMessageTest` | 6 | Pop-up berhasil keluar & simpan; halaman kedaluwarsa (419) → pop-up gagal; tamu menyimpan artikel → pop-up & kembali ke artikel setelah login; form tidak valid → pop-up gagal umum; tanpa pesan → tanpa pop-up |
 | `PagesRedesignTest` | 11 | Halaman 404/429/500; Baca Nanti; filter notifikasi; ringkasan & cetak laporan; detail artikel penulis (pratinjau, kelengkapan, Google); waktu baca tidak tampil; form bertahap + penghitung kata; statistik dashboard |
+| `ArticleTranslationTest` | 6 | Simpan versi Inggris (tersanitasi, form edit menampilkannya); judul & isi Inggris wajib berpasangan (editor kosong `<div><br></div>` dianggap kosong, disimpan null); pengunjung English melihat terjemahan (judul halaman, `<h1 lang="en">`, isi, kartu beranda, sidebar); tanpa terjemahan → Indonesia + pemberitahuan; pencarian & live search cocok dengan teks Inggris; detail admin menampilkan status & pratinjau versi Inggris |
 | `SecurityTest` | 13 | Header keamanan (termasuk 404) & HSTS hanya HTTPS; sesi lain keluar saat password berubah, sesi pengganti tetap login; batas login per email + IP; batas daftar/reset/ganti password; batas aksi tulis per akun; penghitung batas terpisah per rute; foto upload kehilangan EXIF/GPS & orientasi diterapkan; `%`/`_` bukan wildcard; tombol kembali halaman error tidak ke situs luar; rute storage lokal mati |
 | `LocaleTest` | 8 | Bawaan Indonesia + tombol bahasa; ganti ke English & bertahan (isi artikel tetap Indonesia); bahasa tak dikenal ditolak; area penulis (dashboard, Artikel Saya, form tulis) & pesan validasi ikut bahasa; halaman admin (Review, Laporan, Kelola Pengguna) & notifikasi ikut bahasa (templat + data); 404 ikut bahasa; pop-up & pemisah ribuan ikut bahasa; setiap teks di view/`app/Http`/notifikasi punya terjemahan (+ kunci `trans_choice` di `id.json`) |
 | `HeartOnlySiteTest` | 4 | Kolom kategori sudah tidak ada, beranda bertema jantung tanpa filter jenis, tombol bagikan & konsultasi jantung, migration menjadikan artikel non-jantung Draft sebelum kolom dihapus |
@@ -331,6 +334,20 @@ bawah "Git di-init ulang".
   (UI & judul; sebelumnya Plus Jakarta Sans), **Roboto = `font-article`** (huruf artikel: paragraf `.article-content` + judul artikel di beranda, Baca Nanti, 404;
   subjudul di dalam isi tetap Inter; sejak 2026-10-29 menggantikan Lora/`font-serif` atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
+- [x] **Versi Bahasa Inggris artikel, diterjemahkan sendiri oleh penulis** (2026-10-30; user memilih opsi C, bukan
+  terjemahan otomatis). Migration `add_english_version_to_articles_table` (`title_en`, `content_en` longText,
+  `seo_title_en` 70, `seo_description_en` 160, nullable; MySQL dimigrasi, backup
+  `artikel_app-sebelum-versi-inggris-20261030-1306.sql`, 3 artikel asli utuh). Model: `setContentEnAttribute` (sanitasi,
+  kosong → null), `content_en_html`, `hasEnglish()`, `showsEnglish()` (locale en + hasEnglish), accessor `display_title`,
+  `display_content_html`, `display_excerpt`, `display_locale`; `meta_title`/`meta_description` ikut bahasa; `scopeSearch`
+  & urutan live search juga mencakup kolom Inggris; konstanta `LIST_COLUMNS`. `ArticleRequest`: `prepareForValidation`
+  (editor kosong → null), `required_with` berpasangan, batas SEO. Form: partial `articles/_english-version` (langkah ⑤,
+  `<details>` terbuka bila terisi/ada error, editor Trix kedua). Publik (`public/*`, `article-card`, `popular-article`,
+  `share-buttons`, live search, Baca Nanti, 404) memakai `display_*`; artikel tanpa terjemahan → pemberitahuan. Detail
+  admin: baris "Versi Bahasa Inggris: Tersedia/Belum ada" + pratinjau. Seeder: 3 artikel penulis demo `withEnglish()`.
+  **Bug tertangkap test:** query live search & sidebar memilih kolom terbatas sehingga judul Inggris tak terbaca → kini
+  `Article::LIST_COLUMNS`. Test `ArticleTranslationTest` (6, terbukti gagal saat locale diabaikan, kolom Inggris tak
+  dipilih, sanitasi dilepas, atau aturan berpasangan dilepas) → 166 test / 843 assertion.
 - [x] **Perbaikan keamanan no. 1–5 & 11** (2026-10-30, hasil audit). (1) `symfony/mime` 8.1.7 → 8.1.10 (CVE-2026-45070,
   medium); deploy wajib `composer install --no-dev` (rute `_boost/...` dari paket dev). (2) Batas percobaan di semua aksi
   tulis: limiter bernama `writes` (30/menit per akun, GET tidak dihitung) di grup `auth` & `writer`; daftar &

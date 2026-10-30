@@ -37,12 +37,13 @@ class LocaleTest extends TestCase
             ->assertSee('Sign in')
             ->assertDontSee('Artikel Kesehatan Jantung</h1>', false);
 
-        // Antarmuka Inggris, isi artikel tetap Indonesia (ditandai lang="id").
+        // Antarmuka Inggris; artikel tanpa terjemahan tetap Indonesia (ditandai lang="id").
         $this->get(route('public.articles.show', $article))
             ->assertSee('Mengenal Serangan Jantung')
             ->assertSee('<div lang="id" class="article-content', false)
             ->assertSee('Comments')
-            ->assertSee('Articles are written in Indonesian.');
+            // Belum diterjemahkan penulis → versi Indonesia + pemberitahuan.
+            ->assertSee('This article is not yet available in English, so it is shown in Indonesian.');
 
         $this->post(route('locale.update'), ['locale' => 'id']);
         $this->get(route('home'))->assertSee('<html lang="id">', false)->assertSee('Masuk');

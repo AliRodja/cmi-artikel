@@ -63,10 +63,10 @@ class PublicArticleController extends Controller
 
             $results = $query
                 // Judul yang cocok tampil lebih dulu, baru yang cocok di isi saja.
-                ->orderByRaw("CASE WHEN title LIKE ? ESCAPE '!' THEN 0 ELSE 1 END", [Article::likePattern($term)])
+                ->orderByRaw("CASE WHEN title LIKE ? ESCAPE '!' OR title_en LIKE ? ESCAPE '!' THEN 0 ELSE 1 END", [Article::likePattern($term), Article::likePattern($term)])
                 ->latest()
                 ->take(6)
-                ->get(['id', 'title', 'slug', 'image', 'created_at']);
+                ->get(Article::LIST_COLUMNS);
         }
 
         return view('public._live-search-results', compact('term', 'results', 'total'));
@@ -93,7 +93,7 @@ class PublicArticleController extends Controller
             ->whereKeyNot($article->getKey())
             ->latest()
             ->take(5)
-            ->get(['id', 'title', 'slug', 'image', 'created_at']);
+            ->get(Article::LIST_COLUMNS);
 
         // Di bawah artikel: artikel terkait...
         $relatedArticles = $this->relatedArticles($article, $latestArticles->modelKeys());
