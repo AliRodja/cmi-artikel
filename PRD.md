@@ -240,7 +240,9 @@ lang/id/{auth,pagination,passwords,validation}.php, lang/id.json
 - **Bahasa:** seluruh UI, validasi, email, dan halaman error Bahasa Indonesia; zona waktu WIB.
 - **Ponsel:** semua halaman responsif (tabel laporan menjadi kartu), tanpa scroll horizontal.
 - **Performa:** eager loading (tanpa N+1), pagination, huruf disajikan dari server sendiri, Trix hanya dimuat di form.
-- **Data real:** MySQL lokal tidak boleh di-reset; setiap migration didahului backup (`storage/app/backups/`).
+- **Data real:** MySQL lokal tidak boleh di-reset; setiap migration didahului backup (`storage/app/backups/`). Cadangan
+  terbaru: `artikel_app-data-real-20261030-0811.sql` (3 artikel asli, uji restore berhasil); cadangan per-tahap lama, data
+  dummy, dan gambar dummy dihapus 2026-10-30 — nama file backup di log progres di bawah tinggal catatan sejarah.
 
 ## 12. Test case
 
@@ -367,7 +369,7 @@ bawah "Git di-init ulang".
   "WhatsApp:"); tombol Konsultasi, kartu "Alami gejala jantung?", halaman error & `contactPoint` JSON-LD tetap
   0821-2159-0000 (`whatsapp_number`/`whatsapp_display`, dari link konsultasi resmi). Akreditasi belum ada (kosong =
   disembunyikan). Ikon baru `phone` di `x-icon`. Test di `CredibilityTest` (terbukti gagal bila konversi +62
-  disabotase) → 137 test / 562 assertion. Backup `.env` lama: `storage/app/backups/env-sebelum-info-klinik.bak`.
+  disabotase) → 137 test / 562 assertion. (Backup `.env` lama sudah dihapus 2026-10-30.)
 - [x] **Media sosial di footer** (2026-10-29): `config('clinic.social')` = daftar label/ikon/url akun resmi CMI
   (Facebook, Instagram, X, TikTok, YouTube — **disalin dari footer cmihospital.com**, semuanya `cmihospitals`; Twitter
   tanpa `www.`). Footer kolom 1 "Ikuti Kami": tombol bulat 44px, `target=_blank rel="noopener noreferrer"`, `title` +
