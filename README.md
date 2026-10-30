@@ -4,6 +4,9 @@ Website artikel berbasis **Laravel 13 + MySQL + Blade + Tailwind CSS v4** untuk 
 Pengunjung dapat membaca artikel yang sudah *Published*. User yang login dapat mengelola artikelnya sendiri
 dan melihat laporan artikel (INNER JOIN `articles` × `users`).
 
+Dokumen produk lengkap — fitur & status, tech stack, peran & hak akses, model data, daftar test case, dan log progres —
+ada di [`PRD.md`](PRD.md).
+
 ---
 
 ## 1. Kebutuhan Sistem
