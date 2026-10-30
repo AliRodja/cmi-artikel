@@ -517,6 +517,30 @@ lang/id/  lang/id.json                     terjemahan Bahasa Indonesia
 4. Uji satu artikel di **Rich Results Test** (search.google.com/test/rich-results) dan pratinjau tautan di
    WhatsApp/Facebook (Sharing Debugger).
 
+### Checklist keamanan saat deploy
+
+Website ini memakai **autentikasi berbasis session** (cookie `http_only` + `same_site=lax` + token CSRF), bukan JWT:
+aplikasinya dirender server dengan Blade dan tidak punya API, sehingga session lebih aman (cookie tidak bisa dibaca
+JavaScript) dan bisa dicabut seketika. Yang wajib diatur di server:
+
+1. `.env`: `APP_ENV=production`, **`APP_DEBUG=false`** (kalau `true`, halaman error menampilkan isi konfigurasi
+   termasuk password database), `APP_URL=https://domain-asli`, `LOG_LEVEL=warning`.
+2. **HTTPS** aktif; arahkan HTTP → HTTPS di web server. Header `Strict-Transport-Security` dikirim otomatis oleh
+   middleware `SecurityHeaders` begitu situs dibuka lewat HTTPS.
+3. `SESSION_SECURE_COOKIE=true` (cookie sesi hanya dikirim lewat HTTPS) dan `SESSION_ENCRYPT=true` (isi tabel
+   `sessions` dienkripsi). Saat pertama diubah, semua user perlu login ulang sekali.
+4. `MAIL_MAILER` diganti SMTP sungguhan (bukan `log`) agar email reset password terkirim.
+5. *Document root* web server harus folder **`public/`**, sehingga `.env`, `storage/`, dan kode tidak bisa diunduh.
+6. Kalau hosting memakai *reverse proxy* / *load balancer* yang menangani HTTPS (mis. Cloudflare, Nginx di depan),
+   aktifkan `$middleware->trustProxies(at: '*')` (atau IP proxy) di `bootstrap/app.php`; tanpa itu Laravel mengira
+   request memakai HTTP (cookie aman & HSTS tidak bekerja benar).
+7. `php artisan config:cache && php artisan route:cache && php artisan view:cache`, lalu `php artisan migrate --force`
+   (**jangan** `migrate:fresh` di database berisi data).
+
+Perlindungan yang sudah aktif di kode: header keamanan (`X-Frame-Options`, `X-Content-Type-Options`,
+`Referrer-Policy`, `Permissions-Policy`, HSTS) untuk semua halaman; sesi di perangkat lain otomatis keluar saat
+password diganti (middleware `AuthenticateSession`); throttle login, lupa password, komentar, dan pencarian.
+
 ## 9. Automated Test
 
 ```bash
@@ -540,15 +564,16 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/PagesRedesignTest.php` | 11 | Halaman 404 berbahasa Indonesia, `noindex`, dengan saran artikel (termasuk 404 artikel Draft); 429 saat terlalu banyak percobaan login; halaman 500 tanpa navbar/database; Baca Nanti punya tombol Hapus & tanggal disimpan; filter notifikasi belum dibaca; ringkasan Laporan menunjukkan artikel tanpa penulis yang tersaring INNER JOIN (tanpa istilah teknis di halaman); Laporan menampilkan rentang data, sorotan kata kunci, dan tombol Cetak; detail artikel di dashboard punya pratinjau, informasi, kelengkapan 6 poin, dan tampilan di Google; "menit baca" tidak ditampilkan di halaman mana pun; dashboard menampilkan total dibaca & kartu statistik bisa diklik; form tulis artikel berlangkah 1–4 dengan penghitung kata & kelengkapan |
 | `tests/Feature/ArticleSeoFieldsTest.php` | 4 | Form menampilkan panel Optimasi SEO; kata kunci/judul/deskripsi SEO tersimpan; batas panjang (70/160/100); halaman publik memakai Judul & Deskripsi SEO (`<title>`, meta description, og:title, JSON-LD `keywords`) sementara judul artikel di halaman tetap; kosong = memakai judul & isi |
 | `tests/Feature/SeoTest.php` | 7 | Meta description, robots, canonical (tanpa `?utm_*`), Open Graph artikel & gambar bawaan; JSON-LD artikel (penulis + profesi, peninjau medis, breadcrumb) dan judul berisi `</script>` tidak bisa keluar dari tag; canonical beranda menyimpan `?page=`; JSON-LD `specialty` kardiovaskular; halaman cari/login/dashboard/akun `noindex`; sitemap hanya beranda & artikel Published; robots.txt tertutup selain production |
-| `tests/Feature/CredibilityTest.php` | 7 | Profesi penulis, "Ditinjau secara medis oleh", sumber rujukan (link hanya http/https, teks di-escape); hanya admin yang boleh menentukan peninjau (penulis ditolak), peninjau harus penulis/admin dan bisa dipilih saat Terbitkan; profesi diisi lewat Kelola Akun; footer hanya menampilkan info klinik yang terisi & link media sosial resmi CMI (URL persis, tab baru aman, nama untuk pembaca layar); tombol ikon punya teks |
+| `tests/Feature/CredibilityTest.php` | 8 | Profesi penulis, "Ditinjau secara medis oleh", sumber rujukan (link hanya http/https, teks di-escape); hanya admin yang boleh menentukan peninjau (penulis ditolak), peninjau harus penulis/admin dan bisa dipilih saat Terbitkan; profesi diisi lewat Kelola Akun; footer hanya menampilkan info klinik yang terisi & link media sosial resmi CMI (URL persis, tab baru aman, nama untuk pembaca layar); tombol ikon punya teks; nomor telepon & WhatsApp diubah ke format +62 untuk link `tel:`/`wa.me`, link peta dari alamat |
 | `tests/Feature/ReadabilityTest.php` | 3 | Tanggal relatif hanya < 24 jam, selebihnya tanggal pasti + `datetime`/`title`; pop-up gagal tanpa bar waktu, pop-up berhasil 8 detik; tombol WhatsApp memakai hijau berkontras tinggi |
 | `tests/Feature/ArticleContentTest.php` | 6 | Rich text: format dipertahankan, HTML berbahaya (`<script>`, `onclick`, `javascript:`) dibuang, link diberi `rel=noopener`, editor kosong ditolak |
 | `tests/Feature/ArticleRoleTest.php` | 11 | Pendaftar selalu pembaca walau mengirim `role=admin`; penulis tidak bisa langsung Published; artikel yang diajukan tidak tampil di publik; penulis tidak bisa edit/hapus artikel yang sudah tayang; penulis **403** di halaman admin; admin mengelola artikel siapa pun; terbitkan & kembalikan (catatan wajib); catatan hilang saat diajukan ulang; command `user:role` |
 | `tests/Feature/ReaderFeaturesTest.php` | 8 | Pembaca **403** di area penulis & diarahkan ke beranda setelah login; komentar (wajib login, validasi, di-escape, tidak bisa di artikel Draft, hapus hanya pemilik/admin); Baca Nanti (simpan/batal, artikel yang ditarik hilang dari daftar) |
 | `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
 | `tests/Feature/UserManagementTest.php` | 8 | Hanya admin (penulis & pembaca **403**); cari nama/email + filter peran (search tidak menembus filter); tambah akun dengan peran, password ter-hash & bisa login; validasi (email unik, peran tidak dikenal, konfirmasi password); edit dengan password kosong = tidak diganti; reset password orang lain; admin tidak bisa mengubah peran / menghapus akun sendiri; hapus akun → artikel tetap tanpa penulis, komentar/Baca Nanti/notifikasi ikut terhapus |
+| `tests/Feature/SecurityTest.php` | 5 | Header keamanan (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) di semua halaman termasuk 404; HSTS hanya lewat HTTPS; sesi lain keluar saat password diganti, sesi yang mengganti tetap login, ganti nama tidak mengeluarkan |
 
-Hasil: **136 test, 554 assertion, semua lulus.**
+Hasil: **142 test, 596 assertion, semua lulus.**
 
 ---
 

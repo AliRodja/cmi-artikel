@@ -12,7 +12,7 @@
 | Asal | Jawaban **ujian masuk IT CMI** (Soal 1 website artikel Laravel, Soal 2 INNER JOIN) milik Ali Imran Rodja |
 | Fase | Sejak 2026-10-28 pengembangan lanjutan dengan **data real** CMI (artikel diinput lewat halaman) |
 | Revisi soal | 2026-10-29: situs dikhususkan untuk artikel jantung; fitur jenis/kategori penyakit dihapus |
-| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **137 test / 562 assertion lulus** |
+| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **142 test / 596 assertion lulus** |
 
 **Tujuan:** pasien dan masyarakat mendapat informasi kesehatan jantung yang tepercaya (penulis jelas, ditinjau tenaga
 medis, ada sumber rujukan), mudah dibaca, dan mudah menghubungi klinik (WhatsApp, telepon).
@@ -224,7 +224,9 @@ lang/id/{auth,pagination,passwords,validation}.php, lang/id.json
 
 ## 11. Kebutuhan non-fungsional
 
-- **Keamanan:** CSRF di semua form; output Blade selalu `{{ }}` (pengecualian tunggal: isi artikel tersanitasi);
+- **Keamanan:** autentikasi berbasis session (cookie `http_only`, `same_site=lax`), **bukan JWT** — aplikasi server-rendered
+  tanpa API; header keamanan HTTP (`SecurityHeaders`); sesi perangkat lain keluar saat password berubah
+  (`AuthenticateSession`); pengaturan production di README "Checklist keamanan saat deploy"; CSRF di semua form; output Blade selalu `{{ }}` (pengecualian tunggal: isi artikel tersanitasi);
   `user_id` dari user login, bukan dari form; `role` tidak bisa diisi massal; throttle login, lupa password, komentar,
   live search; link eksternal `rel="noopener noreferrer"`.
 - **Keterbacaan & aksesibilitas:** huruf terkecil 14px, kontras ≥ 4,5:1, area sentuh 44px, ikon selalu disertai teks
@@ -237,8 +239,8 @@ lang/id/{auth,pagination,passwords,validation}.php, lang/id.json
 
 ## 12. Test case
 
-Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **18 file · 137 test ·
-562 assertion — semua lulus (2026-10-29).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
+Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **19 file · 142 test ·
+596 assertion — semua lulus (2026-10-30).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
 selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi nomor +62 dirusak).
 
 | File | Test | Yang diuji |
@@ -260,6 +262,7 @@ selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi n
 | `ReadabilityTest` | 3 | Tanggal relatif hanya < 24 jam; pop-up gagal tanpa timer, berhasil dengan timer; hijau WhatsApp kontras tinggi |
 | `PopupMessageTest` | 6 | Pop-up berhasil keluar & simpan; halaman kedaluwarsa (419) → pop-up gagal; tamu menyimpan artikel → pop-up & kembali ke artikel setelah login; form tidak valid → pop-up gagal umum; tanpa pesan → tanpa pop-up |
 | `PagesRedesignTest` | 11 | Halaman 404/429/500; Baca Nanti; filter notifikasi; ringkasan & cetak laporan; detail artikel penulis (pratinjau, kelengkapan, Google); waktu baca tidak tampil; form bertahap + penghitung kata; statistik dashboard |
+| `SecurityTest` | 5 | Header keamanan di semua respons termasuk 404; HSTS hanya lewat HTTPS; sesi lain keluar saat password berubah; sesi yang mengganti password tetap login; ganti nama tidak mengeluarkan |
 | `HeartOnlySiteTest` | 4 | Kolom kategori sudah tidak ada, beranda bertema jantung tanpa filter jenis, tombol bagikan & konsultasi jantung, migration menjadikan artikel non-jantung Draft sebelum kolom dihapus |
 
 ### Checklist uji manual (browser) — semua ✅ (2026-10-19)
@@ -285,8 +288,8 @@ Coblong, Kota Bandung, Jawa Barat 40134 · Buka setiap hari, 24 jam · Telepon (
 **Menunggu / backlog:**
 - [ ] Akreditasi CMI (`CLINIC_ACCREDITATION`) — tunggu data dari user, jangan dikarang.
 - [ ] Link Google Maps resmi (`CLINIC_MAPS_URL`) — sementara link pencarian dari alamat.
-- [ ] `npm run build` sebelum dikumpulkan / deploy; isi `CLINIC_*` di `.env` server; jalankan "Checklist SEO saat
-  deploy" di README.
+- [ ] `npm run build` sebelum dikumpulkan / deploy; isi `CLINIC_*` di `.env` server; jalankan "Checklist keamanan
+  saat deploy" & "Checklist SEO saat deploy" di README.
 - Persiapan tanya-jawab penilai: middleware vs policy, alur reset password, INNER JOIN vs LEFT JOIN, jebakan
   `orWhere` tanpa closure, N+1 & eager loading, mass assignment & `$fillable`, CSRF, route model binding dengan slug.
 
@@ -317,6 +320,17 @@ bawah "Git di-init ulang".
   (UI & judul; sebelumnya Plus Jakarta Sans), **Roboto = `font-article`** (huruf artikel: paragraf `.article-content` + judul artikel di beranda, Baca Nanti, 404;
   subjudul di dalam isi tetap Inter; sejak 2026-10-29 menggantikan Lora/`font-serif` atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
+- [x] **Keamanan: header HTTP, keluar dari perangkat lain, pengaturan production** (2026-10-30). User bertanya soal JWT
+  → tidak dipakai (aplikasi Blade tanpa API; session + cookie `http_only` + CSRF lebih aman & bisa dicabut). Middleware
+  baru `App\Http\Middleware\SecurityHeaders` (global `append` di `bootstrap/app.php`, ikut di 404): `X-Frame-Options:
+  SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`,
+  HSTS `max-age=31536000` hanya bila `isSecure()`. Belum ada CSP (perlu uji skrip/font). `AuthenticateSession` bawaan
+  Laravel ditambahkan ke grup `web`: sidik password di sesi → ganti password lewat Kelola Akun / reset email / admin
+  mengeluarkan sesi lain (cookie "ingat saya" juga dicek), sesi yang mengganti tetap login; sesi lama tanpa sidik tidak
+  dikeluarkan. Diuji juga E2E dua perangkat (curl, SQLite sementara): A ganti password → A 200, B → login. `.env.example`
+  diberi komentar production + `SESSION_SECURE_COOKIE`; README bagian "Checklist keamanan saat deploy" (debug off,
+  HTTPS, cookie aman & enkripsi sesi, SMTP, document root `public/`, `trustProxies` bila di balik proxy, cache).
+  Test `SecurityTest` (5, terbukti gagal bila tiap middleware dimatikan) → 142 test / 596 assertion.
 - [x] **Info kontak resmi CMI di footer** (2026-10-29, data dari user): alamat Jl. Tubagus Ismail VII, Sekeloa,
   Kecamatan Coblong, Kota Bandung, Jawa Barat 40134 · Buka setiap hari, 24 jam · Telepon (022) 253 1000 · WhatsApp
   0811 9161 166 · Email info@cmihospital.com. Diisi di `.env` **dan** `.env.example` (`CLINIC_ADDRESS/HOURS/PHONE/

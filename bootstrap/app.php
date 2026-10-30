@@ -2,10 +2,12 @@
 
 use App\Http\Middleware\EnsureUserCanWrite;
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\AuthenticateSession;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -19,6 +21,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'writer' => EnsureUserCanWrite::class,
         ]);
+
+        $middleware->append(SecurityHeaders::class);
+
+        // Setiap sesi menyimpan sidik password. Bila password diganti (Kelola Akun, reset lewat email, atau admin),
+        // sesi di perangkat lain tidak cocok lagi dan otomatis keluar; sesi yang mengganti tetap login.
+        // Cookie "ingat saya" juga dicek karena ikut memuat sidik password.
+        $middleware->web(append: [AuthenticateSession::class]);
 
         // User yang sudah login lalu membuka /login atau /register: pembaca ke beranda, lainnya ke dashboard.
         $middleware->redirectUsersTo(fn (Request $request) => $request->user()?->canWrite() ? route('dashboard') : route('home'));

@@ -41,7 +41,7 @@ Aturan kerja untuk Claude. **Produk, fitur, tech stack, rute, model data, test c
 npm run dev                 # terminal 1 (biarkan berjalan)
 php artisan optimize:clear  # terminal 2
 php artisan serve           # http://localhost:8000
-php artisan test            # 137 test per 2026-10-29
+php artisan test            # 142 test per 2026-10-30
 npm run build               # wajib sebelum dikumpulkan / deploy
 ```
 - Dev server Vite tidak mengenali class Tailwind di file Blade baru → `touch resources/css/app.css`. Mengubah
@@ -72,6 +72,9 @@ npm run build               # wajib sebelum dikumpulkan / deploy
 - Kontak klinik di `config/clinic.php` (`CLINIC_*`): WhatsApp **tombol Konsultasi 0821-2159-0000**
   (`whatsapp_consultation_url`) berbeda dengan **WhatsApp footer 0811 9161 166** (`whatsapp_url`) — pilihan user.
 - SEO terpusat di `App\Support\Seo` + `partials/seo`; JSON-LD wajib `Seo::JSON_FLAGS` (`JSON_HEX_TAG`).
+- Keamanan: autentikasi **session, bukan JWT** (tanpa API; kalau kelak butuh API → Sanctum). `SecurityHeaders` (global)
+  & `AuthenticateSession` (grup `web`) di `bootstrap/app.php` — jangan dilepas. Halaman yang dimuat dalam iframe situs
+  lain akan diblokir (`X-Frame-Options: SAMEORIGIN`); CSP belum ada, uji skrip/font/Vite bila menambahkannya.
 
 ## Konvensi kode
 - Blade: selalu `{{ }}`. **Satu-satunya** `{!! !!}`: `{!! $article->content_html !!}` di dalam `.article-content`.
