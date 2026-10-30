@@ -12,7 +12,7 @@
 | Asal | Jawaban **ujian masuk IT CMI** (Soal 1 website artikel Laravel, Soal 2 INNER JOIN) milik Ali Imran Rodja |
 | Fase | Sejak 2026-10-28 pengembangan lanjutan dengan **data real** CMI (artikel diinput lewat halaman) |
 | Revisi soal | 2026-10-29: situs dikhususkan untuk artikel jantung; fitur jenis/kategori penyakit dihapus |
-| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **151 test / 646 assertion lulus** |
+| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **160 test / 800 assertion lulus** |
 
 **Tujuan:** pasien dan masyarakat mendapat informasi kesehatan jantung yang tepercaya (penulis jelas, ditinjau tenaga
 medis, ada sumber rujukan), mudah dibaca, dan mudah menghubungi klinik (WhatsApp, telepon).
@@ -232,7 +232,9 @@ lang/id/{auth,pagination,passwords,validation}.php, lang/id.json
 
 - **Keamanan:** autentikasi berbasis session (cookie `http_only`, `same_site=lax`), **bukan JWT** — aplikasi server-rendered
   tanpa API; header keamanan HTTP (`SecurityHeaders`); sesi perangkat lain keluar saat password berubah
-  (`AuthenticateSession`); pengaturan production di README "Checklist keamanan saat deploy"; CSRF di semua form; output Blade selalu `{{ }}` (pengecualian tunggal: isi artikel tersanitasi);
+  (`AuthenticateSession`); batas percobaan bernama di semua aksi tulis (Masuk/Lupa Password per email + IP); Lupa
+  Password tidak membocorkan email terdaftar; foto upload digambar ulang (EXIF/GPS terbuang, orientasi diterapkan);
+  `composer audit` bersih; pengaturan production di README "Checklist keamanan saat deploy"; CSRF di semua form; output Blade selalu `{{ }}` (pengecualian tunggal: isi artikel tersanitasi);
   `user_id` dari user login, bukan dari form; `role` tidak bisa diisi massal; throttle login, lupa password, komentar,
   live search; link eksternal `rel="noopener noreferrer"`.
 - **Keterbacaan & aksesibilitas:** huruf terkecil 14px, kontras ≥ 4,5:1, area sentuh 44px, ikon selalu disertai teks
@@ -247,13 +249,13 @@ lang/id/{auth,pagination,passwords,validation}.php, lang/id.json
 
 ## 12. Test case
 
-Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **20 file · 151 test ·
-646 assertion — semua lulus (2026-10-30).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
+Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **20 file · 160 test ·
+800 assertion — semua lulus (2026-10-30).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
 selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi nomor +62 dirusak).
 
 | File | Test | Yang diuji |
 |---|:-:|---|
-| `AuthTest` | 16 | Navbar tamu hanya tombol Masuk; daftar (+ validasi), Masuk benar/salah, throttle 5×, Keluar, lupa password & tampilan "Cek email", reset password (token sekali pakai, token salah), tamu ke `/dashboard` → login, user login tidak bisa buka login/daftar |
+| `AuthTest` | 17 | Navbar tamu hanya tombol Masuk; daftar (+ validasi), Masuk benar/salah, throttle 5×, Keluar, lupa password & tampilan "Cek email", reset password (token sekali pakai, token salah), tamu ke `/dashboard` → login, user login tidak bisa buka login/daftar; lupa password menjawab sama untuk email terdaftar/tidak |
 | `ArticleAuthorizationTest` | 9 | Pemilik bisa lihat/ubah/hapus artikel belum terbit; user lain 403 (lihat, ubah, hapus); daftar hanya milik sendiri; tamu ditolak; `user_id` dari user login; publik hanya Published; halaman publik tanpa tombol kelola |
 | `ArticleReportTest` | 9 | **Soal 2:** INNER JOIN membuang artikel tanpa penulis, hanya Published, nama & email dari `users`, urut terbaru, 10/halaman, cari judul/nama/email, cari tidak membocorkan Draft, kata kunci ikut di link halaman, tamu ditolak |
 | `ArticleRoleTest` | 11 | Pendaftar selalu pembaca, penulis tidak bisa terbit langsung / mengubah artikel terbit / membuka halaman admin, ajukan review, admin terbitkan & kembalikan (catatan wajib), catatan terhapus saat diajukan ulang, aksi review hanya untuk status Review, perintah `user:role` |
@@ -270,7 +272,7 @@ selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi n
 | `ReadabilityTest` | 3 | Tanggal relatif hanya < 24 jam; pop-up gagal tanpa timer, berhasil dengan timer; hijau WhatsApp kontras tinggi |
 | `PopupMessageTest` | 6 | Pop-up berhasil keluar & simpan; halaman kedaluwarsa (419) → pop-up gagal; tamu menyimpan artikel → pop-up & kembali ke artikel setelah login; form tidak valid → pop-up gagal umum; tanpa pesan → tanpa pop-up |
 | `PagesRedesignTest` | 11 | Halaman 404/429/500; Baca Nanti; filter notifikasi; ringkasan & cetak laporan; detail artikel penulis (pratinjau, kelengkapan, Google); waktu baca tidak tampil; form bertahap + penghitung kata; statistik dashboard |
-| `SecurityTest` | 5 | Header keamanan di semua respons termasuk 404; HSTS hanya lewat HTTPS; sesi lain keluar saat password berubah; sesi yang mengganti password tetap login; ganti nama tidak mengeluarkan |
+| `SecurityTest` | 13 | Header keamanan (termasuk 404) & HSTS hanya HTTPS; sesi lain keluar saat password berubah, sesi pengganti tetap login; batas login per email + IP; batas daftar/reset/ganti password; batas aksi tulis per akun; penghitung batas terpisah per rute; foto upload kehilangan EXIF/GPS & orientasi diterapkan; `%`/`_` bukan wildcard; tombol kembali halaman error tidak ke situs luar; rute storage lokal mati |
 | `LocaleTest` | 8 | Bawaan Indonesia + tombol bahasa; ganti ke English & bertahan (isi artikel tetap Indonesia); bahasa tak dikenal ditolak; area penulis (dashboard, Artikel Saya, form tulis) & pesan validasi ikut bahasa; halaman admin (Review, Laporan, Kelola Pengguna) & notifikasi ikut bahasa (templat + data); 404 ikut bahasa; pop-up & pemisah ribuan ikut bahasa; setiap teks di view/`app/Http`/notifikasi punya terjemahan (+ kunci `trans_choice` di `id.json`) |
 | `HeartOnlySiteTest` | 4 | Kolom kategori sudah tidak ada, beranda bertema jantung tanpa filter jenis, tombol bagikan & konsultasi jantung, migration menjadikan artikel non-jantung Draft sebelum kolom dihapus |
 
@@ -329,6 +331,19 @@ bawah "Git di-init ulang".
   (UI & judul; sebelumnya Plus Jakarta Sans), **Roboto = `font-article`** (huruf artikel: paragraf `.article-content` + judul artikel di beranda, Baca Nanti, 404;
   subjudul di dalam isi tetap Inter; sejak 2026-10-29 menggantikan Lora/`font-serif` atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
+- [x] **Perbaikan keamanan no. 1–5 & 11** (2026-10-30, hasil audit). (1) `symfony/mime` 8.1.7 → 8.1.10 (CVE-2026-45070,
+  medium); deploy wajib `composer install --no-dev` (rute `_boost/...` dari paket dev). (2) Batas percobaan di semua aksi
+  tulis: limiter bernama `writes` (30/menit per akun, GET tidak dihitung) di grup `auth` & `writer`; daftar &
+  reset-password 10/menit, ganti password 5/menit. **Temuan:** `throttle:X,Y` tanpa nama memakai SATU penghitung per
+  IP/akun untuk semua rute (live search menghabiskan jatah komentar) → semua diberi nama ketiga (`throttle:10,1,comments`).
+  (3) Limiter `auth-attempts` untuk Masuk & Lupa Password: 5/menit per email + IP, plus 30/menit per IP. (4) Lupa Password
+  menjawab sama untuk email terdaftar, tidak terdaftar, maupun throttle broker; teks "Jika email terdaftar…"
+  (`lang/id/passwords.php`, `lang/en/passwords.php` hanya menimpa `sent`, digabung dengan bawaan). (5)
+  `App\Support\ImageUpload::store()` menggambar ulang JPG/PNG/WebP dengan GD (EXIF/GPS terbuang, Orientation diterapkan
+  dulu, transparansi dipertahankan, nama acak) — dipakai `ArticleController`; gambar lama di server tidak diproses ulang.
+  (11) Tombol kembali halaman 419/429 hanya ke host sendiri; `Article::likePattern()` + `LIKE ? ESCAPE '!'` di pencarian
+  publik & live search (query Soal 2 sengaja tidak diubah); `filesystems.local.serve = false`. Test `SecurityTest` +8,
+  `AuthTest` +1 → 160 test / 800 assertion; keenam perbaikan terbukti ditangkap test saat disabotase.
 - [x] **Ganti bahasa juga di area penulis/admin & halaman akun** (2026-10-30). `SetLocale` tidak lagi memaksa `id` di
   `/dashboard…`; tombol bahasa tampil di semua halaman. Dibungkus `__()`: dashboard, `articles/{index,_form,_seo-panel,
   _reviewer-select,create,edit,show,report}`, `review/index`, `users/*`, `bookmarks/index`, `notifications/index`,

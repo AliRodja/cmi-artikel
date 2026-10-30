@@ -18,38 +18,44 @@ use App\Http\Controllers\SeoController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
+// Catatan throttle: "throttle:jumlah,menit,nama". Tanpa nama, Laravel memakai SATU penghitung bersama per pengunjung/akun
+// untuk semua rute (mis. live search menghabiskan jatah komentar), jadi setiap rute diberi nama penghitung sendiri.
+// Batas bernama (auth-attempts, writes) ada di AppServiceProvider.
 Route::get('/', [PublicArticleController::class, 'index'])->name('home');
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 // Dinamis (bukan public/robots.txt) agar isinya mengikuti APP_ENV & APP_URL.
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
 Route::get('/artikel/{article}', [PublicArticleController::class, 'show'])->name('public.articles.show');
 // Live search panel cari navbar. Dibatasi 60 permintaan/menit per pengunjung (JS sudah memberi jeda saat mengetik).
-Route::get('/cari', [PublicArticleController::class, 'liveSearch'])->middleware('throttle:60,1')->name('articles.live-search');
+Route::get('/cari', [PublicArticleController::class, 'liveSearch'])->middleware('throttle:60,1,live-search')->name('articles.live-search');
 // Ganti bahasa tampilan (Indonesia / English), dari tombol bahasa di navbar.
-Route::post('/bahasa', LocaleController::class)->middleware('throttle:30,1')->name('locale.update');
+Route::post('/bahasa', LocaleController::class)->middleware('throttle:30,1,locale')->name('locale.update');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
-    Route::post('/register', [RegisterController::class, 'store']);
+    // Batas per IP agar tidak bisa dipakai membuat akun palsu secara massal.
+    Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:10,1,register');
 
     Route::get('/login', [LoginController::class, 'create'])->name('login');
-    Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:5,1');
+    // auth-attempts: 5×/menit per email + IP (AppServiceProvider), agar staf satu Wi-Fi tidak saling mengunci.
+    Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:auth-attempts');
 
     Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:auth-attempts')
         ->name('password.email');
 
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'create'])->name('password.reset');
-    Route::post('/reset-password', [ResetPasswordController::class, 'store'])->name('password.update');
+    Route::post('/reset-password', [ResetPasswordController::class, 'store'])->middleware('throttle:10,1,reset-password')->name('password.update');
 });
 
-Route::middleware('auth')->group(function () {
+// throttle:writes = batas aksi simpan/ubah/hapus per akun (AppServiceProvider); membuka halaman tidak dihitung.
+Route::middleware(['auth', 'throttle:writes'])->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
     // Fitur semua peran (termasuk pembaca): komentar, Baca Nanti, notifikasi.
     Route::post('/artikel/{article}/komentar', [CommentController::class, 'store'])
-        ->middleware('throttle:10,1')
+        ->middleware('throttle:10,1,comments')
         ->name('comments.store');
     Route::delete('/komentar/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
@@ -63,10 +69,11 @@ Route::middleware('auth')->group(function () {
     // Kelola Akun: data akun milik user yang login (semua peran).
     Route::get('/akun', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/akun', [ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/akun/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    // Lebih ketat: orang yang meminjam perangkat yang masih login tidak bisa menebak password saat ini berulang kali.
+    Route::put('/akun/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:5,1,password-change')->name('profile.password');
 });
 
-Route::middleware(['auth', 'writer'])->group(function () {
+Route::middleware(['auth', 'writer', 'throttle:writes'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::prefix('dashboard')->group(function () {

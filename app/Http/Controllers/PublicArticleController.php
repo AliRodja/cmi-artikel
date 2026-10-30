@@ -63,7 +63,7 @@ class PublicArticleController extends Controller
 
             $results = $query
                 // Judul yang cocok tampil lebih dulu, baru yang cocok di isi saja.
-                ->orderByRaw('CASE WHEN title LIKE ? THEN 0 ELSE 1 END', ["%{$term}%"])
+                ->orderByRaw("CASE WHEN title LIKE ? ESCAPE '!' THEN 0 ELSE 1 END", [Article::likePattern($term)])
                 ->latest()
                 ->take(6)
                 ->get(['id', 'title', 'slug', 'image', 'created_at']);

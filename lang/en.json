@@ -158,12 +158,10 @@
     "Link untuk membuat password baru sudah dikirim.": "A link to create a new password has been sent.",
     "Masukkan email akun Anda. Kami akan mengirim link untuk membuat password baru.": "Enter your account email. We will send you a link to create a new password.",
     "Tidak masalah. Kami bantu Anda membuat password baru melalui link yang dikirim ke email Anda.": "No problem. We will help you create a new password through a link sent to your email.",
-    "Kami sudah mengirim link ke": "We have sent a link to",
     "Link berlaku": "The link is valid for",
     ":count menit": ":count minutes",
     "Buka email tersebut, lalu klik tombol": "Open that email, then click the button",
     "Reset Password": "Reset Password",
-    "Belum masuk? Periksa folder Spam atau Promosi.": "Not there yet? Check your Spam or Promotions folder.",
     "Kembali ke halaman Masuk": "Back to sign in",
     "Kirim ulang link": "Resend link",
     "Gunakan email yang Anda pakai saat mendaftar.": "Use the email you registered with.",
@@ -478,5 +476,9 @@
     ":name mengajukan artikel untuk direview.": ":name submitted an article for review.",
     ":name mengomentari artikel Anda.": ":name commented on your article.",
     "Artikel baru telah terbit.": "A new article has been published.",
-    "Artikel Anda dikembalikan admin: \":note\"": "Your article was returned by the admin: \":note\""
+    "Artikel Anda dikembalikan admin: \":note\"": "Your article was returned by the admin: \":note\"",
+    "Jika": "If",
+    "terdaftar, kami sudah mengirim link ke email tersebut.": "is registered, we have sent a link to that email.",
+    "Belum masuk? Periksa folder Spam atau Promosi, dan pastikan email yang Anda ketik benar. Tunggu 1 menit sebelum kirim ulang.": "Not there yet? Check your Spam or Promotions folder and make sure you typed the email correctly. Wait 1 minute before resending.",
+    "Gambar tidak dapat diproses. Coba file JPG, PNG, atau WebP lain.": "The image could not be processed. Try another JPG, PNG, or WebP file."
 }

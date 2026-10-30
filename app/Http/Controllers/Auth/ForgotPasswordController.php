@@ -23,9 +23,14 @@ class ForgotPasswordController extends Controller
 
         $status = Password::sendResetLink($request->only('email'));
 
-        // Email ikut dibawa (withInput) agar halaman bisa menampilkan "dikirim ke ..." dan tombol kirim ulang.
-        return $status === Password::RESET_LINK_SENT
-            ? back()->withInput($request->only('email'))->with('status', __($status))
-            : back()->withInput($request->only('email'))->withErrors(['email' => __($status)]);
+        // Jawaban selalu sama, baik email terdaftar, tidak terdaftar (INVALID_USER), maupun baru saja diminta
+        // (RESET_THROTTLED). Kalau berbeda, orang bisa mengecek apakah email dokter/pasien tertentu punya akun.
+        // Status lain (mis. gagal kirim) tetap ditampilkan sebagai error.
+        if (! in_array($status, [Password::RESET_LINK_SENT, Password::INVALID_USER, Password::RESET_THROTTLED], true)) {
+            return back()->withInput($request->only('email'))->withErrors(['email' => __($status)]);
+        }
+
+        // Email ikut dibawa (withInput) agar halaman bisa menampilkan alamatnya dan tombol kirim ulang.
+        return back()->withInput($request->only('email'))->with('status', __(Password::RESET_LINK_SENT));
     }
 }

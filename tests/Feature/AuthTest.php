@@ -141,6 +141,24 @@ class AuthTest extends TestCase
         $this->assertDatabaseHas('password_reset_tokens', ['email' => $user->email]);
     }
 
+    public function test_forgot_password_does_not_reveal_whether_email_is_registered(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create(['email' => 'terdaftar@cmi.test']);
+
+        $registered = $this->from('/forgot-password')->post('/forgot-password', ['email' => 'terdaftar@cmi.test']);
+        $unknown = $this->from('/forgot-password')->post('/forgot-password', ['email' => 'tidak-ada@cmi.test']);
+        // Permintaan kedua untuk email yang sama (dibatasi broker 60 detik) juga tidak boleh berbeda.
+        $repeated = $this->from('/forgot-password')->post('/forgot-password', ['email' => 'terdaftar@cmi.test']);
+
+        foreach ([$registered, $unknown, $repeated] as $response) {
+            $response->assertRedirect('/forgot-password')
+                ->assertSessionHasNoErrors()
+                ->assertSessionHas('status', 'Jika email tersebut terdaftar, link reset password sudah dikirim.');
+        }
+        Notification::assertSentToTimes($user, ResetPassword::class, 1);
+    }
+
     public function test_forgot_password_page_switches_to_check_email_state_after_sending(): void
     {
         Notification::fake();

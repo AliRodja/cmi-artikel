@@ -85,9 +85,20 @@ class Article extends Model
      */
     public function scopeSearch(Builder $query, string $term): Builder
     {
+        $pattern = static::likePattern($term);
+
         return $query->where(fn (Builder $query) => $query
-            ->where('title', 'like', "%{$term}%")
-            ->orWhere('content', 'like', "%{$term}%"));
+            ->whereRaw("title LIKE ? ESCAPE '!'", [$pattern])
+            ->orWhereRaw("content LIKE ? ESCAPE '!'", [$pattern]));
+    }
+
+    /**
+     * "%kata%" untuk LIKE, dengan % dan _ ketikan pengunjung dianggap huruf biasa (bukan wildcard), mis. cari "50%".
+     * Pakai ESCAPE '!' karena perilakunya sama di MySQL dan SQLite (backslash berbeda di keduanya).
+     */
+    public static function likePattern(string $term): string
+    {
+        return '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term).'%';
     }
 
     /**

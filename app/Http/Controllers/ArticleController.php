@@ -6,6 +6,7 @@ use App\Http\Requests\ArticleRequest;
 use App\Models\Article;
 use App\Models\User;
 use App\Support\ArticleNotifier;
+use App\Support\ImageUpload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -46,7 +47,7 @@ class ArticleController extends Controller
         $data = $request->safe()->except(['image', 'remove_image']);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('articles', 'public');
+            $data['image'] = ImageUpload::store($request->file('image'), 'articles');
         }
 
         $article = $request->user()->articles()->create($data);
@@ -91,7 +92,7 @@ class ArticleController extends Controller
 
         if ($request->hasFile('image')) {
             $this->deleteImage($article);
-            $data['image'] = $request->file('image')->store('articles', 'public');
+            $data['image'] = ImageUpload::store($request->file('image'), 'articles');
         } elseif ($request->boolean('remove_image')) {
             $this->deleteImage($article);
             $data['image'] = null;

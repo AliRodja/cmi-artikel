@@ -23,7 +23,7 @@
                     <x-icon name="envelope-open" size="size-5" />
                 </span>
                 <p class="text-sm text-green-900">
-                    {{ __('Kami sudah mengirim link ke') }} <span class="font-semibold break-all">{{ old('email') }}</span>.
+                    {{ __('Jika') }} <span class="font-semibold break-all">{{ old('email') }}</span> {{ __('terdaftar, kami sudah mengirim link ke email tersebut.') }}
                     {{ __('Link berlaku') }} <span class="font-semibold">{{ __(':count menit', ['count' => config('auth.passwords.users.expire')]) }}</span>.
                 </p>
             </div>
@@ -35,7 +35,7 @@
                 </li>
                 <li class="flex gap-2">
                     <x-icon name="check" size="size-3" class="mt-1 text-brand-600" />
-                    <span>{{ __('Belum masuk? Periksa folder Spam atau Promosi.') }}</span>
+                    <span>{{ __('Belum masuk? Periksa folder Spam atau Promosi, dan pastikan email yang Anda ketik benar. Tunggu 1 menit sebelum kirim ulang.') }}</span>
                 </li>
             </ul>
 

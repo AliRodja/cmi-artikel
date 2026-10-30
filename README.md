@@ -541,12 +541,18 @@ JavaScript) dan bisa dicabut seketika. Yang wajib diatur di server:
 6. Kalau hosting memakai *reverse proxy* / *load balancer* yang menangani HTTPS (mis. Cloudflare, Nginx di depan),
    aktifkan `$middleware->trustProxies(at: '*')` (atau IP proxy) di `bootstrap/app.php`; tanpa itu Laravel mengira
    request memakai HTTP (cookie aman & HSTS tidak bekerja benar).
-7. `php artisan config:cache && php artisan route:cache && php artisan view:cache`, lalu `php artisan migrate --force`
+7. Pasang dependency **tanpa paket pengembangan**: `composer install --no-dev --optimize-autoloader` (paket dev seperti
+   Laravel Boost membuka rute `_boost/...` yang tidak boleh ada di server), lalu jalankan `composer audit`.
+8. `php artisan config:cache && php artisan route:cache && php artisan view:cache`, lalu `php artisan migrate --force`
    (**jangan** `migrate:fresh` di database berisi data).
 
 Perlindungan yang sudah aktif di kode: header keamanan (`X-Frame-Options`, `X-Content-Type-Options`,
 `Referrer-Policy`, `Permissions-Policy`, HSTS) untuk semua halaman; sesi di perangkat lain otomatis keluar saat
-password diganti (middleware `AuthenticateSession`); throttle login, lupa password, komentar, dan pencarian.
+password diganti (middleware `AuthenticateSession`); batas percobaan di semua aksi tulis — Masuk & Lupa Password per
+email + IP (staf satu Wi-Fi tidak saling mengunci), daftar, reset & ganti password, komentar, pencarian, serta semua
+aksi simpan/ubah/hapus per akun; Lupa Password tidak membocorkan email mana yang terdaftar; foto upload digambar ulang
+sehingga metadata EXIF (lokasi GPS, perangkat) terbuang tanpa membuat foto miring; `%`/`_` di pencarian publik dianggap
+huruf biasa.
 
 ## 9. Automated Test
 
@@ -560,7 +566,7 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 
 | File | Jumlah | Yang diuji |
 |---|---|---|
-| `tests/Feature/AuthTest.php` | 16 | Navbar tamu hanya tombol Masuk; register (+ validasi, password ter-hash), login benar/salah, throttle login (429), logout, kirim link reset, reset password + token tidak bisa dipakai ulang, token palsu ditolak, middleware `auth` & `guest` |
+| `tests/Feature/AuthTest.php` | 17 | Navbar tamu hanya tombol Masuk; register (+ validasi, password ter-hash), login benar/salah, throttle login (429), logout, kirim link reset, reset password + token tidak bisa dipakai ulang, token palsu ditolak, middleware `auth` & `guest`; lupa password memberi jawaban sama untuk email terdaftar maupun tidak |
 | `tests/Feature/ArticleAuthorizationTest.php` | 9 | Pemilik bisa lihat/edit/update/hapus artikel yang belum tayang; user lain **403** (lihat, edit, update, hapus); daftar hanya artikel sendiri; tamu diarahkan ke login; `user_id` tidak bisa disisipkan dari form; publik hanya melihat Published (Draft 404) dan tidak ada tombol kelola |
 | `tests/Feature/ArticleReportTest.php` | 9 | Soal 2: INNER JOIN membuang artikel tanpa penulis, hanya `status = 1`, nama & email dari tabel `users`, urut `created_at` terbaru, 10 per halaman, search judul/nama/email, search tidak membocorkan Draft, kata kunci terbawa di link pagination, tamu ditolak |
 | `tests/Feature/HeartOnlySiteTest.php` | 4 | Kolom & pilihan jenis artikel sudah tidak ada (field `category` paksaan diabaikan); beranda berjudul "Artikel Kesehatan Jantung" tanpa filter jenis; halaman detail berisi link bagikan ter-encode, "Alami gejala jantung?" & URL WhatsApp CS persis; migration menjadikan artikel non-jantung Draft lalu menghapus kolomnya |
@@ -578,10 +584,10 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/ReaderFeaturesTest.php` | 8 | Pembaca **403** di area penulis & diarahkan ke beranda setelah login; komentar (wajib login, validasi, di-escape, tidak bisa di artikel Draft, hapus hanya pemilik/admin); Baca Nanti (simpan/batal, artikel yang ditarik hilang dari daftar) |
 | `tests/Feature/NotificationTest.php` | 9 | Admin ← pengajuan; tidak ada notifikasi ganda saat edit; penulis & pembaca ← terbit; admin menerbitkan artikelnya sendiri; penulis ← dikembalikan & komentar (bukan komentarnya sendiri); lonceng menampilkan jumlah, membuka = tandai dibaca; tidak bisa membuka notifikasi orang lain (404); tandai semua dibaca |
 | `tests/Feature/UserManagementTest.php` | 8 | Hanya admin (penulis & pembaca **403**); cari nama/email + filter peran (search tidak menembus filter); tambah akun dengan peran, password ter-hash & bisa login; validasi (email unik, peran tidak dikenal, konfirmasi password); edit dengan password kosong = tidak diganti; reset password orang lain; admin tidak bisa mengubah peran / menghapus akun sendiri; hapus akun → artikel tetap tanpa penulis, komentar/Baca Nanti/notifikasi ikut terhapus |
-| `tests/Feature/SecurityTest.php` | 5 | Header keamanan (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) di semua halaman termasuk 404; HSTS hanya lewat HTTPS; sesi lain keluar saat password diganti, sesi yang mengganti tetap login, ganti nama tidak mengeluarkan |
+| `tests/Feature/SecurityTest.php` | 13 | Header keamanan di semua halaman termasuk 404; HSTS hanya lewat HTTPS; sesi lain keluar saat password diganti, sesi yang mengganti tetap login; batas login per email + IP (rekan satu IP tetap bisa masuk); batas daftar/reset/ganti password; batas aksi tulis per akun (membuka halaman tidak dihitung); tiap batas punya penghitung sendiri (live search tidak menghabiskan jatah komentar); foto upload kehilangan EXIF/GPS dan orientasinya diterapkan; `%`/`_` di pencarian bukan wildcard; tombol kembali di halaman error tidak mengarah ke situs lain; rute storage lokal tidak aktif |
 | `tests/Feature/LocaleTest.php` | 8 | Bawaan Indonesia + tombol bahasa; ganti ke English & bertahan di halaman lain (isi artikel tetap Indonesia, `lang="id"`); bahasa tak dikenal ditolak; area penulis & pesan validasi ikut bahasa; halaman admin & notifikasi ikut bahasa; 404 ikut bahasa; pop-up & pemisah ribuan ikut bahasa; setiap teks punya terjemahan di `lang/en.json` (dan kunci `trans_choice` terdaftar di `lang/id.json`) |
 
-Hasil: **151 test, 646 assertion, semua lulus.**
+Hasil: **160 test, 800 assertion, semua lulus.**
 
 ---
 

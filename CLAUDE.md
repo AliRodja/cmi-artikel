@@ -43,7 +43,7 @@ Aturan kerja untuk Claude. **Produk, fitur, tech stack, rute, model data, test c
 npm run dev                 # terminal 1 (biarkan berjalan)
 php artisan optimize:clear  # terminal 2
 php artisan serve           # http://localhost:8000
-php artisan test            # 151 test per 2026-10-30
+php artisan test            # 160 test per 2026-10-30
 npm run build               # wajib sebelum dikumpulkan / deploy
 ```
 - Dev server Vite tidak mengenali class Tailwind di file Blade baru → `touch resources/css/app.css`. Mengubah
@@ -67,8 +67,10 @@ npm run build               # wajib sebelum dikumpulkan / deploy
   `orderByDesc('articles.created_at')` + `paginate(10)->withQueryString()` — **jangan diubah** saat redesign.
 - Slug unik otomatis di `Article::booted()`, tidak berubah saat judul diedit; route model binding memakai `slug`.
 - Isi artikel: Trix → disanitasi `App\Support\ArticleContent` dua lapis (mutator saat simpan + accessor `content_html`).
-- Gambar di disk `public` folder `articles/`; file lama dihapus saat diganti / checkbox `remove_image` / artikel
-  dihapus (butuh `storage:link`).
+- Gambar di disk `public` folder `articles/`, **selalu lewat `App\Support\ImageUpload::store()`** (digambar ulang GD:
+  EXIF/GPS terbuang, orientasi diterapkan) — jangan `->store()` langsung. File lama dihapus saat diganti / checkbox
+  `remove_image` / artikel dihapus (butuh `storage:link`).
+- Lupa Password sengaja menjawab sama untuk email terdaftar/tidak — jangan kembalikan pesan "email tidak ditemukan".
 - Notifikasi lewat `App\Support\ArticleNotifier` (update hanya bila `wasChanged('status')`). Kunjungan lewat
   `App\Support\ArticleViewCounter` dengan `DB::table()->increment()` (agar `updated_at` tidak berubah).
 - Kontak klinik di `config/clinic.php` (`CLINIC_*`): WhatsApp **tombol Konsultasi 0821-2159-0000**
@@ -123,5 +125,8 @@ npm run build               # wajib sebelum dikumpulkan / deploy
   (419 diuji dengan curl / memalsukan instance di test).
 - `env()` membaca `$_SERVER`/`$_ENV` lebih dulu (dari `.env`) → test yang menimpa env harus menimpa ketiganya.
 - `public/robots.txt` statis akan menang atas route `/robots.txt` — jangan dibuat lagi.
+- `throttle:X,Y` TANPA nama = satu penghitung bersama per IP/akun untuk SEMUA rute → selalu beri nama ketiga
+  (`throttle:10,1,comments`) atau pakai limiter bernama (`auth-attempts`, `writes` di AppServiceProvider).
+- LIKE dengan input pengunjung: pakai `Article::likePattern()` + `LIKE ? ESCAPE '!'` (backslash beda di MySQL & SQLite).
 - Uji E2E Chrome headless: klik CDP kadang hilang setelah `form.submit()` (bukan bug aplikasi) → pakai `element.click()`.
 - Alat audit kontras salah membaca latar `oklch()` & teks di atas gambar/gradien — cek manual.

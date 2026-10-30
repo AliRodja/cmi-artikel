@@ -33,7 +33,8 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Tidak dipakai (gambar ada di disk "public"); dimatikan agar tidak ada rute storage/{path} yang terbuka.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
