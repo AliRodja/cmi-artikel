@@ -26,7 +26,7 @@
     ])>
         <span @class([
             'text-base font-bold tracking-tight',
-            'text-brand-950' => $tone === 'light',
+            'text-gray-700' => $tone === 'light',
             'text-white' => $tone === 'dark',
         ])>{{ config('app.name') }}</span>
 
