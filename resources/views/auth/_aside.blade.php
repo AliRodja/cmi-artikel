@@ -1,8 +1,10 @@
 {{--
     Isi panel biru kiri halaman Masuk & Daftar (slot "aside" x-auth-card): logo, sambutan singkat,
-    dan ajakan konsultasi WhatsApp. Variabel: $heading, $text.
+    ajakan konsultasi WhatsApp, dan catatan keamanan akses. Variabel: $heading, $text.
 --}}
-<x-logo tone="dark" />
+<a href="{{ route('home') }}" class="self-start rounded-lg focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none">
+    <x-logo tone="dark" />
+</a>
 
 <div class="my-auto py-10">
     <h2 class="text-3xl leading-tight font-extrabold tracking-tight">{{ $heading }}</h2>
@@ -17,3 +19,7 @@
         <x-icon name="chevron-right" size="size-3" />
     </a>
 </div>
+
+<p class="mt-8 flex items-center gap-2 border-t border-brand-900 pt-6 text-sm text-brand-100">
+    <x-icon name="shield" size="size-4" class="shrink-0" /> {{ __('Akses aman & terenkripsi ke portal kesehatan Anda.') }}
+</p>

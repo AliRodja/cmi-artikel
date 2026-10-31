@@ -338,6 +338,13 @@ bawah "Git di-init ulang".
   (UI & judul; sebelumnya Plus Jakarta Sans), **Roboto = `font-article`** (huruf artikel: paragraf `.article-content` + judul artikel di beranda, Baca Nanti, 404;
   subjudul di dalam isi tetap Inter; sejak 2026-10-29 menggantikan Lora/`font-serif` atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
+- [x] **Tampilan baru kartu halaman auth di `x-auth-card`** (2026-10-31). Desain dari user (awalnya ditulis langsung di
+  `login.blade.php` → error 500 karena `:title` tidak dikirim + logo/judul dobel) dipindah ke komponen sehingga Masuk,
+  Daftar, Lupa & Reset Password seragam: kartu `rounded-2xl` + bayangan lembut, lebar `max-w-4xl`, dipusatkan vertikal,
+  isian & tombol di dalam kartu `rounded-xl` (varian `[&_.form-input]`/`[&_.btn]`, `.form-input` global tidak diubah),
+  panel biru memakai cahaya tipis di pojok (gantinya gradien radial). `auth/_aside`: logo jadi link ke beranda + catatan
+  "Akses aman & terenkripsi…" (ikon perisai). Penyesuaian aturan keterbacaan: teks ≥ 14px & `text-brand-100`/`slate-500`
+  (versi user `text-xs`, `slate-400`, `font-serif`).
 - [x] **README jadi tutorial instalasi macOS, Linux, Windows** (2026-10-30). Bagian 1–6 ditulis ulang: kebutuhan (PHP
   **8.4.1+**, bukan 8.3 seperti tertulis sebelumnya; ekstensi `intl`, `gd`, `exif`, dll.; Node 20.19+/22.12+; internet saat
   build untuk Google Fonts), persiapan perangkat per OS (Homebrew; apt + PPA ondrej/sury PHP 8.4, NodeSource, user MySQL
