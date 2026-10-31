@@ -10,6 +10,7 @@
         "cloudinary/cloudinary_php": "^3.3",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
+        "livewire/livewire": "^4.4",
         "symfony/html-sanitizer": "^8.1"
     },
     "require-dev": {

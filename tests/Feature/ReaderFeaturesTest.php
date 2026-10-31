@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\ArticleComments;
+use App\Livewire\BookmarkButton;
 use App\Models\Article;
 use App\Models\Comment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ReaderFeaturesTest extends TestCase
@@ -114,5 +117,54 @@ class ReaderFeaturesTest extends TestCase
         $this->actingAs($this->pembaca)
             ->get(route('bookmarks.index'))
             ->assertDontSee($this->article->title);
+    }
+
+    public function test_livewire_bookmark_button_toggles_and_dispatches_sync_event(): void
+    {
+        Livewire::actingAs($this->pembaca)
+            ->test(BookmarkButton::class, ['article' => $this->article, 'isBookmarked' => false, 'withLabel' => true])
+            ->assertSee('Simpan')
+            ->call('toggle')
+            ->assertSet('isBookmarked', true)
+            ->assertDispatched('bookmark-toggled', articleId: $this->article->id, isBookmarked: true)
+            ->assertSee('Tersimpan')
+            ->call('toggle')
+            ->assertSet('isBookmarked', false)
+            ->assertDispatched('bookmark-toggled', articleId: $this->article->id, isBookmarked: false)
+            ->assertSee('Simpan');
+
+        $this->assertFalse($this->pembaca->hasBookmarked($this->article));
+    }
+
+    public function test_livewire_comments_component_creates_validates_and_deletes_comments(): void
+    {
+        $other = User::factory()->pembaca()->create();
+
+        Livewire::actingAs($this->pembaca)
+            ->test(ArticleComments::class, ['article' => $this->article])
+            ->set('body', '')
+            ->call('store')
+            ->assertHasErrors(['body' => 'required'])
+            ->set('body', 'Komentar langsung via Livewire.')
+            ->call('store')
+            ->assertHasNoErrors()
+            ->assertSet('body', '')
+            ->assertSee('Komentar Anda sudah ditambahkan.')
+            ->assertSee('Komentar langsung via Livewire.');
+
+        $comment = Comment::firstOrFail();
+
+        Livewire::actingAs($other)
+            ->test(ArticleComments::class, ['article' => $this->article])
+            ->call('destroy', $comment->id)
+            ->assertForbidden();
+
+        Livewire::actingAs($this->pembaca)
+            ->test(ArticleComments::class, ['article' => $this->article])
+            ->call('destroy', $comment->id)
+            ->assertSee('Komentar dihapus.')
+            ->assertDontSee('Komentar langsung via Livewire.');
+
+        $this->assertModelMissing($comment);
     }
 }

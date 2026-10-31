@@ -127,9 +127,10 @@ class LocaleTest extends TestCase
     {
         $english = json_decode(File::get(lang_path('en.json')), true);
 
-        // Semua view + PHP yang membuat teks untuk pengguna (controller, Form Request, bootstrap/app.php).
+        // Semua view + PHP yang membuat teks untuk pengguna (controller, Form Request, Livewire, bootstrap/app.php).
         $files = collect(File::allFiles(resource_path('views')))
             ->merge(File::allFiles(app_path('Http')))
+            ->merge(File::allFiles(app_path('Livewire')))
             ->map(fn ($file) => (string) $file)
             ->push(base_path('bootstrap/app.php'));
 

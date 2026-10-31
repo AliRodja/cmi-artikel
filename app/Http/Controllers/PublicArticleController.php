@@ -86,8 +86,6 @@ class PublicArticleController extends Controller
         $article->load([
             'user:id,name,profession',
             'medicalReviewer:id,name,profession',
-            // Komentar terlama di atas (urutan percakapan), sekaligus nama & peran penulisnya.
-            'comments' => fn ($query) => $query->with('user:id,name,role')->oldest(),
         ]);
 
         $isBookmarked = (bool) $request->user()?->hasBookmarked($article);
