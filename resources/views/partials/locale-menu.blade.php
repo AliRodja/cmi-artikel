@@ -4,7 +4,7 @@
     Nama bahasa ditulis dalam bahasanya sendiri agar mudah dikenali, apa pun bahasa yang sedang aktif.
 --}}
 <div id="locale-menu" popover class="dropdown-panel w-64 overflow-hidden">
-    <div class="h-0.5 bg-gradient-to-r from-brand-950 via-brand-600 to-amber-400" aria-hidden="true"></div>
+    <div class="h-0.5 bg-gradient-to-r from-brand-600 via-brand-500 to-amber-400" aria-hidden="true"></div>
     <p class="border-b border-brand-100/80 bg-brand-50/50 px-4 py-3 text-sm font-semibold text-brand-950">{{ __('Bahasa tampilan') }}</p>
     <form action="{{ route('locale.update') }}" method="POST" class="space-y-1 p-2">
         @csrf

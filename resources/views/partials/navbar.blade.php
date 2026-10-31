@@ -1,6 +1,33 @@
-<header data-navbar class="sticky top-0 z-30 border-b border-brand-200/80 bg-brand-50 transition-shadow data-scrolled:shadow-md data-scrolled:shadow-brand-950/8">
-    {{-- Garis aksen atas 3px: gradien biru tua CMI ke emas/amber hangat (tinggi total header tetap 67px untuk sticky toolbar Trix). --}}
-    <div class="h-[3px] bg-gradient-to-r from-brand-950 via-brand-600 to-amber-400" aria-hidden="true"></div>
+{{-- Bilah atas (top utility bar) biru khas CMI: Contact Us + tautan media sosial utama (tanpa kolom cari & tanpa tombol login di bilah ini). --}}
+<div class="bg-brand-600 text-white print:hidden">
+    <div class="mx-auto flex w-full max-w-[96rem] flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-2 text-xs font-medium sm:gap-x-5 sm:px-6 lg:px-8">
+        <a href="#hubungi-kami" class="text-white/95 transition hover:text-white hover:underline">
+            {{ __('Contact Us') }}
+        </a>
+        <span class="text-white/50 select-none" aria-hidden="true">|</span>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 sm:gap-x-5">
+            <a href="https://www.youtube.com/c/CMIhospital-com" target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-1.5 text-white/95 transition hover:text-white hover:underline">
+                <x-icon name="youtube" size="size-3.5" />
+                <span>CMIhospital.com</span>
+            </a>
+            <a href="https://www.instagram.com/cmihospital.official/" target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-1.5 text-white/95 transition hover:text-white hover:underline">
+                <x-icon name="instagram" size="size-3.5" />
+                <span>cmihospitals</span>
+            </a>
+            <a href="https://www.facebook.com/cmihospitals" target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-1.5 text-white/95 transition hover:text-white hover:underline">
+                <x-icon name="facebook" size="size-3.5" />
+                <span>CMI Hospital</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<header data-navbar class="sticky top-0 z-30 border-b border-brand-200/80 bg-brand-50 transition-shadow data-scrolled:shadow-md data-scrolled:shadow-brand-900/8">
+    {{-- Garis pemisah tipis 3px agar tinggi sticky header tetap 67px (selaras dengan sticky toolbar Trix top-[67px]). --}}
+    <div class="h-[3px] bg-brand-600/15" aria-hidden="true"></div>
 
     {{--
         Tiga kolom: [1fr | auto | 1fr]. Kolom kiri & kanan selalu sama lebar, sehingga
@@ -46,8 +73,8 @@
                 {{-- Hanya tombol Masuk (permintaan user); pendaftaran lewat link "Daftar akun baru" di halaman Masuk. --}}
                 {{-- Di ponsel tanpa ikon & tidak terlipat, agar muat bersama tombol bahasa. Ikon dibungkus <span> karena
                      CSS Font Awesome yang tak berlayer menimpa class "hidden". --}}
-                <a href="{{ route('login') }}" class="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-brand-900 px-4 text-xs font-semibold whitespace-nowrap text-white shadow-xs ring-1 ring-brand-950/10 transition hover:bg-brand-800 focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:outline-none sm:px-4.5 sm:text-sm">
-                    <span class="hidden sm:inline"><x-icon name="login" size="size-3" class="text-amber-300" /></span> {{ __('Masuk') }}
+                <a href="{{ route('login') }}" class="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-brand-600 px-4 text-xs font-semibold whitespace-nowrap text-white shadow-xs transition hover:bg-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:outline-none sm:px-4.5 sm:text-sm">
+                    <span class="hidden sm:inline"><x-icon name="login" size="size-3" /></span> {{ __('Masuk') }}
                 </a>
             @else
                 {{-- popovertarget: browser sendiri yang membuka/menutup dropdown (partials/notification-menu & user-menu). --}}

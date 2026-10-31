@@ -5,7 +5,7 @@
     - Enter tanpa memilih hasil = form GET biasa ke beranda (?search=...), halaman hasil lengkap.
 --}}
 <dialog id="search-panel" class="search-panel" aria-label="{{ __('Cari artikel') }}">
-    <div class="h-[3px] bg-gradient-to-r from-brand-950 via-brand-600 to-amber-400" aria-hidden="true"></div>
+    <div class="h-[3px] bg-gradient-to-r from-brand-600 via-brand-500 to-amber-400" aria-hidden="true"></div>
     <div class="container-page py-5">
         <div class="mx-auto max-w-3xl">
             <form action="{{ route('home') }}" method="GET" role="search" class="flex items-center gap-2"

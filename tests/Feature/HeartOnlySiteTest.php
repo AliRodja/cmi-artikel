@@ -39,6 +39,12 @@ class HeartOnlySiteTest extends TestCase
         $this->get(route('home'))
             ->assertSee('<title>Artikel Kesehatan Jantung · '.config('app.name').'</title>', false)
             ->assertSee('Nyeri Dada Bukan Selalu Maag')
+            ->assertSee('data-hero-slider', false)
+            ->assertSee('images/Hero-1.webp', false)
+            ->assertSee('images/Hero-2.webp', false)
+            ->assertSee('images/Hero-3.webp', false)
+            ->assertSee('data-hero-prev', false)
+            ->assertSee('data-hero-next', false)
             ->assertDontSee('?jenis=', false)
             ->assertDontSee('Berita Utama');
     }

@@ -31,7 +31,7 @@
             </ul>
         </div>
 
-        <div>
+        <div id="hubungi-kami" class="scroll-mt-24">
             <p class="eyebrow text-white/90">{{ __('Hubungi Kami') }}</p>
             <ul class="mt-4 space-y-3 text-sm text-white">
                 @if ($clinic['address'])

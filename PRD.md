@@ -12,7 +12,7 @@
 | Asal | Jawaban **ujian masuk IT CMI** (Soal 1 website artikel Laravel, Soal 2 INNER JOIN) milik Ali Imran Rodja |
 | Fase | Sejak 2026-10-28 pengembangan lanjutan dengan **data real** CMI (artikel diinput lewat halaman) |
 | Revisi soal | 2026-10-29: situs dikhususkan untuk artikel jantung; fitur jenis/kategori penyakit dihapus |
-| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **175 test / 889 assertion lulus** |
+| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **175 test / 894 assertion lulus** |
 
 **Tujuan:** pasien dan masyarakat mendapat informasi kesehatan jantung yang tepercaya (penulis jelas, ditinjau tenaga
 medis, ada sumber rujukan), mudah dibaca, dan mudah menghubungi klinik (WhatsApp, telepon).
@@ -26,7 +26,7 @@ medis, ada sumber rujukan), mudah dibaca, dan mudah menghubungi klinik (WhatsApp
 | **Admin** — editor konten | Meninjau & menerbitkan, kelola pengguna, laporan | Antrean review, laporan bisa dicetak; UI **tanpa istilah teknis** (bukan developer) |
 | **Penilai CMI** | Memeriksa rubrik | Penjelasan teknis (INNER JOIN, middleware, dll.) cukup di README & kode |
 
-Desain: **korporat & polos** — hero biru tua, navbar `#E3F2FD`, footer `#066AC9`, tanpa hiasan "seperti AI".
+Desain: **korporat & polos** — hero & footer biru cerah CMI `#066AC9` (`bg-brand-600`), navbar `#E3F2FD` (`bg-brand-50`), tanpa hiasan "seperti AI".
 
 ## 3. Lingkup soal ujian & rubrik
 
@@ -264,7 +264,7 @@ lang/en.json (terjemahan Inggris, kunci = teks Indonesia), lang/en/passwords.php
 ## 12. Test case
 
 Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **23 file · 175 test ·
-889 assertion — semua lulus (2026-10-31).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
+894 assertion — semua lulus (2026-10-31).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
 selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi nomor +62 dirusak).
 
 | File | Test | Yang diuji |
@@ -348,23 +348,34 @@ Entri pekerjaan diurutkan **dari yang terbaru** (urutan mengikuti riwayat commit
 bawah "Git di-init ulang".
 - Arah desain: **corporate / company profile**. Token di `app.css` `@theme`: palet `brand-50..950` dari warna resmi
   CMI (navbar `#E3F2FD` = `brand-50`, footer `#066AC9` = `brand-600`) + font dari **Google Fonts API** lewat provider
-  `google()` laravel-vite-plugin (diunduh saat build, disajikan dari server sendiri; `@fonts` di layout): Inter = `font-sans`
-  (UI & judul; sebelumnya Plus Jakarta Sans), **Roboto = `font-article`** (huruf artikel: paragraf `.article-content` + judul artikel di beranda, Baca Nanti, 404;
-  subjudul di dalam isi tetap Inter; sejak 2026-10-29 menggantikan Lora/`font-serif` atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
+  `google()` laravel-vite-plugin (diunduh saat build, disajikan dari server sendiri; `@fonts` di layout): **Roboto, sans-serif**
+  untuk seluruh UI, judul, dan isi artikel (`--font-sans: var(--font-roboto), sans-serif` & `--font-article: var(--font-roboto), sans-serif`;
+  sejak 2026-10-31 menyeragamkan Inter + Roboto menjadi Roboto penuh atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
-- [x] **Redesign beranda & navbar bergaya Editorial / Quiet Luxury** (2026-10-31; target pembaca usia 25–40+ dengan
-  riwayat kondisi kronis). Hero `bg-brand-950` dengan aksen emas/amber hangat (`amber-300`), kolom cari berikon, pintasan
-  topik kronis (`Hipertensi`, `Kolesterol`, `Nyeri Dada`, `Aritmia`, `Gaya Hidup`), serta 3 pilar kredibilitas medis
-  (*Ditinjau Tim Medis*, *Berbasis Rujukan Ilmiah*, *Pendampingan Jangka Panjang*). Bagian **Sorotan** diubah menjadi
-  *Editorial Split Card* di atas latar putih bersih (garis aksen gradien di atas, lencana "Ditinjau oleh …", profesi
-  penulis, dan tautan "Baca Selengkapnya"); **Artikel Lainnya** & **Terpopuler** dibungkus kartu rapi. Kartu artikel
+- [x] **Redesign beranda, navbar & halaman auth bergaya Editorial / Quiet Luxury + warna cerah CMI** (2026-10-31;
+  target pembaca usia 25–40+ dengan riwayat kondisi kronis). Atas permintaan user, warna biru tua (`bg-brand-950`)
+  diganti dengan warna cerah khas rumah sakit CMI (`bg-brand-600` `#066AC9` pada hero detail artikel, panel kiri halaman
+  auth, dan kartu konsultasi; serta latar putih bersih pada hero beranda). Susunan `@section('hero')` di beranda:
+  (1) paling atas **jumbotron slider** utuh tanpa lapisan warna biru yang otomatis membaca semua poster `Hero*` / `hero*`
+  di `public/images/` (`Hero-1.webp`, `Hero-2.webp`, `Hero-3.webp`, dst., urut alami) dengan tombol geser kiri/kanan,
+  geser sentuh (`snap-x`), titik indikator, dan geser otomatis tiap 6 detik; (2) tepat di bawah gambar poster terdapat
+  blok judul `Artikel Kesehatan Jantung`, kolom cari kapsul berikon, pintasan topik kronis (`Hipertensi`, `Kolesterol`,
+  `Nyeri Dada`, `Aritmia`, `Gaya Hidup`), serta 3 kartu akses cepat bergaya **Cleveland Clinic** (*Konsultasi Langsung*,
+  *Pustaka Kesehatan Jantung*, *Lokasi & Kontak Klinik* dengan garis aksen atas `border-t-4`). Di atas navbar ditambahkan
+  **bilah atas biru CMI** (`Contact Us | YouTube CMIhospital.com | Instagram cmihospitals | Facebook CMI Hospital`, tanpa
+  kolom cari dan tanpa tombol login di bilah atas sesuai permintaan user); lebar & padding `.container-page` dari navbar
+  hingga footer diperlebar (`max-w-[90rem] px-4 sm:px-8 lg:px-14`) mengikuti proporsi cmihospital.com. Bagian **Sorotan**, **Artikel Lainnya**,
+  **Terpopuler**, dan `x-article-card` memakai kartu berbingkai aksen atas biru `border-t-4 border-t-brand-600`. Kartu artikel
   (`x-article-card`) dan `PublicArticleController` kini memuat & menampilkan gelar/profesi penulis serta lencana
-  "Ditinjau Medis"; `x-consultation-card` diberi aksen senada. **Navbar** (`partials/navbar`) tetap `#E3F2FD`
+  "Ditinjau Medis"; `x-consultation-card` memakai `bg-brand-600`; tombol & ikon WhatsApp (`x-consultation-card`,
+  `x-floating-contact`, `x-share-buttons`) memakai kode warna hijau resmi WhatsApp `#25D366` (hover `#1EBE5D`) atas
+  permintaan user. **Navbar** (`partials/navbar`) tetap `#E3F2FD`
   (`bg-brand-50`, tinggi total 67px) dengan garis aksen gradien 3px di atas, tombol kapsul berbingkai (`.nav-pill-btn`)
   untuk Menu, Cari (dengan indikator `<kbd>/</kbd>`), dan Bahasa, sub-label "Pusat Informasi Jantung" pada `<x-logo
-  compact subtitle />`, tombol Masuk kapsul `bg-brand-900`, serta tampilan seragam pada drawer samping & panel popover
-  (Bahasa, Notifikasi, Akun menampilkan profesi user). Terjemahan `lang/en.json` ditambahkan → 175 test / 889 assertion
-  lulus.
+  compact subtitle />`, tombol Masuk kapsul `bg-brand-600`, serta tampilan seragam pada drawer samping & panel popover
+  (Bahasa, Notifikasi, Akun menampilkan profesi user). **Halaman Auth** (`x-auth-card`, `auth/_aside`, `auth/login`)
+  diselaraskan dengan panel kiri `bg-brand-600`, garis aksen gradien di atas kartu, label `Portal Akun`, tipografi judul
+  `font-article`, serta lencana `Layanan Pasien`. Terjemahan `lang/en.json` ditambahkan → 175 test / 889 assertion lulus.
 - [x] **Gambar artikel di Cloudinary** (2026-10-31; dikerjakan user dengan bimbingan). SDK resmi
   `cloudinary/cloudinary_php` 3.3 — `cloudinary-labs/cloudinary-laravel` 3.0.2 hanya mendukung Laravel 11–12. Config
   `services.cloudinary` (`CLOUDINARY_URL` = rahasia, hanya di `.env`; `CLOUDINARY_FOLDER`) + `filesystems.article_images`

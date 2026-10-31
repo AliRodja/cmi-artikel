@@ -40,6 +40,7 @@
         'cloud-arrow-up' => 'fa-solid fa-cloud-arrow-up',
         'x-mark' => 'fa-solid fa-xmark',
         'tag' => 'fa-solid fa-tag',
+        'chevron-left' => 'fa-solid fa-chevron-left',
         'chevron-right' => 'fa-solid fa-chevron-right',
         'share' => 'fa-solid fa-share-nodes',
         'stethoscope' => 'fa-solid fa-stethoscope',

@@ -8,7 +8,7 @@
             'label' => 'WhatsApp',
             'icon' => 'whatsapp',
             'href' => 'https://wa.me/?'.http_build_query(['text' => $article->display_title."\n".$shareUrl]),
-            'class' => 'text-[#0E7A3F] hover:bg-[#0E7A3F]',
+            'class' => 'text-[#25D366] hover:bg-[#25D366]',
         ],
         [
             'label' => 'X',

@@ -1,13 +1,13 @@
 @props(['article'])
 
-<article {{ $attributes->class('group card flex flex-col overflow-hidden border-gray-200/90 transition duration-300 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lg') }}>
-    <a href="{{ route('public.articles.show', $article) }}" class="block aspect-[16/10] overflow-hidden bg-brand-950">
+<article {{ $attributes->class('group card flex flex-col overflow-hidden border-t-4 border-gray-200/90 border-t-brand-600 transition duration-300 hover:-translate-y-0.5 hover:border-brand-300 hover:border-t-brand-600 hover:shadow-lg') }}>
+    <a href="{{ route('public.articles.show', $article) }}" class="block aspect-[16/10] overflow-hidden bg-brand-50">
         @if ($article->image_url)
             <img src="{{ $article->image_url }}" alt="{{ $article->display_title }}" loading="lazy"
                  class="size-full object-cover transition duration-500 group-hover:scale-105">
         @else
-            <div class="flex size-full items-center justify-center bg-gradient-to-br from-brand-800 to-brand-950">
-                <span class="text-4xl font-extrabold text-white/15">{{ Str::upper(Str::substr($article->display_title, 0, 1)) }}</span>
+            <div class="flex size-full items-center justify-center bg-gradient-to-br from-brand-500 to-brand-700">
+                <span class="text-4xl font-extrabold text-white/25">{{ Str::upper(Str::substr($article->display_title, 0, 1)) }}</span>
             </div>
         @endif
     </a>

@@ -7,7 +7,7 @@
 --}}
 <dialog id="nav-drawer" class="nav-drawer" aria-label="{{ __('Menu navigasi') }}">
     <div class="flex h-full flex-col">
-        <div class="h-1 bg-gradient-to-r from-brand-950 via-brand-600 to-amber-400" aria-hidden="true"></div>
+        <div class="h-1 bg-gradient-to-r from-brand-600 via-brand-500 to-amber-400" aria-hidden="true"></div>
 
         <div class="flex items-center justify-between border-b border-brand-100 bg-brand-50/80 px-5 py-3.5">
             <x-logo />

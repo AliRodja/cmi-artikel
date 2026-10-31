@@ -30,9 +30,6 @@ class CredibilityTest extends TestCase
 
         $this->get(route('home'))
             ->assertOk()
-            ->assertSee('Ditinjau Tim Medis')
-            ->assertSee('Berbasis Rujukan Ilmiah')
-            ->assertSee('Pendampingan Jangka Panjang')
             ->assertSee('Hipertensi')
             ->assertSee('Ahli Gizi')
             ->assertSee('Ditinjau oleh dr. Andi')

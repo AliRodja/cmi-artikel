@@ -10,9 +10,9 @@
  * seluruh halaman (bg-brand-*, text-brand-*, dst.) ikut berubah.
  */
 @theme {
-    --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    /* Huruf artikel → utilitas font-article (isi artikel & judul artikel di daftar). */
-    --font-article: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
+    --font-sans: var(--font-roboto), sans-serif;
+    /* Huruf artikel → utilitas font-article (isi artikel & judul artikel di daftar) konsisten memakai Roboto, sans-serif. */
+    --font-article: var(--font-roboto), sans-serif;
 
     /*
      * Pembaca utama berusia matang (40+): huruf terkecil dinaikkan. text-xs 12→14px, text-sm 14→15px.
@@ -38,7 +38,7 @@
 }
 
 @layer components {
-    .container-page  { @apply mx-auto w-full max-w-6xl px-4 sm:px-6; }
+    .container-page  { @apply mx-auto w-full max-w-[90rem] px-4 sm:px-8 lg:px-14; }
 
     .card            { @apply rounded-xl border border-gray-200 bg-white shadow-sm; }
 
@@ -75,8 +75,7 @@
      * Tipografi isi artikel (HTML dari Trix). Dipakai di halaman detail DAN di
      * dalam editor, sehingga yang ditulis tampil sama dengan hasil akhirnya.
      * <h1> dari tombol "Heading" Trix ditampilkan seukuran subjudul.
-     * Paragraf memakai Roboto (font-article); subjudul memakai Inter (font-sans)
-     * supaya senada dengan judul halaman.
+     * Seluruh paragraf dan subjudul konsisten memakai Roboto, sans-serif.
      */
     .article-content { @apply font-article text-[1.125rem] leading-8 text-gray-800; }
     .article-content :where(p)          { @apply my-5; }

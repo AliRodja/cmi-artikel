@@ -118,7 +118,7 @@ npm run build               # wajib sebelum dikumpulkan / deploy
 - Ikuti gaya kode sekitar (komentar Bahasa Indonesia secukupnya, penamaan Laravel).
 
 ## Keputusan produk (jangan dilanggar tanpa izin user)
-- Desain **korporat & polos**: hero publik biru tua (`bg-brand-950`), navbar `#E3F2FD`, footer `#066AC9`; tanpa
+- Desain **korporat & polos**: hero publik, panel kiri auth, kartu konsultasi & footer memakai biru cerah CMI `#066AC9` (`bg-brand-600`), navbar `#E3F2FD` (`bg-brand-50`); tanpa
   hiasan "seperti AI" (pola garis, glow berlebihan).
 - Pembaca usia 25+ (banyak orang tua): huruf ≥ 14px, teks minimal `text-gray-500` (bukan `gray-400`), kontras ≥ 4,5:1,
   area sentuh 44px, ikon disertai teks, tanggal pasti, pop-up gagal tidak hilang sendiri.

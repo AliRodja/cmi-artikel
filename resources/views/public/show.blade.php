@@ -21,15 +21,15 @@
     {{-- Bar progres membaca (CSS scroll-driven animation, lihat .reading-progress di app.css). --}}
     <div class="reading-progress" aria-hidden="true"></div>
 
-    {{-- Hero biru tua, sama dengan beranda (public/index). --}}
-    <section class="relative overflow-hidden bg-brand-950">
-        <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,var(--color-brand-700),transparent_45%)] opacity-70"></div>
+    {{-- Hero biru cerah khas CMI, sama dengan beranda (public/index) & footer. --}}
+    <section class="relative overflow-hidden bg-brand-600">
+        <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,var(--color-brand-400),transparent_45%)] opacity-45"></div>
 
         <div class="container-page relative py-12 sm:py-16">
-            <nav aria-label="{{ __('Breadcrumb') }}" class="flex flex-wrap items-center gap-2 text-xs font-medium text-brand-300">
-                <a href="{{ route('home') }}" class="hover:text-white">{{ __('Beranda') }}</a>
-                <x-icon name="chevron-right" size="size-3" class="text-brand-500" />
-                <a href="{{ route('home') }}#daftar-artikel" class="hover:text-white">{{ __('Artikel Kesehatan Jantung') }}</a>
+            <nav aria-label="{{ __('Breadcrumb') }}" class="flex flex-wrap items-center gap-2 text-xs font-medium text-white/90">
+                <a href="{{ route('home') }}" class="hover:text-white hover:underline">{{ __('Beranda') }}</a>
+                <x-icon name="chevron-right" size="size-3" class="text-white/70" />
+                <a href="{{ route('home') }}#daftar-artikel" class="hover:text-white hover:underline">{{ __('Artikel Kesehatan Jantung') }}</a>
             </nav>
 
             <div class="mt-6 max-w-4xl">
@@ -39,26 +39,26 @@
                     {{ $article->display_title }}
                 </h1>
 
-                <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-brand-200">
+                <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-white/90">
                     <div class="flex items-center gap-3">
                         <x-avatar :name="$article->user?->name" size="md" tone="dark" />
                         <div class="leading-tight">
                             <p class="font-semibold text-white">{{ $article->user?->name ?? __('Anonim') }}</p>
-                            <p class="text-xs">{{ $article->user?->profession ?? __('Penulis').' · '.config('app.name') }}</p>
+                            <p class="text-xs text-white/90">{{ $article->user?->profession ?? __('Penulis').' · '.config('app.name') }}</p>
                         </div>
                     </div>
-                    <span class="hidden h-8 w-px bg-white/15 sm:block"></span>
+                    <span class="hidden h-8 w-px bg-white/25 sm:block"></span>
                     <span class="inline-flex items-center gap-1.5">
-                        <x-icon name="calendar" size="size-4" class="text-brand-300" />
+                        <x-icon name="calendar" size="size-4" class="text-white/90" />
                         {{ $article->created_at->translatedFormat('d F Y') }}
                     </span>
                     <span class="inline-flex items-center gap-1.5">
-                        <x-icon name="eye" size="size-4" class="text-brand-300" />
+                        <x-icon name="eye" size="size-4" class="text-white/90" />
                         {{ trans_choice(':count kali dilihat', $article->view_count, ['count' => Number::format($article->view_count)]) }}
                     </span>
                     @if ($article->medicalReviewer)
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-white">
-                            <x-icon name="shield" size="size-4" class="text-brand-300" />
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-white ring-1 ring-white/30">
+                            <x-icon name="shield" size="size-4" class="text-amber-300" />
                             {{ __('Ditinjau oleh :name', ['name' => $article->medicalReviewer->name]) }}
                         </span>
                     @endif

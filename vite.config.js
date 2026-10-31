@@ -12,12 +12,7 @@ export default defineConfig({
             // (tanpa request ke Google di browser pengunjung). Preload hanya varian yang
             // dipakai di atas lipatan; varian lain dimuat saat dibutuhkan.
             fonts: [
-                google('Inter', {
-                    weights: [400, 500, 600, 700, 800],
-                    styles: ['normal', 'italic'],
-                    preload: [{ weight: 400, style: 'normal' }],
-                }),
-                // Huruf artikel (isi & judul artikel di daftar): Roboto, sans-serif.
+                // Seluruh aplikasi & isi artikel konsisten memakai Roboto, sans-serif.
                 google('Roboto', {
                     weights: [400, 500, 600],
                     styles: ['normal', 'italic'],
