@@ -43,8 +43,8 @@
     <button type="button" data-copy-link="{{ $shareUrl }}" title="{{ __('Salin tautan') }}"
             data-text-copy="{{ __('Salin tautan') }}" data-text-copied="{{ __('Tautan disalin') }}" data-text-failed="{{ __('Gagal menyalin') }}"
             @class(['share-btn text-gray-700 hover:bg-brand-600 hover:text-white', 'w-auto gap-2 px-4 text-sm font-semibold' => $labels])>
-        <x-icon name="link" size="size-4" data-copy-icon />
-        <x-icon name="check" size="size-4" data-copy-done hidden />
+        <span data-copy-icon class="inline-flex items-center justify-center"><x-icon name="link" size="size-4" /></span>
+        <span data-copy-done hidden class="inline-flex items-center justify-center"><x-icon name="check" size="size-4" /></span>
         <span @class(['sr-only' => ! $labels]) data-copy-label>{{ __('Salin tautan') }}</span>
     </button>
 </div>

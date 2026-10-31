@@ -21,47 +21,57 @@
     {{-- Bar progres membaca (CSS scroll-driven animation, lihat .reading-progress di app.css). --}}
     <div class="reading-progress" aria-hidden="true"></div>
 
-    {{-- Hero biru cerah khas CMI, sama dengan beranda (public/index) & footer. --}}
-    <section class="relative overflow-hidden bg-brand-600">
-        <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,var(--color-brand-400),transparent_45%)] opacity-45"></div>
-
-        <div class="container-page relative py-12 sm:py-16">
-            <nav aria-label="{{ __('Breadcrumb') }}" class="flex flex-wrap items-center gap-2 text-xs font-medium text-white/90">
-                <a href="{{ route('home') }}" class="hover:text-white hover:underline">{{ __('Beranda') }}</a>
-                <x-icon name="chevron-right" size="size-3" class="text-white/70" />
-                <a href="{{ route('home') }}#daftar-artikel" class="hover:text-white hover:underline">{{ __('Artikel Kesehatan Jantung') }}</a>
+    {{-- Header artikel bergaya Health Library (Cleveland Clinic): cerah, bersih, berfokus pada keterbacaan & kredibilitas medis. --}}
+    <section class="relative overflow-hidden border-b border-gray-200 bg-gradient-to-b from-brand-50/80 via-brand-50/25 to-white">
+        <div class="container-page relative py-10 sm:py-12">
+            <nav aria-label="{{ __('Breadcrumb') }}" class="flex flex-wrap items-center gap-2 text-xs font-medium text-gray-600">
+                <a href="{{ route('home') }}" class="transition hover:text-brand-700 hover:underline">{{ __('Beranda') }}</a>
+                <x-icon name="chevron-right" size="size-3" class="text-gray-400" />
+                <a href="{{ route('home') }}#daftar-artikel" class="transition hover:text-brand-700 hover:underline">{{ __('Artikel Kesehatan Jantung') }}</a>
             </nav>
 
-            <div class="mt-6 max-w-4xl">
+            <div class="mt-4 flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-white px-3.5 py-1 text-xs font-semibold text-brand-700 shadow-2xs">
+                    <x-icon name="stethoscope" size="size-3.5" class="text-brand-600" />
+                    {{ __('Kesehatan Jantung') }}
+                </span>
+
+                @if ($article->medicalReviewer)
+                    <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-800">
+                        <x-icon name="shield" size="size-3.5" class="text-emerald-600" />
+                        {{ __('Ditinjau oleh :name', ['name' => $article->medicalReviewer->name]) }}
+                    </span>
+                @endif
+            </div>
+
+            <div class="mt-4 max-w-4xl">
                 {{-- display_*: versi Inggris bila pengunjung memilih English dan penulis sudah menerjemahkan (Article::showsEnglish),
                      selain itu Indonesia. Atribut lang mengikuti versi yang tampil (lafal pembaca layar). --}}
-                <h1 lang="{{ $article->display_locale }}" class="text-3xl leading-[1.15] font-extrabold tracking-tight text-white sm:text-4xl lg:text-[2.75rem]">
+                <h1 lang="{{ $article->display_locale }}" class="font-article text-3xl leading-[1.2] font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-[2.65rem]">
                     {{ $article->display_title }}
                 </h1>
 
-                <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-white/90">
+                <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-gray-200/80 pt-5 text-sm text-gray-600">
                     <div class="flex items-center gap-3">
-                        <x-avatar :name="$article->user?->name" size="md" tone="dark" />
+                        <x-avatar :name="$article->user?->name" size="md" />
                         <div class="leading-tight">
-                            <p class="font-semibold text-white">{{ $article->user?->name ?? __('Anonim') }}</p>
-                            <p class="text-xs text-white/90">{{ $article->user?->profession ?? __('Penulis').' · '.config('app.name') }}</p>
+                            <p class="font-bold text-gray-900">{{ $article->user?->name ?? __('Anonim') }}</p>
+                            <p class="mt-0.5 text-xs text-gray-600">{{ $article->user?->profession ?? __('Penulis').' · '.config('app.name') }}</p>
                         </div>
                     </div>
-                    <span class="hidden h-8 w-px bg-white/25 sm:block"></span>
-                    <span class="inline-flex items-center gap-1.5">
-                        <x-icon name="calendar" size="size-4" class="text-white/90" />
-                        {{ $article->created_at->translatedFormat('d F Y') }}
-                    </span>
-                    <span class="inline-flex items-center gap-1.5">
-                        <x-icon name="eye" size="size-4" class="text-white/90" />
-                        {{ trans_choice(':count kali dilihat', $article->view_count, ['count' => Number::format($article->view_count)]) }}
-                    </span>
-                    @if ($article->medicalReviewer)
-                        <span class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-white ring-1 ring-white/30">
-                            <x-icon name="shield" size="size-4" class="text-amber-300" />
-                            {{ __('Ditinjau oleh :name', ['name' => $article->medicalReviewer->name]) }}
+
+                    <span class="hidden h-7 w-px bg-gray-200 sm:block" aria-hidden="true"></span>
+
+                    <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-gray-600 sm:text-sm">
+                        <span class="inline-flex items-center gap-1.5">
+                            <x-icon name="calendar" size="size-4" class="text-brand-600" />
+                            {{ $article->created_at->translatedFormat('d F Y') }}
                         </span>
-                    @endif
+                        <span class="inline-flex items-center gap-1.5">
+                            <x-icon name="eye" size="size-4" class="text-brand-600" />
+                            {{ trans_choice(':count kali dilihat', $article->view_count, ['count' => Number::format($article->view_count)]) }}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -70,28 +80,30 @@
 
 @section('content')
     {{-- Tiga kolom di layar lebar: aksi (simpan & bagikan) | isi artikel | sidebar. Di ponsel tersusun ke bawah. --}}
-    <div class="grid gap-8 lg:grid-cols-[3rem_minmax(0,1fr)_18rem] xl:gap-12">
+    <div class="grid gap-8 lg:grid-cols-[4.75rem_minmax(0,1fr)_20rem] xl:gap-10">
         {{-- Kolom 1: rel aksi. Di layar lebar tersusun ke bawah dan ikut menempel saat scroll. --}}
         <aside aria-label="{{ __('Simpan dan bagikan artikel') }}" class="lg:sticky lg:top-24 lg:self-start">
-            <div class="flex flex-wrap items-center gap-2 lg:flex-col lg:gap-3">
+            <div class="flex flex-wrap items-center gap-2 rounded-2xl border border-gray-200/80 bg-white px-3 py-2.5 shadow-xs lg:flex-col lg:flex-nowrap lg:px-2 lg:py-3.5">
                 @include('public._bookmark-button', ['class' => 'share-btn'])
-                <span class="mx-1 h-6 w-px bg-gray-200 lg:mx-0 lg:h-px lg:w-6"></span>
-                <span class="text-[0.75rem] font-semibold tracking-wide text-gray-500 uppercase">{{ __('Bagikan') }}</span>
-                <x-share-buttons :article="$article" class="lg:flex-col lg:gap-3" />
+                <span class="mx-1 h-6 w-px bg-gray-200 lg:mx-0 lg:my-0.5 lg:h-px lg:w-8"></span>
+                <span class="text-[0.6875rem] font-bold text-gray-500">{{ __('Bagikan') }}</span>
+                <x-share-buttons :article="$article" class="lg:flex-col lg:gap-2.5" />
             </div>
         </aside>
 
         {{-- Kolom 2: isi artikel, penulis & komentar. --}}
         <div class="min-w-0 space-y-8">
-            <article class="card overflow-hidden">
+            <article class="card overflow-hidden border-t-4 border-t-brand-600">
                 @if ($article->image_url)
-                    <img src="{{ $article->image_url }}" alt="{{ $article->display_title }}" class="aspect-[16/9] w-full object-cover">
+                    <div class="border-b border-gray-100 bg-brand-50/40">
+                        <img src="{{ $article->image_url }}" alt="{{ $article->display_title }}" class="aspect-[16/9] w-full object-cover">
+                    </div>
                 @endif
 
-                <div class="px-6 py-8 sm:px-12 sm:py-10">
+                <div class="px-6 py-8 sm:px-10 sm:py-10 lg:px-12">
                     @if (app()->getLocale() === 'en' && ! $article->hasEnglish())
                         {{-- Pengunjung memilih English, tetapi penulis belum menerjemahkan artikel ini. --}}
-                        <p class="mb-6 flex items-start gap-2 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-900">
+                        <p class="mb-6 flex items-start gap-2.5 rounded-xl border border-brand-200 bg-brand-50/80 px-4 py-3 text-sm text-brand-900">
                             <x-icon name="globe" size="size-4" class="mt-0.5 shrink-0 text-brand-600" />
                             {{ __('Artikel ini belum tersedia dalam Bahasa Inggris, jadi ditampilkan dalam Bahasa Indonesia.') }}
                         </p>
@@ -102,39 +114,51 @@
 
                 {{-- Tinjauan medis & sumber rujukan: penanda kredibilitas informasi kesehatan. --}}
                 @if ($article->medicalReviewer || $article->source_list)
-                    <div class="space-y-6 border-t border-gray-100 px-6 py-6 sm:px-12">
+                    <div class="space-y-6 border-t border-gray-100 bg-gray-50/40 px-6 py-7 sm:px-10 lg:px-12">
                         @include('public._credibility')
                     </div>
                 @endif
 
                 {{-- Akhir artikel: ajakan menyimpan & membagikan. --}}
-                <footer class="border-t border-gray-100 bg-gray-50/70 px-6 py-5 sm:px-12">
-                    <p class="text-sm font-semibold text-gray-900">{{ __('Artikel ini bermanfaat? Bagikan ke keluarga & teman.') }}</p>
-                    <x-share-buttons :article="$article" labels class="mt-3 flex-wrap" />
+                <footer class="border-t border-gray-200/80 bg-brand-50/45 px-6 py-6 sm:px-10 lg:px-12">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <p class="text-sm font-bold text-gray-900">{{ __('Artikel ini bermanfaat? Bagikan ke keluarga & teman.') }}</p>
+                            <p class="mt-0.5 text-xs text-gray-600">{{ __('Bantu orang terdekat mengenali dan menjaga kesehatan jantung lebih dini.') }}</p>
+                        </div>
+                        <x-share-buttons :article="$article" labels class="flex-wrap" />
+                    </div>
                 </footer>
             </article>
 
             @if ($article->user)
-                <section class="card flex items-center gap-4 p-5 sm:p-6">
-                    <x-avatar :name="$article->user->name" size="md" />
-                    <div class="min-w-0 flex-1">
-                        <p class="text-xs font-semibold tracking-wider text-gray-500 uppercase">{{ __('Ditulis oleh') }}</p>
-                        <p class="font-bold text-gray-900">{{ $article->user->name }}</p>
-                        <p class="text-sm text-gray-600">{{ $article->user->profession ?? __('Penulis di :site', ['site' => config('app.name')]) }}</p>
+                <section class="card flex flex-wrap items-center justify-between gap-4 border-l-4 border-l-brand-600 p-5 sm:p-6">
+                    <div class="flex items-center gap-4">
+                        <x-avatar :name="$article->user->name" size="md" />
+                        <div class="min-w-0">
+                            <p class="text-xs font-semibold tracking-wider text-brand-700 uppercase">{{ __('Ditulis oleh') }}</p>
+                            <p class="mt-0.5 text-base font-bold text-gray-900">{{ $article->user->name }}</p>
+                            <p class="text-sm text-gray-600">{{ $article->user->profession ?? __('Penulis di :site', ['site' => config('app.name')]) }}</p>
+                        </div>
                     </div>
                     @include('public._bookmark-button', ['class' => 'btn btn-secondary btn-sm', 'withLabel' => true])
                 </section>
             @endif
 
             {{-- Komentar --}}
-            <section id="komentar" class="card scroll-mt-24 p-5 sm:p-6">
-                <h2 class="flex items-center gap-2 text-lg font-bold text-gray-900">
-                    <x-icon name="comments" class="text-brand-600" /> {{ __('Komentar') }}
-                    <span class="rounded-full bg-gray-100 px-2 text-sm font-semibold text-gray-600">{{ $article->comments->count() }}</span>
-                </h2>
+            <section id="komentar" class="card scroll-mt-24 border-t-4 border-t-brand-600 p-5 sm:p-7">
+                <div class="flex items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                    <h2 class="flex items-center gap-2.5 text-lg font-bold text-gray-900">
+                        <span class="flex size-8 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+                            <x-icon name="comments" size="size-4" />
+                        </span>
+                        {{ __('Komentar') }}
+                        <span class="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand-700 ring-1 ring-brand-200/70">{{ $article->comments->count() }}</span>
+                    </h2>
+                </div>
 
                 @auth
-                    <form action="{{ route('comments.store', $article) }}" method="POST" class="mt-5 flex gap-3">
+                    <form action="{{ route('comments.store', $article) }}" method="POST" class="mt-5 flex gap-3.5">
                         @csrf
                         <x-avatar :name="auth()->user()->name" />
                         <div class="min-w-0 flex-1">
@@ -151,9 +175,9 @@
                         </div>
                     </form>
                 @else
-                    <div class="mt-5 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-900">
-                        <a href="{{ route('login') }}" class="link">{{ __('Masuk') }}</a> {{ __('atau') }}
-                        <a href="{{ route('register') }}" class="link">{{ __('daftar') }}</a> {{ __('untuk ikut berkomentar.') }}
+                    <div class="mt-5 rounded-xl border border-brand-200/80 bg-brand-50/70 px-4 py-3.5 text-sm text-brand-900">
+                        <a href="{{ route('login') }}" class="link font-semibold underline underline-offset-2">{{ __('Masuk') }}</a> {{ __('atau') }}
+                        <a href="{{ route('register') }}" class="link font-semibold underline underline-offset-2">{{ __('daftar') }}</a> {{ __('untuk ikut berkomentar.') }}
                     </div>
                 @endauth
 
@@ -162,15 +186,15 @@
                 @else
                     <ul class="mt-6 space-y-4">
                         @foreach ($article->comments as $comment)
-                            <li class="flex gap-3">
+                            <li class="flex gap-3.5">
                                 <x-avatar :name="$comment->user->name" />
-                                <div class="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3">
+                                <div class="min-w-0 flex-1 rounded-xl border border-gray-200/90 bg-gray-50/50 px-4 py-3.5">
                                     <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                        <p class="text-sm font-semibold text-gray-900">{{ $comment->user->name }}</p>
+                                        <p class="text-sm font-bold text-gray-900">{{ $comment->user->name }}</p>
                                         @if ($comment->user_id === $article->user_id)
-                                            <span class="badge bg-brand-50 text-brand-700">{{ __('Penulis artikel') }}</span>
+                                            <span class="badge bg-brand-50 text-brand-700 ring-1 ring-brand-200/70">{{ __('Penulis artikel') }}</span>
                                         @elseif ($comment->user->isAdmin())
-                                            <span class="badge bg-gray-100 text-gray-600">{{ __('Admin') }}</span>
+                                            <span class="badge bg-gray-100 text-gray-700">{{ __('Admin') }}</span>
                                         @endif
                                         <span class="text-xs text-gray-500">· <x-date :value="$comment->created_at" format="d M Y, H:i" /></span>
 
@@ -187,7 +211,7 @@
                                         @endcan
                                     </div>
                                     {{-- Teks biasa ({{ }} = di-escape), baris baru dipertahankan dengan whitespace-pre-line. --}}
-                                    <p class="mt-1 text-sm whitespace-pre-line text-gray-700">{{ $comment->body }}</p>
+                                    <p class="mt-1.5 text-sm leading-relaxed whitespace-pre-line text-gray-700">{{ $comment->body }}</p>
                                 </div>
                             </li>
                         @endforeach
@@ -199,21 +223,23 @@
         {{-- Kolom 3: artikel lainnya, ajakan konsultasi (menempel saat scroll). --}}
         <aside class="min-w-0 space-y-6">
             @if ($latestArticles->isNotEmpty())
-                <section class="card p-5">
-                    <h2 class="font-bold text-gray-900">{{ __('Artikel Lainnya') }}</h2>
-                    <ul class="mt-2 divide-y divide-gray-100">
-                        @foreach ($latestArticles as $related)
-                            <li>
-                                <a href="{{ route('public.articles.show', $related) }}" class="group flex gap-3 py-3">
-                                    <x-article-thumb :article="$related" class="size-16" />
-                                    <div class="min-w-0">
-                                        <p class="line-clamp-2 text-sm leading-snug font-semibold text-gray-900 group-hover:text-brand-700">{{ $related->display_title }}</p>
-                                        <p class="mt-1 text-xs text-gray-500">{{ $related->created_at->translatedFormat('d M Y') }}</p>
-                                    </div>
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
+                <section>
+                    <x-section-title :title="__('Artikel Lainnya')" :href="route('home').'#daftar-artikel'" />
+                    <div class="card border-t-4 border-t-brand-600 p-5">
+                        <ul class="divide-y divide-gray-100">
+                            @foreach ($latestArticles as $related)
+                                <li>
+                                    <a href="{{ route('public.articles.show', $related) }}" class="group flex gap-3.5 py-3.5 first:pt-0 last:pb-0">
+                                        <x-article-thumb :article="$related" class="size-16 shrink-0" />
+                                        <div class="min-w-0 flex-1">
+                                            <p class="line-clamp-2 font-article text-sm leading-snug font-semibold text-gray-900 transition group-hover:text-brand-700">{{ $related->display_title }}</p>
+                                            <p class="mt-1.5 text-xs text-gray-500">{{ $related->created_at->translatedFormat('d M Y') }}</p>
+                                        </div>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
                 </section>
             @endif
 
@@ -224,12 +250,7 @@
     {{-- Artikel terkait: membahas kata kunci utama yang sama, dilengkapi artikel lain (PublicArticleController::relatedArticles). --}}
     @if ($relatedArticles->isNotEmpty())
         <section class="mt-16">
-            <div class="mb-6 flex flex-wrap items-end justify-between gap-2 border-b border-gray-200 pb-3">
-                <h2 class="text-xl font-bold text-gray-900">{{ __('Artikel Terkait') }}</h2>
-                <a href="{{ route('home') }}#daftar-artikel" class="link inline-flex items-center gap-1.5 text-sm">
-                    {{ __('Semua artikel') }} <x-icon name="chevron-right" size="size-3" />
-                </a>
-            </div>
+            <x-section-title :title="__('Artikel Terkait')" :href="route('home').'#daftar-artikel'" :link-label="__('Semua artikel')" />
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($relatedArticles as $related)
                     <x-article-card :article="$related" />
@@ -240,11 +261,11 @@
 
     {{-- Artikel terpopuler: urut jumlah pembaca (articles.view_count), minimal config('clinic.popular_min_views'). --}}
     <section class="mt-16">
-        <div class="mb-6 flex flex-wrap items-end justify-between gap-2 border-b border-gray-200 pb-3">
-            <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900">
-                <x-icon name="fire" class="text-orange-500" /> {{ __('Artikel Terpopuler') }}
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 pb-3">
+            <h2 class="border-l-4 border-brand-600 pl-3 text-lg leading-tight font-bold text-gray-900">
+                {{ __('Artikel Terpopuler') }}
             </h2>
-            <p class="text-xs text-gray-500">{{ __('Berdasarkan jumlah pembaca') }}</p>
+            <p class="text-xs font-medium text-gray-500">{{ __('Berdasarkan jumlah pembaca') }}</p>
         </div>
 
         @if ($popularArticles->isEmpty())

@@ -352,10 +352,10 @@ bawah "Git di-init ulang".
   untuk seluruh UI, judul, dan isi artikel (`--font-sans: var(--font-roboto), sans-serif` & `--font-article: var(--font-roboto), sans-serif`;
   sejak 2026-10-31 menyeragamkan Inter + Roboto menjadi Roboto penuh atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
-- [x] **Redesign beranda, navbar & halaman auth bergaya Editorial / Quiet Luxury + warna cerah CMI** (2026-10-31;
+- [x] **Redesign beranda, detail artikel, navbar & halaman auth bergaya Cleveland Clinic + warna cerah CMI** (2026-10-31;
   target pembaca usia 25–40+ dengan riwayat kondisi kronis). Atas permintaan user, warna biru tua (`bg-brand-950`)
-  diganti dengan warna cerah khas rumah sakit CMI (`bg-brand-600` `#066AC9` pada hero detail artikel, panel kiri halaman
-  auth, dan kartu konsultasi; serta latar putih bersih pada hero beranda). Susunan `@section('hero')` di beranda:
+  diganti dengan warna cerah khas rumah sakit CMI (`bg-brand-600` `#066AC9` pada panel kiri halaman auth dan kartu
+  konsultasi; serta latar cerah `from-brand-50/80 to-white` pada hero beranda & hero detail artikel `public/show`). Susunan `@section('hero')` di beranda:
   (1) paling atas **jumbotron slider** utuh tanpa lapisan warna biru yang otomatis membaca semua poster `Hero*` / `hero*`
   di `public/images/` (`Hero-1.webp`, `Hero-2.webp`, `Hero-3.webp`, dst., urut alami) dengan tombol geser kiri/kanan,
   geser sentuh (`snap-x`), titik indikator, dan geser otomatis tiap 6 detik; (2) tepat di bawah gambar poster terdapat
@@ -365,7 +365,7 @@ bawah "Git di-init ulang".
   **bilah atas biru CMI** (`Contact Us | YouTube CMIhospital.com | Instagram cmihospitals | Facebook CMI Hospital`, tanpa
   kolom cari dan tanpa tombol login di bilah atas sesuai permintaan user); lebar & padding `.container-page` dari navbar
   hingga footer diperlebar (`max-w-[90rem] px-4 sm:px-8 lg:px-14`) mengikuti proporsi cmihospital.com. Bagian **Sorotan**, **Artikel Lainnya**,
-  **Terpopuler**, dan `x-article-card` memakai kartu berbingkai aksen atas biru `border-t-4 border-t-brand-600`. Kartu artikel
+  **Terpopuler** (`x-popular-article`), kartu isi artikel & komentar di `public/show`, serta `x-article-card` memakai kartu berbingkai aksen atas biru `border-t-4 border-t-brand-600`; kotak peninjau medis & sumber rujukan (`public/_credibility`) diperjelas dengan lencana hijau medis & kartu rujukan berbingkai. Kartu artikel
   (`x-article-card`) dan `PublicArticleController` kini memuat & menampilkan gelar/profesi penulis serta lencana
   "Ditinjau Medis"; `x-consultation-card` memakai `bg-brand-600`; tombol & ikon WhatsApp (`x-consultation-card`,
   `x-floating-contact`, `x-share-buttons`) memakai kode warna hijau resmi WhatsApp `#25D366` (hover `#1EBE5D`) atas

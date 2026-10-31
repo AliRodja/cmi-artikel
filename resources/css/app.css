@@ -100,6 +100,9 @@
     .share-btn       { @apply flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white shadow-xs ring-1 ring-gray-200 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-transparent; }
 }
 
+/* CSS Font Awesome yang tak berlayer memiliki display: inline-block yang menimpa atribut HTML [hidden] bawaan browser. */
+[hidden] { display: none !important; }
+
 /*
  * Editor Trix. Sengaja DI LUAR @layer: trix.css tidak memakai layer, dan aturan
  * tanpa layer selalu menang atas aturan di dalam layer. Selector ini lebih

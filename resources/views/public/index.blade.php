@@ -86,10 +86,7 @@
         <div class="border-b border-gray-200 bg-gradient-to-b from-brand-50/75 via-brand-50/30 to-white">
             <div class="container-page py-10 sm:py-12">
                 <div class="mx-auto max-w-3xl text-center">
-                    <div class="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-4 py-1.5 shadow-2xs">
-                        <x-icon name="shield" size="size-3" class="text-brand-600" />
-                        <p class="eyebrow text-brand-700">{{ __('Pusat Informasi') }} · {{ config('app.name') }}</p>
-                    </div>
+                    
 
                     <h1 class="mt-4 font-article text-3xl leading-tight font-bold tracking-tight text-gray-900 sm:text-4xl">{{ __('Artikel Kesehatan Jantung') }}</h1>
                     <p class="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-gray-600">{{ __('Kenali gejala, faktor risiko, pencegahan, dan perawatan penyakit jantung bersama :site.', ['site' => config('app.name')]) }}</p>

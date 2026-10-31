@@ -1,25 +1,26 @@
-{{-- Bilah atas (top utility bar) biru khas CMI: Contact Us + tautan media sosial utama (tanpa kolom cari & tanpa tombol login di bilah ini). --}}
+{{-- Bilah atas (top utility bar) biru khas CMI: Hubungi Kami (Contact Us saat English) + tautan media sosial utama.
+     Responsif: di ponsel tampil 1 baris rapi (Hubungi Kami di kiri, ikon medsos di kanan); di layar >= sm tampil lengkap dengan nama akun. --}}
 <div class="bg-brand-600 text-white print:hidden">
-    <div class="mx-auto flex w-full max-w-[96rem] flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-2 text-xs font-medium sm:gap-x-5 sm:px-6 lg:px-8">
-        <a href="#hubungi-kami" class="text-white/95 transition hover:text-white hover:underline">
-            {{ __('Contact Us') }}
+    <div class="mx-auto flex w-full max-w-[96rem] items-center justify-between gap-3 px-4 py-1.5 text-xs font-medium sm:flex-wrap sm:justify-start sm:gap-x-5 sm:gap-y-1.5 sm:px-6 sm:py-2 lg:px-8">
+        <a href="#hubungi-kami" class="inline-flex items-center gap-1.5 whitespace-nowrap text-white/95 transition hover:text-white hover:underline">
+            {{ __('Hubungi Kami') }}
         </a>
-        <span class="text-white/50 select-none" aria-hidden="true">|</span>
-        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 sm:gap-x-5">
-            <a href="https://www.youtube.com/c/CMIhospital-com" target="_blank" rel="noopener noreferrer"
-               class="inline-flex items-center gap-1.5 text-white/95 transition hover:text-white hover:underline">
+        <span class="hidden text-white/50 select-none sm:inline" aria-hidden="true">|</span>
+        <div class="flex items-center gap-2 sm:flex-wrap sm:gap-x-5 sm:gap-y-1">
+            <a href="https://www.youtube.com/c/CMIhospital-com" target="_blank" rel="noopener noreferrer" title="YouTube · CMIhospital.com"
+               class="inline-flex size-7 items-center justify-center gap-1.5 rounded-full bg-white/12 text-white/95 transition hover:bg-white/20 hover:text-white sm:size-auto sm:rounded-none sm:bg-transparent sm:hover:bg-transparent sm:hover:underline">
                 <x-icon name="youtube" size="size-3.5" />
-                <span>CMIhospital.com</span>
+                <span class="sr-only sm:not-sr-only">CMIhospital.com</span>
             </a>
-            <a href="https://www.instagram.com/cmihospital.official/" target="_blank" rel="noopener noreferrer"
-               class="inline-flex items-center gap-1.5 text-white/95 transition hover:text-white hover:underline">
+            <a href="https://www.instagram.com/cmihospital.official/" target="_blank" rel="noopener noreferrer" title="Instagram · cmihospitals"
+               class="inline-flex size-7 items-center justify-center gap-1.5 rounded-full bg-white/12 text-white/95 transition hover:bg-white/20 hover:text-white sm:size-auto sm:rounded-none sm:bg-transparent sm:hover:bg-transparent sm:hover:underline">
                 <x-icon name="instagram" size="size-3.5" />
-                <span>cmihospitals</span>
+                <span class="sr-only sm:not-sr-only">cmihospitals</span>
             </a>
-            <a href="https://www.facebook.com/cmihospitals" target="_blank" rel="noopener noreferrer"
-               class="inline-flex items-center gap-1.5 text-white/95 transition hover:text-white hover:underline">
+            <a href="https://www.facebook.com/cmihospitals" target="_blank" rel="noopener noreferrer" title="Facebook · CMI Hospital"
+               class="inline-flex size-7 items-center justify-center gap-1.5 rounded-full bg-white/12 text-white/95 transition hover:bg-white/20 hover:text-white sm:size-auto sm:rounded-none sm:bg-transparent sm:hover:bg-transparent sm:hover:underline">
                 <x-icon name="facebook" size="size-3.5" />
-                <span>CMI Hospital</span>
+                <span class="sr-only sm:not-sr-only">CMI Hospital</span>
             </a>
         </div>
     </div>
