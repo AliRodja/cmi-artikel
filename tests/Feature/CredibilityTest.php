@@ -160,7 +160,7 @@ class CredibilityTest extends TestCase
         // URL persis seperti di footer cmihospital.com.
         foreach ([
             'https://www.facebook.com/cmihospitals',
-            'https://www.instagram.com/cmihospitals/',
+            'https://www.instagram.com/cmihospital.official/',
             'https://twitter.com/cmihospitals/',
             'https://www.tiktok.com/@cmihospitals',
             'https://www.youtube.com/c/CMIhospital-com',

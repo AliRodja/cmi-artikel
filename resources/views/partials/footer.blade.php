@@ -95,7 +95,7 @@
     </div>
 
     <div class="border-t border-white/20">
-        <p class="container-page py-5 text-sm text-white/90">
+        <p class="container-page pt-5 pb-32 text-sm text-white/90 sm:pb-24">
             &copy; {{ date('Y') }} {{ config('app.name') }}. {{ __('Seluruh hak cipta dilindungi.') }}
         </p>
     </div>

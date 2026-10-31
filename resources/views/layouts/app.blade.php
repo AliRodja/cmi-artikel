@@ -21,6 +21,10 @@
     </main>
 
     @include('partials.footer')
+    
+    @unless (request()->is('dashboard*'))
+        <x-floating-contact />
+    @endunless
 
     @stack('scripts')
 </body>
