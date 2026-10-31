@@ -4,8 +4,10 @@
     Kartu halaman autentikasi (masuk, daftar, lupa & reset password).
     Slot opsional "aside": panel biru di sisi kiri (hanya layar lebar), mis. sambutan di halaman Masuk.
     Kolom isian & tombol di dalam kartu otomatis bersudut lebih bulat (rounded-xl) agar seragam di semua halaman auth.
+    Kartu dipusatkan vertikal hanya mulai layar sm; di ponsel kartu langsung di atas agar tombol bawah form tidak
+    tertutup tombol kontak melayang.
 --}}
-<div class="flex min-h-[calc(100vh-8rem)] items-center justify-center py-8 sm:py-12">
+<div class="flex items-center justify-center sm:min-h-[calc(100vh-8rem)] sm:py-12">
     <div @class(['mx-auto w-full', 'max-w-md' => ! isset($aside), 'max-w-4xl' => isset($aside)])>
         <div @class([
             'overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl shadow-slate-900/5',

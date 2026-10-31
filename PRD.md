@@ -338,6 +338,13 @@ bawah "Git di-init ulang".
   (UI & judul; sebelumnya Plus Jakarta Sans), **Roboto = `font-article`** (huruf artikel: paragraf `.article-content` + judul artikel di beranda, Baca Nanti, 404;
   subjudul di dalam isi tetap Inter; sejak 2026-10-29 menggantikan Lora/`font-serif` atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
+- [x] **Tombol melayang tidak lagi menutupi konten di ponsel** (2026-10-31). Diukur di lebar 320/390/768 px: saat digulir
+  ke paling bawah teks hak cipta footer tertutup tombol Telepon/WhatsApp, dan di halaman Masuk tombol "Daftar akun baru"
+  tertutup sejak awal. Perbaikan: hak cipta footer diberi ruang bawah `pb-[calc(6rem+env(safe-area-inset-bottom))]`,
+  jarak bawah tombol melayang ikut safe-area iPhone (`bottom-[max(1rem,env(safe-area-inset-bottom))]`; layout memakai
+  `viewport-fit=cover`), dan `x-auth-card` dipusatkan vertikal hanya mulai `sm` (di ponsel kartu langsung di atas).
+  Atas permintaan user, di ponsel tombol WhatsApp juga bulat ikon saja (44×44 px, hijau tetap) seperti tombol telepon;
+  teks "Konsultasi Gratis" tetap dibacakan pembaca layar (`sr-only sm:not-sr-only`) dan titik berkedip hanya mulai `sm`.
 - [x] **Tampilan baru kartu halaman auth di `x-auth-card`** (2026-10-31). Desain dari user (awalnya ditulis langsung di
   `login.blade.php` → error 500 karena `:title` tidak dikirim + logo/judul dobel) dipindah ke komponen sehingga Masuk,
   Daftar, Lupa & Reset Password seragam: kartu `rounded-2xl` + bayangan lembut, lebar `max-w-4xl`, dipusatkan vertikal,

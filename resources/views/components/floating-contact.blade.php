@@ -1,5 +1,9 @@
-{{-- Tombol kontak melayang di kanan bawah: Telepon Klinik + Konsultasi WhatsApp. Dipasang di layouts/app. --}}
-<div class="fixed right-4 bottom-4 z-40 flex items-center gap-2 sm:right-6 sm:bottom-6 sm:gap-2.5">
+{{--
+    Tombol kontak melayang di kanan bawah: Telepon Klinik + Konsultasi WhatsApp. Dipasang di layouts/app.
+    Jarak bawah ikut safe-area iPhone (layout memakai viewport-fit=cover) agar tidak tertutup garis home.
+    Footer menyisakan ruang di bawah hak cipta (pb-24) supaya teks terakhir tidak tertutup tombol ini.
+--}}
+<div class="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex items-center gap-2 sm:right-6 sm:bottom-[max(1.5rem,env(safe-area-inset-bottom))] sm:gap-2.5">
     {{-- Tombol Telepon Klinik: di ponsel ikon saja, nama & nomor tetap dibacakan lewat aria-label. --}}
     @if (config('clinic.phone'))
         <a href="tel:{{ config('clinic.phone_international') }}"
@@ -11,16 +15,18 @@
         </a>
     @endif
 
-    {{-- Tombol Utama Konsultasi WhatsApp. Hijau #0E7A3F = hijau WhatsApp yang lolos kontras 4,5:1 (ReadabilityTest). --}}
+    {{-- Tombol Utama Konsultasi WhatsApp. Hijau #0E7A3F = hijau WhatsApp yang lolos kontras 4,5:1 (ReadabilityTest).
+         Di ponsel bulat ikon saja seperti tombol telepon; teks "Konsultasi Gratis" tetap dibacakan (sr-only). --}}
     <a href="{{ config('clinic.whatsapp_consultation_url') }}" target="_blank" rel="noopener noreferrer"
-       class="group inline-flex min-h-11 items-center gap-2.5 rounded-full bg-[#0E7A3F] px-4 text-sm font-semibold text-white shadow-lg shadow-emerald-900/15 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#0B6534] hover:shadow-xl hover:shadow-emerald-900/20 focus-visible:ring-2 focus-visible:ring-[#0E7A3F] focus-visible:ring-offset-2 focus-visible:outline-none active:translate-y-0 sm:px-5">
-        {{-- Titik berkedip (hiasan): berhenti bila pengguna memilih "kurangi gerakan" di perangkatnya. --}}
-        <span class="relative flex size-2.5 shrink-0" aria-hidden="true">
+       title="{{ __('Konsultasi Gratis') }}"
+       class="group inline-flex min-h-11 min-w-11 items-center justify-center gap-2.5 rounded-full bg-[#0E7A3F] px-3 text-sm font-semibold text-white shadow-lg shadow-emerald-900/15 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#0B6534] hover:shadow-xl hover:shadow-emerald-900/20 focus-visible:ring-2 focus-visible:ring-[#0E7A3F] focus-visible:ring-offset-2 focus-visible:outline-none active:translate-y-0 sm:px-5">
+        {{-- Titik berkedip (hiasan, mulai layar sm): berhenti bila pengguna memilih "kurangi gerakan" di perangkatnya. --}}
+        <span class="relative hidden size-2.5 shrink-0 sm:flex" aria-hidden="true">
             <span class="absolute inline-flex size-full rounded-full bg-emerald-200 opacity-75 motion-safe:animate-ping"></span>
             <span class="relative inline-flex size-2.5 rounded-full bg-emerald-300"></span>
         </span>
 
         <x-icon name="whatsapp" size="size-4" class="transition-transform duration-200 group-hover:scale-110 sm:text-base" />
-        <span class="tracking-wide">{{ __('Konsultasi Gratis') }}</span>
+        <span class="sr-only tracking-wide sm:not-sr-only">{{ __('Konsultasi Gratis') }}</span>
     </a>
 </div>
