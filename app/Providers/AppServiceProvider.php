@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Cloudinary\Cloudinary;
 use App\Models\Article;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -12,7 +13,11 @@ use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+        public function register(): void
+    {
+        // SDK Cloudinary dibuat lewat container (bukan "new" di ImageUpload) agar test bisa menggantinya dengan tiruan.
+        $this->app->bind(Cloudinary::class, fn () => new Cloudinary((string) config('services.cloudinary.url')));
+    }
 
     /**
      * Batas percobaan (dipakai di routes/web.php lewat middleware throttle:<nama>). Lewat batas → halaman 429.

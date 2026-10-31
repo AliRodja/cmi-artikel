@@ -34,5 +34,10 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    // Penyimpanan gambar artikel di Cloudinary (CDN). Kunci rahasia hanya di .env, tidak pernah di kode.
+    'cloudinary' => [
+        'url' => env('CLOUDINARY_URL'),
+        'folder' => env('CLOUDINARY_FOLDER', 'cmi-artikel'),
+    ],
 
 ];

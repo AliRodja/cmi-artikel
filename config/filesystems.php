@@ -77,5 +77,7 @@ return [
     'links' => [
         public_path('storage') => storage_path('app/public'),
     ],
+    // Tempat gambar artikel: "local" = disk public (storage/app/public), "cloudinary" = CDN Cloudinary.
+    'article_images' => env('ARTICLE_IMAGE_DRIVER', 'local'),
 
 ];

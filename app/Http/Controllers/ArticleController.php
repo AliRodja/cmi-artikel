@@ -11,7 +11,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ArticleController extends Controller
@@ -134,9 +133,7 @@ class ArticleController extends Controller
 
     private function deleteImage(Article $article): void
     {
-        if ($article->image) {
-            Storage::disk('public')->delete($article->image);
-        }
+        ImageUpload::delete($article->image);
     }
 
     /** Pilihan "peninjau medis" (penulis & admin) — hanya admin yang boleh menentukannya. */

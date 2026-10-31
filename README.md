@@ -303,6 +303,10 @@ sudah terisi data resmi CMI di `.env.example`. `CLINIC_MAPS_URL` kosong = link p
 `CLINIC_ACCREDITATION` masih kosong. Yang dikosongkan tidak ditampilkan. Nomor WhatsApp tombol Konsultasi
 (0821-2159-0000) ada di `config/clinic.php`.
 
+Gambar artikel bawaannya disimpan di laptop sendiri (`ARTICLE_IMAGE_DRIVER=local`), jadi **tidak perlu akun
+Cloudinary** untuk menjalankan atau menilai proyek ini. Server production memakai Cloudinary (lihat "Checklist keamanan
+saat deploy" poin 9).
+
 ### Langkah 4 — Buat database
 
 Pastikan MySQL sudah berjalan (bagian 2), lalu buka konsol MySQL:
@@ -405,7 +409,7 @@ Buka **http://localhost:8000** di browser. Untuk menghentikan, tekan `Ctrl + C` 
 php artisan test
 ```
 
-Hasil yang diharapkan: **166 test lulus**. Test memakai database SQLite sementara di memori, jadi database
+Hasil yang diharapkan: **175 test lulus**. Test memakai database SQLite sementara di memori, jadi database
 `artikel_app` tidak tersentuh.
 
 ---
@@ -493,7 +497,7 @@ php artisan optimize:clear
 | 3 | Lupa & Reset Password | 10 | `ForgotPasswordController` + `ResetPasswordController` dengan *password broker* Laravel; token disimpan ter-hash, berlaku 60 menit, sekali pakai; email Bahasa Indonesia | Lihat [bagian 4](#5-menguji-lupa--reset-password) |
 | 4 | Dashboard | 5 | `DashboardController` (invokable) — jumlah artikel, Published, Draft, dan 5 artikel terbaru **milik user yang login** | Masuk → halaman Dashboard |
 | 5 | CRUD Artikel | 20 | `ArticleController` (resource) — daftar milik sendiri + search judul + filter status + pagination, tambah, detail, edit, hapus dengan konfirmasi; slug unik otomatis | Menu **Artikel Saya** |
-| 6 | Upload & Pengelolaan Gambar | 10 | Disimpan di disk `public` folder `articles/` (nama file acak); preview sebelum upload; file lama **dihapus dari disk** saat gambar diganti, saat checkbox "Hapus gambar" dicentang, dan saat artikel dihapus | Tulis artikel dengan gambar → edit → ganti/hapus gambar |
+| 6 | Upload & Pengelolaan Gambar | 10 | Semua lewat `App\Support\ImageUpload`: foto digambar ulang (EXIF/GPS dibuang), lalu disimpan di disk `public` folder `articles/` (bawaan, nama file acak) atau **Cloudinary** (`ARTICLE_IMAGE_DRIVER=cloudinary`, CDN dengan format & kualitas otomatis); preview sebelum upload; file lama **dihapus** (dari disk atau Cloudinary) saat gambar diganti, saat checkbox "Hapus gambar" dicentang, dan saat artikel dihapus | Tulis artikel dengan gambar → edit → ganti/hapus gambar |
 | 7 | Validation Form | 5 | Form Request `ArticleRequest` (dipakai `store` & `update`): judul wajib maks 255, isi wajib, gambar `jpg/jpeg/png/webp` maks 2 MB, status hanya 0/1; pesan error Bahasa Indonesia, input lama dipertahankan (`old()`) | Kirim form kosong |
 | 8 | Authorization / Middleware | 10 | Middleware `auth` (area dashboard), `guest` (halaman login/daftar), `throttle`, dan middleware buatan sendiri `admin` (`EnsureUserIsAdmin`, halaman Review & Laporan); `ArticlePolicy` + `Gate::authorize()` → penulis hanya mengelola artikel **miliknya** yang belum tayang, admin mengelola semua (lainnya **403**); penulis tidak bisa memilih status Published (divalidasi di server); `user_id` dan `role` tidak pernah diambil dari input form | Buka `/dashboard` tanpa login → diarahkan ke login. Login sebagai penulis lalu buka `/dashboard/review` atau edit artikel user lain → 403 |
 | 9 | Halaman Publik Artikel | 5 | `PublicArticleController` — situs khusus **artikel kesehatan jantung**; beranda bergaya portal berita (Sorotan + Artikel Lainnya, lalu daftar artikel + Terpopuler & kartu konsultasi WhatsApp), daftar artikel **Published** (search, 10 per halaman, eager loading penulis); detail artikel 3 kolom (bagikan WhatsApp/X/Facebook · isi · artikel lainnya & tombol konsultasi WhatsApp); artikel Draft → **404**; tidak ada tombol tambah/edit/hapus | Buka `/` tanpa login |
@@ -828,6 +832,10 @@ JavaScript) dan bisa dicabut seketika. Yang wajib diatur di server:
    Laravel Boost membuka rute `_boost/...` yang tidak boleh ada di server), lalu jalankan `composer audit`.
 8. `php artisan config:cache && php artisan route:cache && php artisan view:cache`, lalu `php artisan migrate --force`
    (**jangan** `migrate:fresh` di database berisi data).
+9. Gambar artikel: isi `ARTICLE_IMAGE_DRIVER=cloudinary` dan **`CLOUDINARY_URL`** (Cloudinary Console → Settings →
+   API Keys) di `.env` server. `CLOUDINARY_URL` memuat *api_secret* — siapa pun yang memegangnya bisa mengunggah dan
+   menghapus semua gambar — jadi jangan di-commit atau dibagikan. Gambar lama di disk dipindah dengan
+   `php artisan images:to-cloudinary --dry-run` (cek daftar) lalu `php artisan images:to-cloudinary` (backup database dulu).
 
 Perlindungan yang sudah aktif di kode: header keamanan (`X-Frame-Options`, `X-Content-Type-Options`,
 `Referrer-Policy`, `Permissions-Policy`, HSTS) untuk semua halaman; sesi di perangkat lain otomatis keluar saat
@@ -871,7 +879,10 @@ Test memakai database **SQLite in-memory** (diatur di `phpunit.xml`), sehingga d
 | `tests/Feature/SecurityTest.php` | 13 | Header keamanan di semua halaman termasuk 404; HSTS hanya lewat HTTPS; sesi lain keluar saat password diganti, sesi yang mengganti tetap login; batas login per email + IP (rekan satu IP tetap bisa masuk); batas daftar/reset/ganti password; batas aksi tulis per akun (membuka halaman tidak dihitung); tiap batas punya penghitung sendiri (live search tidak menghabiskan jatah komentar); foto upload kehilangan EXIF/GPS dan orientasinya diterapkan; `%`/`_` di pencarian bukan wildcard; tombol kembali di halaman error tidak mengarah ke situs lain; rute storage lokal tidak aktif |
 | `tests/Feature/LocaleTest.php` | 8 | Bawaan Indonesia + tombol bahasa; ganti ke English & bertahan di halaman lain (isi artikel tetap Indonesia, `lang="id"`); bahasa tak dikenal ditolak; area penulis & pesan validasi ikut bahasa; halaman admin & notifikasi ikut bahasa; 404 ikut bahasa; pop-up & pemisah ribuan ikut bahasa; setiap teks punya terjemahan di `lang/en.json` (dan kunci `trans_choice` terdaftar di `lang/id.json`) |
 
-Hasil: **166 test, 843 assertion, semua lulus.**
+| `tests/Feature/FloatingContactTest.php` | 3 | Tombol melayang "Konsultasi Gratis" (link WhatsApp konsultasi) & telepon klinik (`tel:`) tampil di halaman publik; tombol telepon hilang bila nomor klinik kosong; tidak tampil di dashboard |
+| `tests/Feature/CloudinaryImageTest.php` | 6 | **Tanpa internet** (SDK Cloudinary diganti tiruan lewat service container): upload masuk folder `cmi-artikel/articles` & tidak ke disk lokal; upload gagal → pesan di form, artikel tidak tersimpan; alamat gambar CDN `f_auto/q_auto`, gambar lama tetap dari storage; hapus artikel → gambar dihapus di Cloudinary; `images:to-cloudinary` memindah tanpa mengubah `updated_at`, melewati file hilang & yang sudah pindah, file lokal tetap; `--dry-run` tidak mengubah apa pun |
+
+Hasil: **175 test, 881 assertion, semua lulus.**
 
 ---
 

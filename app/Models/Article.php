@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use App\Support\ArticleContent;
+use App\Support\ImageUpload;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+
 
 class Article extends Model
 {
@@ -175,7 +177,7 @@ class Article extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image ? asset('storage/'.$this->image) : null;
+        return ImageUpload::url($this->image);
     }
 
     /**

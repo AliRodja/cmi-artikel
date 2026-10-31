@@ -24,9 +24,10 @@ Aturan kerja untuk Claude. **Produk, fitur, tech stack, rute, model data, test c
 ## ⚠️ Database berisi DATA REAL
 **JANGAN** menjalankan `migrate:fresh`, `migrate:refresh`, `migrate:reset`, `db:wipe`, atau `db:seed` pada MySQL.
 - Sebelum `php artisan migrate` di MySQL: backup ke `storage/app/backups/artikel_app-sebelum-<fitur>-*.sql` (gitignored),
-  pakai `mysqldump --single-transaction --set-gtid-purged=OFF`. Cadangan data real (3 artikel asli):
-  `artikel_app-sebelum-versi-inggris-20261030-1306.sql` (terbaru, sebelum kolom `*_en`, belum diuji restore) dan
-  `artikel_app-data-real-20261030-0811.sql` (terbukti bisa di-restore); cadangan lama & data dummy dihapus 2026-10-30.
+  pakai `mysqldump --single-transaction --set-gtid-purged=OFF`. Perintah yang mengubah data real (mis.
+  `images:to-cloudinary`) juga didahului backup + `--dry-run`. Cadangan data real (3 artikel asli):
+  `artikel_app-sebelum-cloudinary-20261031-1035.sql` (terbaru, gambar masih lokal), `artikel_app-sebelum-versi-inggris-
+  20261030-1306.sql`, dan `artikel_app-data-real-20261030-0811.sql` (terbukti bisa di-restore).
 - Uji/screenshot pakai SQLite sementara: `DB_CONNECTION=sqlite DB_DATABASE=/path/tmp.sqlite php artisan migrate --seed --force`
   lalu `php artisan serve` dengan env yang sama (env shell mengalahkan `.env`). Seeder tetap untuk penilai.
 - `php artisan test` aman: SQLite in-memory dari `phpunit.xml`.
@@ -45,7 +46,7 @@ Aturan kerja untuk Claude. **Produk, fitur, tech stack, rute, model data, test c
 npm run dev                 # terminal 1 (biarkan berjalan)
 php artisan optimize:clear  # terminal 2
 php artisan serve           # http://localhost:8000
-php artisan test            # 166 test per 2026-10-30
+php artisan test            # 175 test per 2026-10-31
 npm run build               # wajib sebelum dikumpulkan / deploy
 ```
 - Dev server Vite tidak mengenali class Tailwind di file Blade baru → `touch resources/css/app.css`. Mengubah
@@ -75,9 +76,15 @@ npm run build               # wajib sebelum dikumpulkan / deploy
   `display_locale` (+ `meta_title`/`meta_description` yang sudah ikut bahasa) — Inggris bila pengunjung memilih English
   DAN `hasEnglish()`, selain itu Indonesia. Area admin & Laporan Soal 2 tetap memakai kolom Indonesia (naskah induk).
   Query yang membatasi kolom untuk kartu/daftar publik pakai `Article::LIST_COLUMNS` (harus memuat title_en/content_en).
-- Gambar di disk `public` folder `articles/`, **selalu lewat `App\Support\ImageUpload::store()`** (digambar ulang GD:
-  EXIF/GPS terbuang, orientasi diterapkan) — jangan `->store()` langsung. File lama dihapus saat diganti / checkbox
-  `remove_image` / artikel dihapus (butuh `storage:link`).
+- Gambar artikel **selalu lewat `App\Support\ImageUpload`**: `store()` (digambar ulang GD: EXIF/GPS terbuang, orientasi
+  diterapkan), `url()` (dipakai `Article::image_url`), `delete()` — jangan `->store()` / `Storage::delete()` langsung.
+  `ARTICLE_IMAGE_DRIVER=cloudinary` → piksel hasil gambar ulang diunggah ke Cloudinary folder `cmi-artikel/articles`,
+  kolom `image` = `cloudinary:<public_id>`, alamat CDN `f_auto/q_auto` dihitung tanpa internet; tanpa awalan = file di
+  disk `public` (`local`, bawaan penilai/test, butuh `storage:link`). SDK resmi `cloudinary/cloudinary_php` (paket
+  `cloudinary-labs/cloudinary-laravel` belum mendukung Laravel 13), di-bind di container (`AppServiceProvider`) agar test
+  memakai tiruan — **test tidak boleh menghubungi Cloudinary**. `CLOUDINARY_URL` berisi api_secret → hanya di `.env`,
+  dibaca lewat `config('services.cloudinary.url')`. File lama dihapus saat diganti / `remove_image` / artikel dihapus
+  (gagal hapus di Cloudinary hanya dicatat log). Gambar lokal lama dipindah dengan `php artisan images:to-cloudinary`.
 - Lupa Password sengaja menjawab sama untuk email terdaftar/tidak — jangan kembalikan pesan "email tidak ditemukan".
 - Notifikasi lewat `App\Support\ArticleNotifier` (update hanya bila `wasChanged('status')`). Kunjungan lewat
   `App\Support\ArticleViewCounter` dengan `DB::table()->increment()` (agar `updated_at` tidak berubah).

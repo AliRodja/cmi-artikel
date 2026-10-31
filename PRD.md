@@ -12,7 +12,7 @@
 | Asal | Jawaban **ujian masuk IT CMI** (Soal 1 website artikel Laravel, Soal 2 INNER JOIN) milik Ali Imran Rodja |
 | Fase | Sejak 2026-10-28 pengembangan lanjutan dengan **data real** CMI (artikel diinput lewat halaman) |
 | Revisi soal | 2026-10-29: situs dikhususkan untuk artikel jantung; fitur jenis/kategori penyakit dihapus |
-| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **166 test / 843 assertion lulus** |
+| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **175 test / 881 assertion lulus** |
 
 **Tujuan:** pasien dan masyarakat mendapat informasi kesehatan jantung yang tepercaya (penulis jelas, ditinjau tenaga
 medis, ada sumber rujukan), mudah dibaca, dan mudah menghubungi klinik (WhatsApp, telepon).
@@ -64,6 +64,7 @@ membuat 3 artikel Published **tanpa penulis** agar terbukti tersaring oleh INNER
 | Huruf | Google Fonts via provider `google()` laravel-vite-plugin (diunduh saat build, disajikan sendiri): **Inter** (UI & judul), **Roboto** (huruf artikel, `font-article`) |
 | Ikon | Font Awesome Free 7 (solid, regular, brands) lewat komponen `x-icon` |
 | Editor artikel | **Trix** 2 (rich text, lampiran dimatikan) |
+| Gambar artikel | **Cloudinary** (CDN, format & kualitas otomatis `f_auto/q_auto`) lewat SDK resmi `cloudinary/cloudinary_php` 3; driver `local` (disk `public`) untuk penilai & test |
 | Keamanan konten | `symfony/html-sanitizer` lewat `App\Support\ArticleContent` |
 | Autentikasi | **Manual** (tanpa Breeze/Jetstream): session, password broker bawaan untuk reset |
 | Notifikasi | Laravel Notifications, channel `database` |
@@ -120,6 +121,8 @@ Semua fitur di bawah ✅ selesai dan teruji kecuali ditandai lain.
   akun (Baca Nanti, Notifikasi, Kelola Akun), area penulis & admin (dashboard, tulis artikel + panel SEO, detail,
   Review, Laporan, Kelola Pengguna), pop-up, pesan validasi, notifikasi, halaman error. Isi artikel tetap Indonesia.
 - Footer: info kontak klinik, media sosial resmi, navigasi.
+- Tombol kontak melayang kanan bawah (semua halaman kecuali `/dashboard…`): **Konsultasi Gratis** (WhatsApp konsultasi)
+  + telepon klinik; di ponsel keduanya bulat ikon saja.
 - SEO: meta & Open Graph, canonical, noindex untuk halaman privat/cari, JSON-LD (MedicalClinic, MedicalWebPage, Article,
   Breadcrumb), `/sitemap.xml`, `/robots.txt` dinamis.
 - Halaman error Bahasa Indonesia: 403, 404 (menyarankan artikel), 419, 429, 500, 503.
@@ -146,13 +149,15 @@ Semua fitur di bawah ✅ selesai dan teruji kecuali ditandai lain.
 - Pencatat kunjungan unik per sesi/akun (penulis sendiri tidak dihitung).
 - Pop-up berhasil/gagal (gagal tidak hilang sendiri); 419 → kembali ke halaman dengan pesan.
 - Sanitasi HTML dua lapis (saat simpan & saat tampil).
+- Gambar artikel disimpan di Cloudinary (`ARTICLE_IMAGE_DRIVER=cloudinary`) atau disk sendiri (`local`); perintah
+  `php artisan images:to-cloudinary [--dry-run]` memindahkan gambar lama.
 
 ## 8. Model data
 
 | Tabel | Kolom utama | Catatan |
 |---|---|---|
 | `users` | name, email (unique), password (hashed), `role` (admin/penulis/pembaca, default pembaca), `profession` | `role` tidak di `$fillable` |
-| `articles` | `user_id` (**nullable**, nullOnDelete), `medical_reviewer_id` (nullable, FK users), title, `slug` (unique), content (longText, HTML tersanitasi), `sources`, image, `status` (0 Draft · 1 Published · 2 Review), `review_note`, `focus_keyword`, `seo_title`, `seo_description`, `view_count`, versi Inggris opsional `title_en`, `content_en`, `seo_title_en`, `seo_description_en` | index (status, created_at); `user_id` nullable sengaja untuk bukti INNER JOIN |
+| `articles` | `user_id` (**nullable**, nullOnDelete), `medical_reviewer_id` (nullable, FK users), title, `slug` (unique), content (longText, HTML tersanitasi), `sources`, `image` (path disk `public`, atau `cloudinary:<public_id>`), `status` (0 Draft · 1 Published · 2 Review), `review_note`, `focus_keyword`, `seo_title`, `seo_description`, `view_count`, versi Inggris opsional `title_en`, `content_en`, `seo_title_en`, `seo_description_en` | index (status, created_at); `user_id` nullable sengaja untuk bukti INNER JOIN |
 | `comments` | article_id, user_id (cascade), body | index (article_id, created_at) |
 | `bookmarks` | user_id, article_id (cascade) | unique (user_id, article_id) — Baca Nanti |
 | `article_views` | article_id (cascade), user_id (nullOnDelete), `visitor` (`user:{id}` / `guest:{hash sesi}`), viewed_at | riwayat kunjungan unik |
@@ -184,7 +189,7 @@ Published** (kalau Draft, sudah tersaring oleh `status = 1` dan tidak membuktika
 
 ## 10. Struktur kode
 ```
-routes/web.php, routes/console.php   (console: perintah `user:role`)
+routes/web.php, routes/console.php   (console: perintah `user:role`, `images:to-cloudinary`)
 bootstrap/app.php                 (alias middleware admin/writer, redirectUsersTo/redirectGuestsTo, render 419)
 app/Models/{User,Article,Comment,ArticleView}.php
 app/Policies/{ArticlePolicy,CommentPolicy,UserPolicy}.php
@@ -193,7 +198,7 @@ app/Http/Requests/{ArticleRequest,UserRequest}.php
 app/Notifications/ArticleNotification.php (abstract) + ArticleSubmittedForReview, ArticlePublished, ArticleReturned,
   NewArticlePublished, NewComment
 app/Support/{ArticleContent,ArticleNotifier,ArticleViewCounter,ImageUpload,Seo}.php
-app/Providers/AppServiceProvider.php (View Composer: antrean review & notifikasi navbar)
+app/Providers/AppServiceProvider.php (View Composer: antrean review & notifikasi navbar; limiter; binding SDK Cloudinary)
 app/Http/Controllers/
   Auth/{LoginController,RegisterController,ForgotPasswordController,ResetPasswordController}.php
   DashboardController.php         (invokable, statistik milik user yang login)
@@ -206,6 +211,7 @@ app/Http/Controllers/
   CommentController, BookmarkController, NotificationController, ProfileController, UserController, SeoController,
   LocaleController                (invokable, POST /bahasa → simpan pilihan bahasa di sesi)
 config/{clinic,seo}.php           (data klinik & WhatsApp & media sosial; SEO bawaan)
+config/services.php `cloudinary`, config/filesystems.php `article_images` (driver gambar artikel)
 database/migrations/              (articles + perubahan bertahap: role, review_note, comments, bookmarks,
                                    notifications, article_views, view_count, profession, peninjau medis & sumber,
                                    field SEO, drop category)
@@ -219,7 +225,7 @@ resources/js/app.js               (dialog, drawer, popover, password toggle, sal
 resources/views/
   layouts/{app,minimal}.blade.php
   partials/{navbar,nav-drawer,search-panel,user-menu,notification-menu,locale-menu,flash,footer,seo}.blade.php
-  components/  article-card article-thumb auth-card avatar consultation-card date error-page form-step highlight
+  components/  article-card article-thumb auth-card avatar consultation-card date error-page floating-contact form-step highlight
                icon input logo notification-item page-header popular-article review-note role-badge section-title
                share-buttons source-line status-badge
   auth/{login,register,forgot-password,reset-password,_aside,_password-match}.blade.php
@@ -237,7 +243,8 @@ lang/en.json (terjemahan Inggris, kunci = teks Indonesia), lang/en/passwords.php
 - **Keamanan:** autentikasi berbasis session (cookie `http_only`, `same_site=lax`), **bukan JWT** — aplikasi server-rendered
   tanpa API; header keamanan HTTP (`SecurityHeaders`); sesi perangkat lain keluar saat password berubah
   (`AuthenticateSession`); batas percobaan bernama di semua aksi tulis (Masuk/Lupa Password per email + IP); Lupa
-  Password tidak membocorkan email terdaftar; foto upload digambar ulang (EXIF/GPS terbuang, orientasi diterapkan);
+  Password tidak membocorkan email terdaftar; foto upload digambar ulang (EXIF/GPS terbuang, orientasi diterapkan)
+  sebelum disimpan/diunggah ke Cloudinary; `CLOUDINARY_URL` (api_secret) hanya di `.env`;
   `composer audit` bersih; pengaturan production di README "Checklist keamanan saat deploy"; CSRF di semua form; output Blade selalu `{{ }}` (pengecualian tunggal: isi artikel tersanitasi);
   `user_id` dari user login, bukan dari form; `role` tidak bisa diisi massal; throttle login, lupa password, komentar,
   live search; link eksternal `rel="noopener noreferrer"`.
@@ -247,16 +254,17 @@ lang/en.json (terjemahan Inggris, kunci = teks Indonesia), lang/en/passwords.php
 - **Bahasa:** seluruh UI, validasi, email, dan halaman error Bahasa Indonesia; zona waktu WIB.
 - **Ponsel:** semua halaman responsif (tabel laporan menjadi kartu), tanpa scroll horizontal.
 - **Performa:** eager loading (tanpa N+1), pagination, huruf disajikan dari server sendiri, Trix hanya dimuat di form.
-- **Data real:** MySQL lokal tidak boleh di-reset; setiap migration didahului backup (`storage/app/backups/`). Cadangan
-  yang ada (keduanya 3 artikel asli): `artikel_app-sebelum-versi-inggris-20261030-1306.sql` (terbaru, sebelum migration
-  versi Inggris, belum diuji restore) dan `artikel_app-data-real-20261030-0811.sql` (uji restore berhasil); cadangan
+- **Data real:** MySQL lokal tidak boleh di-reset; setiap migration / perintah pengubah data didahului backup
+  (`storage/app/backups/`). Cadangan yang ada (semuanya 3 artikel asli): `artikel_app-sebelum-cloudinary-20261031-1035.sql`
+  (terbaru, gambar masih lokal), `artikel_app-sebelum-versi-inggris-20261030-1306.sql` (sebelum migration versi Inggris,
+  belum diuji restore) dan `artikel_app-data-real-20261030-0811.sql` (uji restore berhasil); cadangan
   per-tahap lama, data dummy, dan gambar dummy dihapus 2026-10-30 — nama file backup lain di log progres di bawah tinggal
   catatan sejarah.
 
 ## 12. Test case
 
-Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **21 file · 166 test ·
-843 assertion — semua lulus (2026-10-30).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
+Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **23 file · 175 test ·
+881 assertion — semua lulus (2026-10-31).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
 selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi nomor +62 dirusak).
 
 | File | Test | Yang diuji |
@@ -282,6 +290,8 @@ selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi n
 | `SecurityTest` | 13 | Header keamanan (termasuk 404) & HSTS hanya HTTPS; sesi lain keluar saat password berubah, sesi pengganti tetap login; batas login per email + IP; batas daftar/reset/ganti password; batas aksi tulis per akun; penghitung batas terpisah per rute; foto upload kehilangan EXIF/GPS & orientasi diterapkan; `%`/`_` bukan wildcard; tombol kembali halaman error tidak ke situs luar; rute storage lokal mati |
 | `LocaleTest` | 8 | Bawaan Indonesia + tombol bahasa; ganti ke English & bertahan (isi artikel tetap Indonesia); bahasa tak dikenal ditolak; area penulis (dashboard, Artikel Saya, form tulis) & pesan validasi ikut bahasa; halaman admin (Review, Laporan, Kelola Pengguna) & notifikasi ikut bahasa (templat + data); 404 ikut bahasa; pop-up & pemisah ribuan ikut bahasa; setiap teks di view/`app/Http`/notifikasi punya terjemahan (+ kunci `trans_choice` di `id.json`) |
 | `HeartOnlySiteTest` | 4 | Kolom kategori sudah tidak ada, beranda bertema jantung tanpa filter jenis, tombol bagikan & konsultasi jantung, migration menjadikan artikel non-jantung Draft sebelum kolom dihapus |
+| `FloatingContactTest` | 3 | Tombol melayang Konsultasi Gratis (link WhatsApp) & telepon (`tel:`) tampil di halaman publik; tombol telepon hilang bila `CLINIC_PHONE` kosong; tidak tampil di dashboard |
+| `CloudinaryImageTest` | 6 | Tanpa internet (SDK ditiru lewat container): upload ke folder `cmi-artikel/articles` & tidak ke disk lokal; gagal upload → pesan di form, artikel tidak tersimpan; alamat CDN `f_auto/q_auto`, gambar lama tetap lokal; hapus artikel → hapus di Cloudinary; `images:to-cloudinary` memindah tanpa mengubah `updated_at`, melewati file hilang & yang sudah pindah, file lokal tetap; `--dry-run` tidak mengubah apa pun |
 
 ### Checklist uji manual (browser) — semua ✅ (2026-10-19)
 1. Beranda: daftar artikel Published, search, pagination
@@ -301,12 +311,16 @@ selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi n
 
 Kontak resmi (diisi 2026-10-29, `CLINIC_*` di `.env` & `.env.example`): Jl. Tubagus Ismail VII, Sekeloa, Kecamatan
 Coblong, Kota Bandung, Jawa Barat 40134 · Buka setiap hari, 24 jam · Telepon (022) 253 1000 · WhatsApp (footer)
-0811 9161 166 · info@cmihospital.com · WhatsApp tombol Konsultasi 0821-2159-0000 · media sosial `cmihospitals`.
+0811 9161 166 · info@cmihospital.com · WhatsApp tombol Konsultasi 0821-2159-0000 · media sosial `cmihospitals`
+(Instagram `cmihospital.official`, diganti 2026-10-31).
 
 **Menunggu / backlog:**
 - [ ] Akreditasi CMI (`CLINIC_ACCREDITATION`) — tunggu data dari user, jangan dikarang.
 - [ ] Link Google Maps resmi (`CLINIC_MAPS_URL`) — sementara link pencarian dari alamat.
-- [ ] `npm run build` sebelum dikumpulkan / deploy; isi `CLINIC_*` di `.env` server; jalankan "Checklist keamanan
+- [ ] File gambar lokal lama (`storage/app/public/articles/`, 3 file) masih disimpan sebagai cadangan setelah pindah ke
+  Cloudinary — boleh dihapus setelah situs stabil.
+- [ ] `npm run build` sebelum dikumpulkan / deploy; isi `CLINIC_*`, `ARTICLE_IMAGE_DRIVER=cloudinary` & `CLOUDINARY_URL`
+  di `.env` server; jalankan "Checklist keamanan
   saat deploy" & "Checklist SEO saat deploy" di README.
 - Persiapan tanya-jawab penilai: middleware vs policy, alur reset password, INNER JOIN vs LEFT JOIN, jebakan
   `orWhere` tanpa closure, N+1 & eager loading, mass assignment & `$fillable`, CSRF, route model binding dengan slug.
@@ -338,6 +352,19 @@ bawah "Git di-init ulang".
   (UI & judul; sebelumnya Plus Jakarta Sans), **Roboto = `font-article`** (huruf artikel: paragraf `.article-content` + judul artikel di beranda, Baca Nanti, 404;
   subjudul di dalam isi tetap Inter; sejak 2026-10-29 menggantikan Lora/`font-serif` atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
+- [x] **Gambar artikel di Cloudinary** (2026-10-31; dikerjakan user dengan bimbingan). SDK resmi
+  `cloudinary/cloudinary_php` 3.3 — `cloudinary-labs/cloudinary-laravel` 3.0.2 hanya mendukung Laravel 11–12. Config
+  `services.cloudinary` (`CLOUDINARY_URL` = rahasia, hanya di `.env`; `CLOUDINARY_FOLDER`) + `filesystems.article_images`
+  (`ARTICLE_IMAGE_DRIVER=local|cloudinary`, `.env.example` = `local` agar penilai tidak butuh akun). `ImageUpload`:
+  piksel hasil gambar ulang GD diunggah sebagai data URI ke `cmi-artikel/articles`, kolom `image` = `cloudinary:<public_id>`
+  (tanpa awalan = file lama di disk `public`, tanpa migration); `url()` (CDN `f_auto/q_auto`, dihitung tanpa internet) &
+  `delete()` dipakai `Article::image_url` & `ArticleController::deleteImage()`; gagal upload → pesan validasi di form,
+  gagal hapus → hanya `report()`. SDK di-bind di container (`AppServiceProvider`) agar test memakai tiruan — percobaan
+  pertama tanpa binding ternyata menghubungi Cloudinary sungguhan. Perintah `images:to-cloudinary [--dry-run]` (query
+  builder agar `updated_at` tetap, file lokal disimpan, aman diulang). Diuji nyata di SQLite sementara (upload, ganti,
+  hapus; data uji lalu dihapus). Data real: backup `artikel_app-sebelum-cloudinary-20261031-1035.sql`, dry-run, lalu 3
+  gambar (#35–37) dipindah, `updated_at` tetap. Test `CloudinaryImageTest` (6, terbukti gagal bila `format('auto')`,
+  `delete()`, atau query builder disabotase) → 175 test / 881 assertion.
 - [x] **Tombol melayang tidak lagi menutupi konten di ponsel** (2026-10-31). Diukur di lebar 320/390/768 px: saat digulir
   ke paling bawah teks hak cipta footer tertutup tombol Telepon/WhatsApp, dan di halaman Masuk tombol "Daftar akun baru"
   tertutup sejak awal. Perbaikan: hak cipta footer diberi ruang bawah `pb-[calc(6rem+env(safe-area-inset-bottom))]`,
@@ -352,6 +379,13 @@ bawah "Git di-init ulang".
   panel biru memakai cahaya tipis di pojok (gantinya gradien radial). `auth/_aside`: logo jadi link ke beranda + catatan
   "Akses aman & terenkripsi…" (ikon perisai). Penyesuaian aturan keterbacaan: teks ≥ 14px & `text-brand-100`/`slate-500`
   (versi user `text-xs`, `slate-400`, `font-serif`).
+- [x] **Tombol kontak melayang & link Instagram baru** (2026-10-31; dikerjakan user dengan bimbingan). Komponen anonim
+  `x-floating-contact` (`php artisan make:component FloatingContact --view`) dipasang di `layouts/app` kecuali
+  `request()->is('dashboard*')`: tombol hijau **Konsultasi Gratis** (#0E7A3F) → `clinic.whatsapp_consultation_url`,
+  tombol telepon (022) 253 1000 → `tel:` `clinic.phone_international` (hilang bila `CLINIC_PHONE` kosong). Redesign user
+  (bulat, blur, titik berkedip) dirapikan: kontras hijau, tinggi 44px, ukuran ikon lewat font-size (`sm:text-base`),
+  `aria-label`, fokus keyboard, `motion-safe:animate-ping`. Terjemahan `en.json`. Instagram → `cmihospital.official`
+  (`config/clinic.php`, `CredibilityTest`). Test `FloatingContactTest` (3) → 169 test / 854 assertion.
 - [x] **README jadi tutorial instalasi macOS, Linux, Windows** (2026-10-30). Bagian 1–6 ditulis ulang: kebutuhan (PHP
   **8.4.1+**, bukan 8.3 seperti tertulis sebelumnya; ekstensi `intl`, `gd`, `exif`, dll.; Node 20.19+/22.12+; internet saat
   build untuk Google Fonts), persiapan perangkat per OS (Homebrew; apt + PPA ondrej/sury PHP 8.4, NodeSource, user MySQL
