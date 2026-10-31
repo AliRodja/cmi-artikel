@@ -2,7 +2,7 @@
 
 > Dokumen produk: apa yang dibangun, untuk siapa, tech stack, fitur & statusnya, test case, dan log progres.
 > Aturan kerja untuk Claude ada di `CLAUDE.md`; panduan instalasi untuk penilai ada di `README.md`.
-> **Terakhir diperbarui: 2026-10-30.**
+> **Terakhir diperbarui: 2026-10-31.**
 
 ## 1. Ringkasan
 
@@ -188,11 +188,11 @@ routes/web.php, routes/console.php   (console: perintah `user:role`)
 bootstrap/app.php                 (alias middleware admin/writer, redirectUsersTo/redirectGuestsTo, render 419)
 app/Models/{User,Article,Comment,ArticleView}.php
 app/Policies/{ArticlePolicy,CommentPolicy,UserPolicy}.php
-app/Http/Middleware/{EnsureUserCanWrite,EnsureUserIsAdmin}.php
+app/Http/Middleware/{EnsureUserCanWrite,EnsureUserIsAdmin,SetLocale,SecurityHeaders}.php
 app/Http/Requests/{ArticleRequest,UserRequest}.php
 app/Notifications/ArticleNotification.php (abstract) + ArticleSubmittedForReview, ArticlePublished, ArticleReturned,
   NewArticlePublished, NewComment
-app/Support/{ArticleContent,ArticleNotifier,ArticleViewCounter,Seo}.php
+app/Support/{ArticleContent,ArticleNotifier,ArticleViewCounter,ImageUpload,Seo}.php
 app/Providers/AppServiceProvider.php (View Composer: antrean review & notifikasi navbar)
 app/Http/Controllers/
   Auth/{LoginController,RegisterController,ForgotPasswordController,ResetPasswordController}.php
@@ -203,7 +203,8 @@ app/Http/Controllers/
                                    liveSearch; relatedArticles())
   ArticleReportController.php     (Soal 2: DB::table + join + where status=1 + search dibungkus where(closure)
                                    + orderByDesc + paginate(10)->withQueryString())
-  CommentController, BookmarkController, NotificationController, ProfileController, UserController, SeoController
+  CommentController, BookmarkController, NotificationController, ProfileController, UserController, SeoController,
+  LocaleController                (invokable, POST /bahasa → simpan pilihan bahasa di sesi)
 config/{clinic,seo}.php           (data klinik & WhatsApp & media sosial; SEO bawaan)
 database/migrations/              (articles + perubahan bertahap: role, review_note, comments, bookmarks,
                                    notifications, article_views, view_count, profession, peninjau medis & sumber,
@@ -217,17 +218,18 @@ resources/js/app.js               (dialog, drawer, popover, password toggle, sal
              editor.js            (Trix, hanya di _form) + article-form.js + seo-panel.js
 resources/views/
   layouts/{app,minimal}.blade.php
-  partials/{navbar,nav-drawer,search-panel,user-menu,notification-menu,flash,footer,seo}.blade.php
+  partials/{navbar,nav-drawer,search-panel,user-menu,notification-menu,locale-menu,flash,footer,seo}.blade.php
   components/  article-card article-thumb auth-card avatar consultation-card date error-page form-step highlight
                icon input logo notification-item page-header popular-article review-note role-badge section-title
                share-buttons source-line status-badge
   auth/{login,register,forgot-password,reset-password,_aside,_password-match}.blade.php
   dashboard.blade.php
-  articles/{index,_form,_seo-panel,_reviewer-select,create,edit,show,report}.blade.php
+  articles/{index,_form,_seo-panel,_english-version,_reviewer-select,create,edit,show,report}.blade.php
   public/{index,show,_bookmark-button,_credibility,_live-search-results}.blade.php
   review/index, users/{index,_form,create,edit}, bookmarks/index, notifications/index, profile/edit
   errors/{403,404,419,429,500,503}.blade.php
 lang/id/{auth,pagination,passwords,validation}.php, lang/id.json
+lang/en.json (terjemahan Inggris, kunci = teks Indonesia), lang/en/passwords.php (hanya menimpa `sent`)
 ```
 
 ## 11. Kebutuhan non-fungsional
@@ -246,8 +248,10 @@ lang/id/{auth,pagination,passwords,validation}.php, lang/id.json
 - **Ponsel:** semua halaman responsif (tabel laporan menjadi kartu), tanpa scroll horizontal.
 - **Performa:** eager loading (tanpa N+1), pagination, huruf disajikan dari server sendiri, Trix hanya dimuat di form.
 - **Data real:** MySQL lokal tidak boleh di-reset; setiap migration didahului backup (`storage/app/backups/`). Cadangan
-  terbaru: `artikel_app-data-real-20261030-0811.sql` (3 artikel asli, uji restore berhasil); cadangan per-tahap lama, data
-  dummy, dan gambar dummy dihapus 2026-10-30 — nama file backup di log progres di bawah tinggal catatan sejarah.
+  yang ada (keduanya 3 artikel asli): `artikel_app-sebelum-versi-inggris-20261030-1306.sql` (terbaru, sebelum migration
+  versi Inggris, belum diuji restore) dan `artikel_app-data-real-20261030-0811.sql` (uji restore berhasil); cadangan
+  per-tahap lama, data dummy, dan gambar dummy dihapus 2026-10-30 — nama file backup lain di log progres di bawah tinggal
+  catatan sejarah.
 
 ## 12. Test case
 

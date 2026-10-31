@@ -24,8 +24,9 @@ Aturan kerja untuk Claude. **Produk, fitur, tech stack, rute, model data, test c
 ## ⚠️ Database berisi DATA REAL
 **JANGAN** menjalankan `migrate:fresh`, `migrate:refresh`, `migrate:reset`, `db:wipe`, atau `db:seed` pada MySQL.
 - Sebelum `php artisan migrate` di MySQL: backup ke `storage/app/backups/artikel_app-sebelum-<fitur>-*.sql` (gitignored),
-  pakai `mysqldump --single-transaction --set-gtid-purged=OFF`. Cadangan data real terbaru (3 artikel asli, terbukti bisa
-  di-restore): `artikel_app-data-real-20261030-0811.sql`; cadangan lama & data dummy dihapus 2026-10-30 atas permintaan user.
+  pakai `mysqldump --single-transaction --set-gtid-purged=OFF`. Cadangan data real (3 artikel asli):
+  `artikel_app-sebelum-versi-inggris-20261030-1306.sql` (terbaru, sebelum kolom `*_en`, belum diuji restore) dan
+  `artikel_app-data-real-20261030-0811.sql` (terbukti bisa di-restore); cadangan lama & data dummy dihapus 2026-10-30.
 - Uji/screenshot pakai SQLite sementara: `DB_CONNECTION=sqlite DB_DATABASE=/path/tmp.sqlite php artisan migrate --seed --force`
   lalu `php artisan serve` dengan env yang sama (env shell mengalahkan `.env`). Seeder tetap untuk penilai.
 - `php artisan test` aman: SQLite in-memory dari `phpunit.xml`.
