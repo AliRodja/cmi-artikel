@@ -28,6 +28,16 @@ class CredibilityTest extends TestCase
             'sources' => "Kemenkes RI, Pedoman Hipertensi https://kemkes.go.id/hipertensi\n\nBuku Ajar Kardiologi\nBahaya <script>alert(1)</script> javascript:alert(1)",
         ]);
 
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Ditinjau Tim Medis')
+            ->assertSee('Berbasis Rujukan Ilmiah')
+            ->assertSee('Pendampingan Jangka Panjang')
+            ->assertSee('Hipertensi')
+            ->assertSee('Ahli Gizi')
+            ->assertSee('Ditinjau oleh dr. Andi')
+            ->assertSee('Ditinjau Medis');
+
         $this->get(route('public.articles.show', $article))
             ->assertSee('Ahli Gizi')
             ->assertSee('Ditinjau secara medis oleh dr. Andi')

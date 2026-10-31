@@ -2,9 +2,10 @@
     Dropdown lonceng notifikasi (Popover API, sama seperti menu akun).
     $latestNotifications & $unreadNotificationCount dari View Composer navbar (AppServiceProvider).
 --}}
-<div id="notification-menu" popover class="dropdown-panel w-96">
-    <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-        <p class="font-semibold text-gray-900">{{ __('Notifikasi') }}</p>
+<div id="notification-menu" popover class="dropdown-panel w-96 overflow-hidden">
+    <div class="h-0.5 bg-gradient-to-r from-brand-950 via-brand-600 to-amber-400" aria-hidden="true"></div>
+    <div class="flex items-center justify-between border-b border-brand-100/80 bg-brand-50/50 px-4 py-3">
+        <p class="font-semibold text-brand-950">{{ __('Notifikasi') }}</p>
         @if ($unreadNotificationCount > 0)
             <form action="{{ route('notifications.read-all') }}" method="POST">
                 @csrf

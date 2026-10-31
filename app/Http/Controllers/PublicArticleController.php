@@ -12,7 +12,7 @@ use Illuminate\View\View;
 class PublicArticleController extends Controller
 {
     /** Kolom yang cukup untuk daftar Artikel Terpopuler (tanpa isi artikel yang panjang). */
-    private const POPULAR_COLUMNS = ['id', 'title', 'slug', 'image', 'view_count', 'created_at'];
+    private const POPULAR_COLUMNS = ['id', 'title', 'title_en', 'content_en', 'slug', 'image', 'view_count', 'created_at'];
 
     public function index(Request $request): View
     {
@@ -21,7 +21,7 @@ class PublicArticleController extends Controller
         // 10 per halaman: pas untuk grid 2 kolom di samping kolom Terpopuler.
         $articles = Article::query()
             ->published()
-            ->with('user:id,name')
+            ->with('user:id,name,profession')
             ->when($search !== '', fn ($query) => $query->search($search))
             ->latest()
             ->paginate(10)
@@ -32,7 +32,12 @@ class PublicArticleController extends Controller
 
         // 1 artikel terbaru untuk kotak besar + 5 berikutnya untuk kolom kanan.
         $latestArticles = $isLanding
-            ? Article::query()->published()->with('user:id,name')->latest()->take(6)->get()
+            ? Article::query()
+                ->published()
+                ->with(['user:id,name,profession', 'medicalReviewer:id,name,profession'])
+                ->latest()
+                ->take(6)
+                ->get()
             : collect();
 
         $popularArticles = Article::query()->popular()->take(5)->get(self::POPULAR_COLUMNS);
@@ -116,7 +121,7 @@ class PublicArticleController extends Controller
      */
     private function relatedArticles(Article $article, array $exclude): Collection
     {
-        $others = fn () => Article::query()->published()->whereKeyNot($article->getKey())->with('user:id,name');
+        $others = fn () => Article::query()->published()->whereKeyNot($article->getKey())->with('user:id,name,profession');
 
         $related = filled($article->focus_keyword)
             ? $others()->search($article->focus_keyword)->latest()->take(3)->get()

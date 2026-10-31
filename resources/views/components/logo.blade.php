@@ -1,4 +1,4 @@
-@props(['tone' => 'light', 'compact' => false])
+@props(['tone' => 'light', 'compact' => false, 'subtitle' => false])
 
 @php
     // Logo perusahaan diletakkan di public/images/logo-cmi.{svg,png,webp,jpg}.
@@ -20,9 +20,22 @@
 
     {{-- compact: nama situs disembunyikan di ponsel agar logo muat di tengah navbar. --}}
     <span @class([
-        'text-base font-bold tracking-tight',
-        'hidden sm:inline' => $compact,
-        'text-brand-950' => $tone === 'light',
-        'text-white' => $tone === 'dark',
-    ])>{{ config('app.name') }}</span>
+        'leading-tight',
+        'hidden sm:flex sm:flex-col' => $compact,
+        'flex flex-col' => ! $compact,
+    ])>
+        <span @class([
+            'text-base font-bold tracking-tight',
+            'text-brand-950' => $tone === 'light',
+            'text-white' => $tone === 'dark',
+        ])>{{ config('app.name') }}</span>
+
+        @if ($subtitle)
+            <span @class([
+                'hidden text-[0.75rem] font-medium tracking-wider uppercase lg:inline',
+                'text-brand-700' => $tone === 'light',
+                'text-brand-200' => $tone === 'dark',
+            ])>{{ __('Pusat Informasi Jantung') }}</span>
+        @endif
+    </span>
 </span>

@@ -12,7 +12,7 @@
 | Asal | Jawaban **ujian masuk IT CMI** (Soal 1 website artikel Laravel, Soal 2 INNER JOIN) milik Ali Imran Rodja |
 | Fase | Sejak 2026-10-28 pengembangan lanjutan dengan **data real** CMI (artikel diinput lewat halaman) |
 | Revisi soal | 2026-10-29: situs dikhususkan untuk artikel jantung; fitur jenis/kategori penyakit dihapus |
-| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **175 test / 881 assertion lulus** |
+| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **175 test / 889 assertion lulus** |
 
 **Tujuan:** pasien dan masyarakat mendapat informasi kesehatan jantung yang tepercaya (penulis jelas, ditinjau tenaga
 medis, ada sumber rujukan), mudah dibaca, dan mudah menghubungi klinik (WhatsApp, telepon).
@@ -264,7 +264,7 @@ lang/en.json (terjemahan Inggris, kunci = teks Indonesia), lang/en/passwords.php
 ## 12. Test case
 
 Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **23 file · 175 test ·
-881 assertion — semua lulus (2026-10-31).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
+889 assertion — semua lulus (2026-10-31).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
 selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi nomor +62 dirusak).
 
 | File | Test | Yang diuji |
@@ -352,6 +352,19 @@ bawah "Git di-init ulang".
   (UI & judul; sebelumnya Plus Jakarta Sans), **Roboto = `font-article`** (huruf artikel: paragraf `.article-content` + judul artikel di beranda, Baca Nanti, 404;
   subjudul di dalam isi tetap Inter; sejak 2026-10-29 menggantikan Lora/`font-serif` atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
+- [x] **Redesign beranda & navbar bergaya Editorial / Quiet Luxury** (2026-10-31; target pembaca usia 25–40+ dengan
+  riwayat kondisi kronis). Hero `bg-brand-950` dengan aksen emas/amber hangat (`amber-300`), kolom cari berikon, pintasan
+  topik kronis (`Hipertensi`, `Kolesterol`, `Nyeri Dada`, `Aritmia`, `Gaya Hidup`), serta 3 pilar kredibilitas medis
+  (*Ditinjau Tim Medis*, *Berbasis Rujukan Ilmiah*, *Pendampingan Jangka Panjang*). Bagian **Sorotan** diubah menjadi
+  *Editorial Split Card* di atas latar putih bersih (garis aksen gradien di atas, lencana "Ditinjau oleh …", profesi
+  penulis, dan tautan "Baca Selengkapnya"); **Artikel Lainnya** & **Terpopuler** dibungkus kartu rapi. Kartu artikel
+  (`x-article-card`) dan `PublicArticleController` kini memuat & menampilkan gelar/profesi penulis serta lencana
+  "Ditinjau Medis"; `x-consultation-card` diberi aksen senada. **Navbar** (`partials/navbar`) tetap `#E3F2FD`
+  (`bg-brand-50`, tinggi total 67px) dengan garis aksen gradien 3px di atas, tombol kapsul berbingkai (`.nav-pill-btn`)
+  untuk Menu, Cari (dengan indikator `<kbd>/</kbd>`), dan Bahasa, sub-label "Pusat Informasi Jantung" pada `<x-logo
+  compact subtitle />`, tombol Masuk kapsul `bg-brand-900`, serta tampilan seragam pada drawer samping & panel popover
+  (Bahasa, Notifikasi, Akun menampilkan profesi user). Terjemahan `lang/en.json` ditambahkan → 175 test / 889 assertion
+  lulus.
 - [x] **Gambar artikel di Cloudinary** (2026-10-31; dikerjakan user dengan bimbingan). SDK resmi
   `cloudinary/cloudinary_php` 3.3 — `cloudinary-labs/cloudinary-laravel` 3.0.2 hanya mendukung Laravel 11–12. Config
   `services.cloudinary` (`CLOUDINARY_URL` = rahasia, hanya di `.env`; `CLOUDINARY_FOLDER`) + `filesystems.article_images`
