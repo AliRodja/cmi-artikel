@@ -12,7 +12,7 @@
 | Asal | Jawaban **ujian masuk IT CMI** (Soal 1 website artikel Laravel, Soal 2 INNER JOIN) milik Ali Imran Rodja |
 | Fase | Sejak 2026-10-28 pengembangan lanjutan dengan **data real** CMI (artikel diinput lewat halaman) |
 | Revisi soal | 2026-10-29: situs dikhususkan untuk artikel jantung; fitur jenis/kategori penyakit dihapus |
-| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **175 test / 894 assertion lulus** |
+| Status | Semua fitur wajib Soal 1 & 2 selesai + fitur lanjutan; **181 test / 922 assertion lulus** |
 
 **Tujuan:** pasien dan masyarakat mendapat informasi kesehatan jantung yang tepercaya (penulis jelas, ditinjau tenaga
 medis, ada sumber rujukan), mudah dibaca, dan mudah menghubungi klinik (WhatsApp, telepon).
@@ -263,8 +263,8 @@ lang/en.json (terjemahan Inggris, kunci = teks Indonesia), lang/en/passwords.php
 
 ## 12. Test case
 
-Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **23 file · 175 test ·
-894 assertion — semua lulus (2026-10-31).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
+Jalankan `php artisan test` (SQLite in-memory dari `phpunit.xml`, MySQL tidak tersentuh). **24 file · 181 test ·
+922 assertion — semua lulus (2026-11-01).** Test penting dibuktikan bisa gagal dengan sabotase sementara (mis. policy
 selalu `true`, `leftJoin`, search tanpa closure, sanitizer dimatikan, konversi nomor +62 dirusak).
 
 | File | Test | Yang diuji |
@@ -352,6 +352,12 @@ bawah "Git di-init ulang".
   untuk seluruh UI, judul, dan isi artikel (`--font-sans: var(--font-roboto), sans-serif` & `--font-article: var(--font-roboto), sans-serif`;
   sejak 2026-10-31 menyeragamkan Inter + Roboto menjadi Roboto penuh atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
+- [x] **Gambar artikel dikompres ke WebP saat upload** (2026-11-01): `ImageUpload::store()` kini selalu menyimpan hasil
+  gambar ulang GD sebagai **WebP kualitas 80** (`WEBP_QUALITY`), apa pun format aslinya (JPG/PNG/WebP), dan memperkecil
+  gambar yang lebih lebar dari **1600px** (`MAX_WIDTH`, proporsi tetap). PNG berpalet diubah ke truecolor dulu
+  (`imagewebp()` menolak palet); transparansi dipertahankan. Berlaku untuk disk lokal (`.webp`) maupun Cloudinary
+  (`data:image/webp`). Gambar lama tidak diubah. Test `ImageCompressionTest` (4), terbukti gagal saat resize/konversi
+  truecolor disabotase → 181 test / 922 assertion.
 - [x] **Redesign beranda, detail artikel, navbar & halaman auth bergaya Cleveland Clinic + warna cerah CMI** (2026-10-31;
   target pembaca usia 25–40+ dengan riwayat kondisi kronis). Atas permintaan user, warna biru tua (`bg-brand-950`)
   diganti dengan warna cerah khas rumah sakit CMI (`bg-brand-600` `#066AC9` pada panel kiri halaman auth dan kartu

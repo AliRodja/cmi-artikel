@@ -46,7 +46,7 @@ Aturan kerja untuk Claude. **Produk, fitur, tech stack, rute, model data, test c
 npm run dev                 # terminal 1 (biarkan berjalan)
 php artisan optimize:clear  # terminal 2
 php artisan serve           # http://localhost:8000
-php artisan test            # 175 test per 2026-10-31
+php artisan test            # 181 test per 2026-11-01
 npm run build               # wajib sebelum dikumpulkan / deploy
 ```
 - Dev server Vite tidak mengenali class Tailwind di file Blade baru → `touch resources/css/app.css`. Mengubah
@@ -77,7 +77,7 @@ npm run build               # wajib sebelum dikumpulkan / deploy
   DAN `hasEnglish()`, selain itu Indonesia. Area admin & Laporan Soal 2 tetap memakai kolom Indonesia (naskah induk).
   Query yang membatasi kolom untuk kartu/daftar publik pakai `Article::LIST_COLUMNS` (harus memuat title_en/content_en).
 - Gambar artikel **selalu lewat `App\Support\ImageUpload`**: `store()` (digambar ulang GD: EXIF/GPS terbuang, orientasi
-  diterapkan), `url()` (dipakai `Article::image_url`), `delete()` — jangan `->store()` / `Storage::delete()` langsung.
+  diterapkan, selalu disimpan WebP q80 & lebar maks 1600px), `url()` (dipakai `Article::image_url`), `delete()` — jangan `->store()` / `Storage::delete()` langsung.
   `ARTICLE_IMAGE_DRIVER=cloudinary` → piksel hasil gambar ulang diunggah ke Cloudinary folder `cmi-artikel/articles`,
   kolom `image` = `cloudinary:<public_id>`, alamat CDN `f_auto/q_auto` dihitung tanpa internet; tanpa awalan = file di
   disk `public` (`local`, bawaan penilai/test, butuh `storage:link`). SDK resmi `cloudinary/cloudinary_php` (paket

@@ -16,11 +16,19 @@ use Illuminate\Validation\ValidationException;
  *   boleh ikut terunduh publik.
  * - Yang disimpan hanya pikselnya, jadi file "gambar" yang disisipi data/kode lain ikut ternetralkan.
  * - Tag Orientation diterapkan dulu ke piksel; tanpa itu foto ponsel yang dipotret tegak bisa tampil miring.
+ * - Hasilnya selalu dikompres ke WebP (JPG/PNG/WebP apa pun yang diunggah) dan diperkecil bila lebih lebar dari
+ *   MAX_WIDTH: file jauh lebih ringan, halaman cepat dimuat di ponsel. Gambar lama (jpg/png) tetap terbaca apa adanya.
  */
 class ImageUpload
 {
     private const EXTENSIONS = [IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png', IMAGETYPE_WEBP => 'webp'];
     private const CLOUDINARY_PREFIX = 'cloudinary:';
+
+    /** Lebar maksimum hasil simpan; gambar utama artikel paling lebar tampil ±1200px (2× untuk layar retina cukup). */
+    public const MAX_WIDTH = 1600;
+
+    /** Kualitas WebP 0–100: 80 = ukuran kecil, perbedaan dengan aslinya hampir tak terlihat mata. */
+    public const WEBP_QUALITY = 80;
 
     public static function store(UploadedFile $file, string $directory, string $disk = 'public'): string
     {
@@ -36,27 +44,19 @@ class ImageUpload
             $image = self::applyOrientation($image, $path);
         }
 
-        // Pertahankan transparansi PNG/WebP.
-        imagealphablending($image, false);
-        imagesavealpha($image, true);
+        $contents = self::toWebp($image);
 
-        ob_start();
-        match ($type) {
-            IMAGETYPE_JPEG => imagejpeg($image, null, 85),
-            IMAGETYPE_PNG => imagepng($image, null, 6),
-            IMAGETYPE_WEBP => imagewebp($image, null, 85),
-        };
-        $contents = (string) ob_get_clean();
         if (config('filesystems.article_images') === 'cloudinary') {
-        return self::CLOUDINARY_PREFIX.self::uploadToCloudinary($contents, $type, $directory);
+            return self::CLOUDINARY_PREFIX.self::uploadToCloudinary($contents, IMAGETYPE_WEBP, $directory);
         }
 
-        $name = $directory.'/'.Str::random(40).'.'.self::EXTENSIONS[$type];
+        $name = $directory.'/'.Str::random(40).'.webp';
         Storage::disk($disk)->put($name, $contents);
 
         return $name;
     }
-        /** Alamat publik gambar: Cloudinary (format & kualitas otomatis) atau file di storage sendiri. */
+
+    /** Alamat publik gambar: Cloudinary (format & kualitas otomatis) atau file di storage sendiri. */
     public static function url(?string $image): ?string
     {
         if (! $image) {
@@ -124,6 +124,32 @@ class ImageUpload
     private static function cloudinary(): Cloudinary
     {
         return app(Cloudinary::class);
+    }
+
+    /** Perkecil (bila perlu) lalu kompres ke WebP; transparansi PNG/WebP dipertahankan. */
+    private static function toWebp(GdImage $image): string
+    {
+        // PNG berpalet (8-bit) harus jadi truecolor dulu; imagewebp() menolak gambar berpalet.
+        imagepalettetotruecolor($image);
+
+        $width = imagesx($image);
+        if ($width > self::MAX_WIDTH) {
+            $height = max(1, (int) round(imagesy($image) * self::MAX_WIDTH / $width));
+            $resized = imagecreatetruecolor(self::MAX_WIDTH, $height);
+            // Kanvas transparan agar latar PNG tidak berubah hitam saat diperkecil.
+            imagealphablending($resized, false);
+            imagefill($resized, 0, 0, imagecolorallocatealpha($resized, 0, 0, 0, 127));
+            imagecopyresampled($resized, $image, 0, 0, 0, 0, self::MAX_WIDTH, $height, $width, imagesy($image));
+            $image = $resized;
+        }
+
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+
+        ob_start();
+        imagewebp($image, null, self::WEBP_QUALITY);
+
+        return (string) ob_get_clean();
     }
 
     /** Putar/balik piksel sesuai tag EXIF Orientation (1–8). imagerotate() berputar berlawanan arah jarum jam. */

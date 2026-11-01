@@ -56,7 +56,7 @@ class CloudinaryImageTest extends TestCase
     public function test_uploaded_image_goes_to_cloudinary_folder_not_local_disk(): void
     {
         $this->fakeUploadApi()->shouldReceive('upload')->once()
-            ->withArgs(fn ($file, $options) => str_starts_with($file, 'data:image/jpeg;base64,')
+            ->withArgs(fn ($file, $options) => str_starts_with($file, 'data:image/webp;base64,')
                 && $options['folder'] === 'cmi-artikel/articles')
             ->andReturn(new ApiResponse(['public_id' => 'cmi-artikel/articles/abc123'], []));
 
