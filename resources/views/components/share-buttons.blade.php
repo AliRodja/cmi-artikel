@@ -8,7 +8,7 @@
             'label' => 'WhatsApp',
             'icon' => 'whatsapp',
             'href' => 'https://wa.me/?'.http_build_query(['text' => $article->display_title."\n".$shareUrl]),
-            'class' => 'text-[#25D366] hover:bg-[#25D366]',
+            'class' => 'text-whatsapp hover:bg-whatsapp',
         ],
         [
             'label' => 'X',
@@ -20,14 +20,15 @@
             'label' => 'Facebook',
             'icon' => 'facebook',
             'href' => 'https://www.facebook.com/sharer/sharer.php?'.http_build_query(['u' => $shareUrl]),
-            'class' => 'text-[#1877F2] hover:bg-[#1877F2]',
+            // Biru Facebook resmi #1877F2 hanya 4,2:1 untuk teks label; versi ini 5,6:1.
+            'class' => 'text-[#1464D2] hover:bg-[#1464D2]',
         ],
     ];
 @endphp
 
 {{--
     Tombol bagikan + salin tautan. Arah susunan (mendatar/menurun) diatur pemanggil lewat class.
-    labels: tampilkan teks di samping ikon ("WhatsApp", "Salin tautan", ...) — lebih jelas bagi pembaca usia matang.
+    labels: tampilkan teks di samping ikon ("WhatsApp", "Salin tautan", ...), lebih jelas bagi pembaca usia matang.
 --}}
 <div {{ $attributes->class('flex items-center gap-2') }}>
     @foreach ($shareLinks as $link)

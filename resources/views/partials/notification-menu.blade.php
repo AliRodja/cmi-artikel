@@ -9,7 +9,7 @@
         @if ($unreadNotificationCount > 0)
             <form action="{{ route('notifications.read-all') }}" method="POST">
                 @csrf
-                <button type="submit" class="link cursor-pointer text-xs">{{ __('Tandai semua dibaca') }}</button>
+                <button type="submit" class="link -my-2 -mr-2 inline-flex min-h-11 cursor-pointer items-center px-2 text-xs">{{ __('Tandai semua dibaca') }}</button>
             </form>
         @endif
     </div>

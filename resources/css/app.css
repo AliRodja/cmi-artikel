@@ -35,6 +35,17 @@
     --color-brand-800: #074884;
     --color-brand-900: #0b3c6d;
     --color-brand-950: #082648;
+
+    /* Hijau WhatsApp versi gelap: #25D366 resmi hanya 2:1 dengan teks putih, ini 5,4:1 (hover 7,1:1). */
+    --color-whatsapp: #0e7a3f;
+    --color-whatsapp-dark: #0b6634;
+}
+
+/* Preflight Tailwind mengembalikan kursor tombol ke panah; semua kontrol yang bisa dipakai diberi kursor tangan. */
+@layer base {
+    button:not(:disabled), [role="button"], summary, select, label[for],
+    input[type="checkbox"], input[type="radio"], input[type="file"] { cursor: pointer; }
+    button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: not-allowed; }
 }
 
 @layer components {
@@ -62,7 +73,7 @@
     .nav-pill-btn       { @apply sm:h-10 sm:w-auto sm:gap-2 sm:border sm:border-brand-200/90 sm:bg-white/75 sm:px-3.5 sm:shadow-2xs sm:hover:border-brand-300 sm:hover:bg-white; }
 
     /* Link menu di drawer samping (partials/nav-drawer) & dropdown. */
-    .drawer-link        { @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-brand-50 hover:text-brand-900; }
+    .drawer-link        { @apply flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-brand-50 hover:text-brand-900; }
     .drawer-link-active { @apply bg-brand-50 font-semibold text-brand-800 ring-1 ring-brand-200/70; }
     .drawer-heading     { @apply mb-1.5 px-3 text-xs font-semibold tracking-wider text-gray-500 uppercase; }
 

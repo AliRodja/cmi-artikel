@@ -33,14 +33,14 @@
 
         <div id="hubungi-kami" class="scroll-mt-24">
             <p class="eyebrow text-white/90">{{ __('Hubungi Kami') }}</p>
-            <ul class="mt-4 space-y-3 text-sm text-white">
+            <ul class="mt-4 space-y-2 text-sm text-white">
                 @if ($clinic['address'])
                     <li class="flex gap-3">
                         <x-icon name="map-pin" size="size-4" class="mt-0.5 text-white/90" />
                         <span>
                             {{ $clinic['address'] }}
                             @if ($clinic['maps_url'])
-                                <a href="{{ $clinic['maps_url'] }}" target="_blank" rel="noopener noreferrer" class="mt-1 block font-semibold underline underline-offset-2 hover:text-white/80">{{ __('Lihat di peta') }}</a>
+                                <a href="{{ $clinic['maps_url'] }}" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-11 items-center font-semibold underline underline-offset-2 hover:text-white/80">{{ __('Lihat di peta') }}</a>
                             @endif
                         </span>
                     </li>
@@ -53,25 +53,25 @@
                     </li>
                 @endif
                 @if ($clinic['phone'])
-                    <li class="flex gap-3">
-                        <x-icon name="phone" size="size-4" class="mt-0.5 text-white/90" />
-                        <a href="tel:{{ $clinic['phone_international'] }}" class="hover:underline">
+                    <li class="flex items-center gap-3">
+                        <x-icon name="phone" size="size-4" class="text-white/90" />
+                        <a href="tel:{{ $clinic['phone_international'] }}" class="inline-flex min-h-11 items-center gap-1 hover:underline">
                             {{ __('Telepon') }}: <span class="font-semibold">{{ $clinic['phone'] }}</span>
                         </a>
                     </li>
                 @endif
                 @if ($clinic['whatsapp'])
-                    <li class="flex gap-3">
-                        <x-icon name="whatsapp" size="size-4" class="mt-0.5 text-white/90" />
-                        <a href="{{ $clinic['whatsapp_url'] }}" target="_blank" rel="noopener noreferrer" class="hover:underline">
+                    <li class="flex items-center gap-3">
+                        <x-icon name="whatsapp" size="size-4" class="text-white/90" />
+                        <a href="{{ $clinic['whatsapp_url'] }}" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-11 items-center gap-1 hover:underline">
                             WhatsApp: <span class="font-semibold">{{ $clinic['whatsapp'] }}</span>
                         </a>
                     </li>
                 @endif
                 @if ($clinic['email'])
-                    <li class="flex gap-3">
-                        <x-icon name="envelope" size="size-4" class="mt-0.5 text-white/90" />
-                        <a href="mailto:{{ $clinic['email'] }}" class="break-all hover:underline">{{ $clinic['email'] }}</a>
+                    <li class="flex items-center gap-3">
+                        <x-icon name="envelope" size="size-4" class="text-white/90" />
+                        <a href="mailto:{{ $clinic['email'] }}" class="inline-flex min-h-11 items-center break-all hover:underline">{{ $clinic['email'] }}</a>
                     </li>
                 @endif
             </ul>
@@ -79,16 +79,16 @@
 
         <div class="lg:justify-self-end">
             <p class="eyebrow text-white/90">{{ __('Navigasi') }}</p>
-            <ul class="mt-4 space-y-3 text-sm text-white">
-                <li><a href="{{ route('home') }}" class="hover:underline">{{ __('Artikel Jantung') }}</a></li>
+            <ul class="mt-2 text-sm text-white">
+                <li><a href="{{ route('home') }}" class="inline-flex min-h-11 items-center hover:underline">{{ __('Artikel Jantung') }}</a></li>
                 @auth
                     @if (auth()->user()->canWrite())
-                        <li><a href="{{ route('dashboard') }}" class="hover:underline">{{ __('Dashboard') }}</a></li>
+                        <li><a href="{{ route('dashboard') }}" class="inline-flex min-h-11 items-center hover:underline">{{ __('Dashboard') }}</a></li>
                     @endif
-                    <li><a href="{{ route('bookmarks.index') }}" class="hover:underline">{{ __('Baca Nanti') }}</a></li>
+                    <li><a href="{{ route('bookmarks.index') }}" class="inline-flex min-h-11 items-center hover:underline">{{ __('Baca Nanti') }}</a></li>
                 @else
-                    <li><a href="{{ route('login') }}" class="hover:underline">{{ __('Masuk') }}</a></li>
-                    <li><a href="{{ route('register') }}" class="hover:underline">{{ __('Daftar') }}</a></li>
+                    <li><a href="{{ route('login') }}" class="inline-flex min-h-11 items-center hover:underline">{{ __('Masuk') }}</a></li>
+                    <li><a href="{{ route('register') }}" class="inline-flex min-h-11 items-center hover:underline">{{ __('Daftar') }}</a></li>
                 @endauth
             </ul>
         </div>

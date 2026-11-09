@@ -12,7 +12,7 @@
     <h2 class="mt-4 text-lg leading-snug font-bold text-white">{{ $title ?? __('Alami gejala jantung?') }}</h2>
     <p class="mt-1.5 text-sm leading-relaxed text-white/90">{{ __('Konsultasi segera dengan tim :site. Kami siap membantu Anda.', ['site' => config('app.name')]) }}</p>
     <a href="{{ config('clinic.whatsapp_consultation_url') }}" target="_blank" rel="noopener noreferrer"
-       class="btn mt-5 w-full bg-[#25D366] py-2.5 text-white shadow-sm hover:bg-[#1EBE5D] focus-visible:ring-white">
+       class="btn mt-5 min-h-11 w-full bg-whatsapp py-2.5 text-white shadow-sm hover:bg-whatsapp-dark focus-visible:ring-white">
         <x-icon name="whatsapp" size="size-5" /> {{ __('Konsultasi via WhatsApp') }}
     </a>
 </section>

@@ -15,11 +15,11 @@
         </a>
     @endif
 
-    {{-- Tombol Utama Konsultasi WhatsApp dengan warna resmi WhatsApp (#25D366).
+    {{-- Tombol Utama Konsultasi WhatsApp, hijau gelap (bg-whatsapp) agar teks putih tetap terbaca.
          Di ponsel bulat ikon saja seperti tombol telepon; teks "Konsultasi Gratis" tetap dibacakan (sr-only). --}}
     <a href="{{ config('clinic.whatsapp_consultation_url') }}" target="_blank" rel="noopener noreferrer"
        title="{{ __('Konsultasi Gratis') }}"
-       class="group inline-flex min-h-11 min-w-11 items-center justify-center gap-2.5 rounded-full bg-[#25D366] px-3 text-sm font-semibold text-white shadow-lg shadow-emerald-900/15 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1EBE5D] hover:shadow-xl hover:shadow-emerald-900/20 focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 focus-visible:outline-none active:translate-y-0 sm:px-5">
+       class="group inline-flex min-h-11 min-w-11 items-center justify-center gap-2.5 rounded-full bg-whatsapp px-3 text-sm font-semibold text-white shadow-lg shadow-emerald-900/15 transition-all duration-200 hover:-translate-y-0.5 hover:bg-whatsapp-dark hover:shadow-xl hover:shadow-emerald-900/20 focus-visible:ring-2 focus-visible:ring-whatsapp focus-visible:ring-offset-2 focus-visible:outline-none active:translate-y-0 sm:px-5">
         {{-- Titik berkedip (hiasan, mulai layar sm): berhenti bila pengguna memilih "kurangi gerakan" di perangkatnya. --}}
         <span class="relative hidden size-2.5 shrink-0 sm:flex" aria-hidden="true">
             <span class="absolute inline-flex size-full rounded-full bg-white opacity-75 motion-safe:animate-ping"></span>

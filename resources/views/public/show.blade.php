@@ -25,9 +25,10 @@
     <section class="relative overflow-hidden border-b border-gray-200 bg-gradient-to-b from-brand-50/80 via-brand-50/25 to-white">
         <div class="container-page relative py-10 sm:py-12">
             <nav aria-label="{{ __('Breadcrumb') }}" class="flex flex-wrap items-center gap-2 text-xs font-medium text-gray-600">
-                <a href="{{ route('home') }}" class="transition hover:text-brand-700 hover:underline">{{ __('Beranda') }}</a>
+                {{-- min-h-11 + -my-3: area sentuh 44px tanpa menambah tinggi baris breadcrumb. --}}
+                <a href="{{ route('home') }}" class="-my-3 inline-flex min-h-11 items-center transition hover:text-brand-700 hover:underline">{{ __('Beranda') }}</a>
                 <x-icon name="chevron-right" size="size-3" class="text-gray-400" />
-                <a href="{{ route('home') }}#daftar-artikel" class="transition hover:text-brand-700 hover:underline">{{ __('Artikel Kesehatan Jantung') }}</a>
+                <a href="{{ route('home') }}#daftar-artikel" class="-my-3 inline-flex min-h-11 items-center transition hover:text-brand-700 hover:underline">{{ __('Artikel Kesehatan Jantung') }}</a>
             </nav>
 
             <div class="mt-4 flex flex-wrap items-center gap-2">
@@ -85,8 +86,8 @@
         <aside aria-label="{{ __('Simpan dan bagikan artikel') }}" class="lg:sticky lg:top-24 lg:self-start">
             <div class="flex flex-wrap items-center gap-2 rounded-2xl border border-gray-200/80 bg-white px-3 py-2.5 shadow-xs lg:flex-col lg:flex-nowrap lg:px-2 lg:py-3.5">
                 @include('public._bookmark-button', ['class' => 'share-btn'])
-                <span class="mx-1 h-6 w-px bg-gray-200 lg:mx-0 lg:my-0.5 lg:h-px lg:w-8"></span>
-                <span class="text-[0.6875rem] font-bold text-gray-500">{{ __('Bagikan') }}</span>
+                <span class="mx-1 h-6 w-px bg-gray-200 lg:mx-0 lg:my-0.5 lg:h-px lg:w-8" aria-hidden="true"></span>
+                <span class="text-xs font-bold text-gray-600">{{ __('Bagikan') }}</span>
                 <x-share-buttons :article="$article" class="lg:flex-col lg:gap-2.5" />
             </div>
         </aside>
@@ -96,7 +97,7 @@
             <article class="card overflow-hidden border-t-4 border-t-brand-600">
                 @if ($article->image_url)
                     <div class="border-b border-gray-100 bg-brand-50/40">
-                        <img src="{{ $article->image_url }}" alt="{{ $article->display_title }}" class="aspect-[16/9] w-full object-cover">
+                        <img src="{{ $article->image_url }}" alt="{{ $article->display_title }}" fetchpriority="high" class="aspect-[16/9] w-full object-cover">
                     </div>
                 @endif
 
@@ -141,7 +142,7 @@
                             <p class="text-sm text-gray-600">{{ $article->user->profession ?? __('Penulis di :site', ['site' => config('app.name')]) }}</p>
                         </div>
                     </div>
-                    @include('public._bookmark-button', ['class' => 'btn btn-secondary btn-sm', 'withLabel' => true])
+                    @include('public._bookmark-button', ['class' => 'btn btn-secondary min-h-11', 'withLabel' => true])
                 </section>
             @endif
 

@@ -32,7 +32,7 @@
 
         @if ($subtitle)
             <span @class([
-                'hidden text-[0.75rem] font-medium tracking-wider uppercase lg:inline',
+                'hidden text-xs font-medium tracking-wider uppercase lg:inline',
                 'text-brand-700' => $tone === 'light',
                 'text-brand-200' => $tone === 'dark',
             ])>{{ __('Pusat Informasi Jantung') }}</span>

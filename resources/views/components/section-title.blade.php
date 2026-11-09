@@ -4,7 +4,7 @@
 <div {{ $attributes->class('mb-5 flex items-center justify-between gap-3 border-b border-gray-200 pb-3') }}>
     <h2 class="border-l-4 border-brand-600 pl-3 text-lg leading-tight font-bold text-gray-900">{{ $title }}</h2>
     @if ($href)
-        <a href="{{ $href }}" class="link inline-flex shrink-0 items-center gap-1 text-sm">
+        <a href="{{ $href }}" class="link -my-2 inline-flex min-h-11 shrink-0 items-center gap-1 text-sm">
             {{ $linkLabel ?? __('Lihat semua') }} <x-icon name="chevron-right" size="size-3" />
         </a>
     @endif

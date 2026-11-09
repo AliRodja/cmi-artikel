@@ -32,7 +32,11 @@
             ? collect(\Illuminate\Support\Facades\File::files(public_path('images')))
                 ->filter(fn ($file) => preg_match('/^hero.*\.(webp|png|jpe?g|avif)$/i', $file->getFilename()))
                 ->sort(fn ($a, $b) => strnatcasecmp($a->getFilename(), $b->getFilename()))
-                ->map(fn ($file) => asset('images/'.$file->getFilename()))
+                // Lebar & tinggi asli dipasang di <img> agar browser menyiapkan ruangnya sebelum gambar selesai dimuat.
+                ->map(fn ($file) => [
+                    'url' => asset('images/'.$file->getFilename()),
+                    'size' => @getimagesize($file->getPathname()) ?: null,
+                ])
                 ->values()
             : collect();
     @endphp
@@ -40,41 +44,61 @@
     <section aria-label="{{ __('Pusat Informasi') }}" class="bg-white">
         {{-- 1. Paling atas: Jumbotron poster yang bisa digeser ke kiri & kanan (tanpa tindihan warna biru). --}}
         @if ($heroImages->isNotEmpty())
-            <div data-hero-slider aria-label="{{ __('Banner informasi :site', ['site' => config('app.name')]) }}"
-                 class="relative mx-auto max-w-[1920px] overflow-hidden border-b border-gray-200 bg-white">
-                <div data-hero-track class="flex snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    @foreach ($heroImages as $imageUrl)
-                        <div data-hero-slide class="w-full shrink-0 snap-center">
-                            <img src="{{ $imageUrl }}"
-                                 alt="{{ __('Banner informasi :site :number', ['site' => config('app.name'), 'number' => $loop->iteration]) }}"
-                                 @if (! $loop->first) loading="lazy" @endif
-                                 class="block h-auto w-full object-contain select-none">
-                        </div>
-                    @endforeach
+            <div data-hero-slider role="region" aria-roledescription="{{ __('Banner bergeser') }}"
+                 aria-label="{{ __('Banner informasi :site', ['site' => config('app.name')]) }}"
+                 class="mx-auto max-w-[1920px] border-b border-gray-200 bg-white">
+                <div class="relative overflow-hidden">
+                    <div data-hero-track class="flex snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        @foreach ($heroImages as $image)
+                            <div data-hero-slide class="w-full shrink-0 snap-center">
+                                {{-- Poster pertama = elemen terbesar saat halaman dibuka: dimuat lebih dulu, sisanya menyusul. --}}
+                                <img src="{{ $image['url'] }}"
+                                     alt="{{ __('Banner informasi :site :number', ['site' => config('app.name'), 'number' => $loop->iteration]) }}"
+                                     @if ($image['size']) width="{{ $image['size'][0] }}" height="{{ $image['size'][1] }}" @endif
+                                     @if ($loop->first) fetchpriority="high" @else loading="lazy" @endif
+                                     class="block h-auto w-full object-contain select-none">
+                            </div>
+                        @endforeach
+                    </div>
+
+                    @if ($heroImages->count() > 1)
+                        <button type="button" data-hero-prev
+                                title="{{ __('Slide sebelumnya') }}"
+                                class="absolute top-1/2 left-2 z-10 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-900/65 text-white shadow-md transition hover:bg-brand-600 focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:outline-none sm:left-4">
+                            <x-icon name="chevron-left" size="size-4" />
+                            <span class="sr-only">{{ __('Slide sebelumnya') }}</span>
+                        </button>
+
+                        <button type="button" data-hero-next
+                                title="{{ __('Slide berikutnya') }}"
+                                class="absolute top-1/2 right-2 z-10 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-900/65 text-white shadow-md transition hover:bg-brand-600 focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:outline-none sm:right-4">
+                            <x-icon name="chevron-right" size="size-4" />
+                            <span class="sr-only">{{ __('Slide berikutnya') }}</span>
+                        </button>
+                    @endif
                 </div>
 
+                {{-- Kontrol di bawah poster (bukan di atasnya): tidak menutupi isi banner, dan tiap tombol bisa 44px. --}}
                 @if ($heroImages->count() > 1)
-                    <button type="button" data-hero-prev
-                            title="{{ __('Slide sebelumnya') }}"
-                            class="absolute top-1/2 left-2 z-10 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-900/65 text-white shadow-md backdrop-blur-xs transition hover:bg-brand-600 focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none sm:left-4 sm:size-11">
-                        <x-icon name="chevron-left" size="size-4" />
-                        <span class="sr-only">{{ __('Slide sebelumnya') }}</span>
-                    </button>
+                    <div class="flex items-center justify-center gap-3 px-4 py-1">
+                        {{-- Tampil hanya bila geser otomatis berjalan (disembunyikan JS saat "kurangi gerakan" aktif). --}}
+                        <button type="button" data-hero-toggle hidden aria-pressed="false"
+                                data-text-pause="{{ __('Jeda') }}" data-text-play="{{ __('Putar') }}"
+                                class="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg px-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none">
+                            <span data-hero-toggle-pause><x-icon name="pause" size="size-3" /></span>
+                            <span data-hero-toggle-play hidden><x-icon name="play" size="size-3" /></span>
+                            <span data-hero-toggle-label>{{ __('Jeda') }}</span>
+                        </button>
 
-                    <button type="button" data-hero-next
-                            title="{{ __('Slide berikutnya') }}"
-                            class="absolute top-1/2 right-2 z-10 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-gray-900/65 text-white shadow-md backdrop-blur-xs transition hover:bg-brand-600 focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none sm:right-4 sm:size-11">
-                        <x-icon name="chevron-right" size="size-4" />
-                        <span class="sr-only">{{ __('Slide berikutnya') }}</span>
-                    </button>
-
-                    <div class="pointer-events-none absolute inset-x-0 bottom-2 z-10 flex justify-center sm:bottom-3">
-                        <div class="pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-gray-900/55 px-2.5 py-1 backdrop-blur-xs">
-                            @foreach ($heroImages as $imageUrl)
+                        <div class="flex items-center">
+                            @foreach ($heroImages as $image)
                                 <button type="button" data-hero-dot="{{ $loop->index }}"
                                         aria-label="{{ __('Slide :number', ['number' => $loop->iteration]) }}"
                                         aria-current="{{ $loop->first ? 'true' : 'false' }}"
-                                        class="h-2 cursor-pointer rounded-full transition-all duration-300 aria-[current=true]:w-6 aria-[current=true]:bg-amber-300 aria-[current=false]:w-2 aria-[current=false]:bg-white/75 hover:aria-[current=false]:bg-white"></button>
+                                        class="group flex size-11 cursor-pointer items-center justify-center rounded-lg focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none">
+                                    {{-- gray-500 = 4,8:1 di latar putih (penanda non-teks minimal 3:1); aktif = biru CMI & lebih panjang. --}}
+                                    <span class="h-2.5 w-2.5 rounded-full bg-gray-500 transition-all duration-300 group-hover:bg-gray-700 group-aria-[current=true]:w-7 group-aria-[current=true]:bg-brand-600"></span>
+                                </button>
                             @endforeach
                         </div>
                     </div>
@@ -86,17 +110,15 @@
         <div class="border-b border-gray-200 bg-gradient-to-b from-brand-50/75 via-brand-50/30 to-white">
             <div class="container-page py-10 sm:py-12">
                 <div class="mx-auto max-w-3xl text-center">
-                    
-
-                    <h1 class="mt-4 font-article text-3xl leading-tight font-bold tracking-tight text-gray-900 sm:text-4xl">{{ __('Artikel Kesehatan Jantung') }}</h1>
+                    <h1 class="font-article text-3xl leading-tight font-bold tracking-tight text-gray-900 sm:text-4xl">{{ __('Artikel Kesehatan Jantung') }}</h1>
                     <p class="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-gray-600">{{ __('Kenali gejala, faktor risiko, pencegahan, dan perawatan penyakit jantung bersama :site.', ['site' => config('app.name')]) }}</p>
 
                     <form action="{{ route('home') }}" method="GET" class="mx-auto mt-7 flex max-w-2xl items-center gap-2 rounded-full border-2 border-brand-200 bg-white p-1.5 pl-4 text-left shadow-md transition focus-within:border-brand-600 focus-within:ring-4 focus-within:ring-brand-500/15">
                         <x-icon name="magnifying-glass" size="size-4" class="shrink-0 text-brand-600" />
                         <label for="search" class="sr-only">{{ __('Cari artikel') }}</label>
                         <input type="search" id="search" name="search" value="{{ $search }}" placeholder="{{ __('Cari judul atau isi artikel...') }}"
-                               class="w-full rounded-full border-0 bg-transparent px-2 text-sm text-gray-900 placeholder:text-gray-500 focus:ring-0 focus:outline-none">
-                        <button type="submit" class="btn btn-primary shrink-0 rounded-full px-6 py-2.5">{{ __('Cari') }}</button>
+                               class="w-full self-stretch rounded-full border-0 bg-transparent px-2 text-sm text-gray-900 placeholder:text-gray-500 focus:ring-0 focus:outline-none">
+                        <button type="submit" class="btn btn-primary min-h-11 shrink-0 rounded-full px-6 py-2.5">{{ __('Cari') }}</button>
                     </form>
 
                     {{-- Pintasan topik untuk pembaca dengan riwayat kondisi kronis / pencegahan jangka panjang. --}}
@@ -105,7 +127,7 @@
                         @foreach ($quickTopics as $topic)
                             <a href="{{ route('home', ['search' => $topic]) }}#daftar-artikel"
                                @class([
-                                   'rounded-full border px-3.5 py-1.5 text-xs font-semibold transition',
+                                   'inline-flex min-h-11 items-center rounded-full border px-4 text-xs font-semibold transition',
                                    'border-brand-600 bg-brand-600 text-white shadow-xs' => strcasecmp($search, $topic) === 0,
                                    'border-brand-200 bg-white text-gray-700 hover:border-brand-600 hover:bg-brand-600 hover:text-white' => strcasecmp($search, $topic) !== 0,
                                ])>
@@ -118,18 +140,18 @@
                 {{-- 3 kartu akses cepat bergaya Cleveland Clinic (We're here when you need us). --}}
                 <div class="mt-9 grid gap-4 sm:grid-cols-3 sm:gap-6">
                     <a href="{{ config('clinic.whatsapp_consultation_url') }}" target="_blank" rel="noopener noreferrer"
-                       class="group card flex flex-col justify-between border-t-4 border-t-[#25D366] p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                       class="group card flex flex-col justify-between border-t-4 border-t-whatsapp p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
                         <div>
                             <div class="flex items-center justify-between gap-3">
-                                <span class="flex size-10 items-center justify-center rounded-lg bg-[#25D366]/12 text-[#1EBE5D]">
+                                <span class="flex size-10 items-center justify-center rounded-lg bg-whatsapp/10 text-whatsapp">
                                     <x-icon name="whatsapp" size="size-5" />
                                 </span>
-                                <x-icon name="chevron-right" size="size-4" class="text-gray-400 transition group-hover:translate-x-0.5 group-hover:text-[#1EBE5D]" />
+                                <x-icon name="chevron-right" size="size-4" class="text-gray-400 transition group-hover:translate-x-0.5 group-hover:text-whatsapp" />
                             </div>
                             <h2 class="mt-3.5 text-base font-bold text-gray-900 group-hover:text-brand-700">{{ __('Konsultasi Langsung') }}</h2>
                             <p class="mt-1 text-xs leading-relaxed text-gray-600">{{ __('Hubungi tim layanan pasien kami melalui WhatsApp untuk jadwal & keluhan jantung.') }}</p>
                         </div>
-                        <span class="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#1EBE5D]">
+                        <span class="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-whatsapp">
                             {{ __('Hubungi via WhatsApp') }}
                         </span>
                     </a>
@@ -231,7 +253,7 @@
                                 </div>
                             </div>
 
-                            <a href="{{ route('public.articles.show', $featured) }}" class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 transition group-hover:text-brand-600">
+                            <a href="{{ route('public.articles.show', $featured) }}" class="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-brand-700 transition group-hover:text-brand-600">
                                 {{ __('Baca Selengkapnya') }} <x-icon name="chevron-right" size="size-3" />
                             </a>
                         </div>
@@ -378,19 +400,43 @@
                 }
             }, { passive: true });
 
-            // Geser otomatis tiap 6 detik (berhenti saat kursor di atas banner atau bila pengguna memilih kurangi gerakan).
+            // Geser otomatis tiap 6 detik. Berhenti sementara saat kursor/fokus di banner, berhenti tetap lewat
+            // tombol Jeda, dan tidak berjalan sama sekali bila pengguna memilih "kurangi gerakan".
+            const toggle = slider.querySelector('[data-hero-toggle]');
             if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                let timer = setInterval(() => goToSlide(activeIndex + 1), 6000);
-                const pause = () => clearInterval(timer);
-                const resume = () => {
+                let timer = null;
+                let stoppedByUser = false;
+
+                const stop = () => {
                     clearInterval(timer);
-                    timer = setInterval(() => goToSlide(activeIndex + 1), 6000);
+                    timer = null;
+                };
+                const start = () => {
+                    stop();
+                    if (!stoppedByUser) {
+                        timer = setInterval(() => goToSlide(activeIndex + 1), 6000);
+                    }
                 };
 
-                slider.addEventListener('mouseenter', pause);
-                slider.addEventListener('mouseleave', resume);
-                slider.addEventListener('focusin', pause);
-                slider.addEventListener('focusout', resume);
+                if (toggle) {
+                    toggle.hidden = false;
+                    toggle.addEventListener('click', () => {
+                        stoppedByUser = !stoppedByUser;
+                        toggle.setAttribute('aria-pressed', String(stoppedByUser));
+                        toggle.querySelector('[data-hero-toggle-pause]').hidden = stoppedByUser;
+                        toggle.querySelector('[data-hero-toggle-play]').hidden = !stoppedByUser;
+                        toggle.querySelector('[data-hero-toggle-label]').textContent = stoppedByUser
+                            ? toggle.dataset.textPlay
+                            : toggle.dataset.textPause;
+                        stoppedByUser ? stop() : start();
+                    });
+                }
+
+                slider.addEventListener('mouseenter', stop);
+                slider.addEventListener('mouseleave', start);
+                slider.addEventListener('focusin', stop);
+                slider.addEventListener('focusout', start);
+                start();
             }
         });
     </script>

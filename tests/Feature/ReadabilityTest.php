@@ -44,6 +44,7 @@ class ReadabilityTest extends TestCase
     public function test_whatsapp_button_uses_high_contrast_green(): void
     {
         $this->get(route('home', ['search' => 'apa saja']))
-            ->assertSee('bg-[#25D366]', false);
+            ->assertSee('bg-whatsapp', false)
+            ->assertDontSee('[#25D366]', false);
     }
 }

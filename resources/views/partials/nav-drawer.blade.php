@@ -12,7 +12,7 @@
         <div class="flex items-center justify-between border-b border-brand-100 bg-brand-50/80 px-5 py-3.5">
             <x-logo />
             <button type="button" data-dialog-close
-                    class="flex size-9 cursor-pointer items-center justify-center rounded-full border border-brand-200/80 bg-white text-gray-600 shadow-2xs transition hover:border-brand-300 hover:text-gray-900">
+                    class="flex size-11 cursor-pointer items-center justify-center rounded-full border border-brand-200/80 bg-white text-gray-600 shadow-2xs transition hover:border-brand-300 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none">
                 <x-icon name="x-mark" size="size-4" />
                 <span class="sr-only">{{ __('Tutup menu') }}</span>
             </button>

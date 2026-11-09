@@ -352,6 +352,17 @@ bawah "Git di-init ulang".
   untuk seluruh UI, judul, dan isi artikel (`--font-sans: var(--font-roboto), sans-serif` & `--font-article: var(--font-roboto), sans-serif`;
   sejak 2026-10-31 menyeragamkan Inter + Roboto menjadi Roboto penuh atas permintaan user). Logo: `public/images/logo-cmi.png` (sudah di-crop 384×160, latar transparan; file asli 1080×1080 di `logo-cmi-square.png`) via komponen `x-logo` (fallback inisial).
 - Git di-init ulang 2026-10-28 (branch `main`); user sendiri yang commit & push ke GitHub.
+- [x] **Perapian UI halaman publik: kontras, area sentuh & slider** (2026-11-09): kelompok 1 dari perapian seluruh
+  halaman (arah desain tetap). Hijau WhatsApp `#25D366` (teks putih 1,98:1) diganti token `--color-whatsapp` `#0E7A3F`
+  (5,42:1, hover `--color-whatsapp-dark` `#0B6634`) → `bg-whatsapp`/`text-whatsapp` di kartu konsultasi, tombol melayang,
+  kartu akses cepat & tombol bagikan, atas persetujuan user; biru Facebook di tombol bagikan `#1464D2` (5,55:1).
+  Semua kontrol publik minimal 44×44 px (burger, Cari, Bahasa, Masuk, lonceng, avatar `md`, tutup drawer/toast, topik,
+  tautan footer, breadcrumb `-my-3`, ikon medsos bilah atas lewat `::after`, `.drawer-link min-h-11`); badge angka navbar
+  14px. Slider beranda: tombol **Jeda/Putar** (geser otomatis 6 dtk), titik indikator dipindah ke bawah poster (44px,
+  `gray-500`/`brand-600`), `role="region"`, poster pertama `width`/`height` + `fetchpriority="high"`; gambar detail
+  artikel `fetchpriority="high"`. `cursor: pointer` untuk semua kontrol di `@layer base`. Diuji Chrome headless 390 px &
+  1366 px (tamu & admin): tanpa overflow horizontal, tanpa error konsol, tanpa teks < 14px. Sisa: tautan pagination
+  bawaan Laravel 38px.
 - [x] **Gambar artikel dikompres ke WebP saat upload** (2026-11-01): `ImageUpload::store()` kini selalu menyimpan hasil
   gambar ulang GD sebagai **WebP kualitas 80** (`WEBP_QUALITY`), apa pun format aslinya (JPG/PNG/WebP), dan memperkecil
   gambar yang lebih lebar dari **1600px** (`MAX_WIDTH`, proporsi tetap). PNG berpalet diubah ke truecolor dulu

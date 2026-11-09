@@ -122,6 +122,9 @@ npm run build               # wajib sebelum dikumpulkan / deploy
   hiasan "seperti AI" (pola garis, glow berlebihan).
 - Pembaca usia 25+ (banyak orang tua): huruf ≥ 14px, teks minimal `text-gray-500` (bukan `gray-400`), kontras ≥ 4,5:1,
   area sentuh 44px, ikon disertai teks, tanggal pasti, pop-up gagal tidak hilang sendiri.
+- Hijau WhatsApp hanya lewat token `bg-whatsapp`/`text-whatsapp` (`#0E7A3F`, hover `whatsapp-dark`), bukan `#25D366`
+  (teks putih 2:1), keputusan user 2026-11-09. Area sentuh kecil diperluas dengan `min-h-11` (+ margin negatif bila tinggi
+  baris harus tetap) atau `::after` (`after:absolute after:-inset-2`).
 - UI **tanpa istilah teknis** (INNER JOIN, SQL, `user_id`) — pengguna nakes & editor konten; penjelasan teknis di README.
 - Tidak ada "waktu baca / menit baca" di mana pun. Semua teks, contoh, dan SEO bertema jantung.
 
@@ -145,3 +148,18 @@ npm run build               # wajib sebelum dikumpulkan / deploy
 - LIKE dengan input pengunjung: pakai `Article::likePattern()` + `LIKE ? ESCAPE '!'` (backslash beda di MySQL & SQLite).
 - Uji E2E Chrome headless: klik CDP kadang hilang setelah `form.submit()` (bukan bug aplikasi) → pakai `element.click()`.
 - Alat audit kontras salah membaca latar `oklch()` & teks di atas gambar/gradien — cek manual.
+
+<!-- antislop:start -->
+## antislop
+For UI, copy, people, mobile layout, or code comments work, read these installed skill files directly (use these paths even if a same-named global skill exists):
+- Core filter, always on: `antislop`: `.claude/skills/antislop/SKILL.md`
+- UI / visual: `antislop-ui`: `.claude/skills/antislop-ui/SKILL.md`
+- Mobile / responsive: `antislop-layoutmobile`: `.claude/skills/antislop-layoutmobile/SKILL.md`
+- Code comments: `antislop-code`: `.claude/skills/antislop-code/SKILL.md`
+- People: `antislop-human`: `.claude/skills/antislop-human/SKILL.md`
+- Copy & text: `antislop-copywriting`: `.claude/skills/antislop-copywriting/SKILL.md`
+Before starting, follow the core's "Two Usage Modes" section in strict order: explicit session instruction first, then global preference, then ask. A session instruction always wins. For a resolved mode, say `antislop active: <mode> (session override).` or `antislop active: <mode> (global preference).` once before presenting findings or making edits, using the actual mode and source. Acknowledging the user's request without naming the source does not replace this notice.
+Only an explicit choice of antislop during or after selects a session mode. A request to review, audit, or avoid file edits does not select a mode; read the global preference in that case. Another skill's mode does not select antislop's mode.
+If the mode is unresolved, ask during/after and end the response; wait for the answer before any UI review, planning, or concept. For read-only tasks, put the active-mode notice only at the start of the final answer, never in progress messages. For editing tasks, announce before the first edit and omit it from the final answer.
+To update antislop later: `npx antislop-ai --update`, or run `npx antislop-ai` and pick Overwrite them.
+<!-- antislop:end -->

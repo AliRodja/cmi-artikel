@@ -53,7 +53,7 @@
                         <p class="mt-0.5 text-sm text-gray-600">{{ $toast['message'] }}</p>
                     </div>
                     <button type="button" data-toast-close
-                            class="-mt-1.5 -mr-1.5 flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700">
+                            class="-mt-2 -mr-2 flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700">
                         <x-icon name="x-mark" size="size-4" />
                         <span class="sr-only">{{ __('Tutup') }}</span>
                     </button>
